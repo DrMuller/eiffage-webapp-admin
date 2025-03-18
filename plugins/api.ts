@@ -31,25 +31,20 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Custom fetch function with authentication and refresh token handling
   async function $api(url: string, options: any = {}) {
-    const { getAccessToken, getRefreshToken, updateAccessToken } = useAuth()
+    const { getAccessToken, getRefreshToken } = useAuth()
 
-    // Create full URL
     const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`
-
-    // Set default headers
     const headers = new Headers(options.headers || {})
 
     if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json')
     }
 
-    // Add authorization header if user is authenticated
     const accessToken = getAccessToken()
     if (accessToken && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${accessToken}`)
     }
 
-    // Prepare fetch options
     const fetchOptions: RequestInit = {
       ...options,
       headers,
