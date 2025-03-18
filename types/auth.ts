@@ -22,8 +22,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 export interface LoginResponse {
-  user: AuthUser;
+  user: User;
   tokens: AuthTokens;
 }
 
