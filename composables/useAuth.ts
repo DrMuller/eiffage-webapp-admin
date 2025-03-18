@@ -9,17 +9,29 @@ const tokens = reactive<AuthTokens>({
 })
 const isAuthenticated = ref(false)
 
+// Cookie options
+const cookieOptions = {
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+  path: '/',
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const
+}
+
 export const useAuth = () => {
   const nuxtApp = useNuxtApp()
+  const cookie = useCookie('auth:tokens', {
+    ...cookieOptions,
+    encode: (value: AuthTokens | null) => encodeURIComponent(JSON.stringify(value)),
+    decode: (value) => JSON.parse(decodeURIComponent(value)) as AuthTokens
+  })
 
   function setAuth(newUser: User, newTokens: AuthTokens) {
     user.value = newUser
     tokens.accessToken = newTokens.accessToken
     tokens.refreshToken = newTokens.refreshToken
     isAuthenticated.value = true
-
-    // Store tokens in localStorage for persistence
-    localStorage.setItem('auth:tokens', JSON.stringify(newTokens))
+    // Store tokens in cookies for persistence
+    cookie.value = newTokens
   }
 
   function clearAuth() {
@@ -28,8 +40,8 @@ export const useAuth = () => {
     tokens.refreshToken = ''
     isAuthenticated.value = false
 
-    // Remove tokens from localStorage
-    localStorage.removeItem('auth:tokens')
+    // Remove tokens from cookies
+    cookie.value = null
   }
 
   function getAccessToken() {
@@ -42,36 +54,39 @@ export const useAuth = () => {
 
   function updateAccessToken(newAccessToken: string) {
     tokens.accessToken = newAccessToken
-    const storedTokens = JSON.parse(localStorage.getItem('auth:tokens') || '{}')
-    localStorage.setItem('auth:tokens', JSON.stringify({
-      ...storedTokens,
-      accessToken: newAccessToken
-    }))
+    if (cookie.value) {
+      // console.log('Updating access token in cookies')
+      const storedTokens = cookie.value
+      cookie.value = {
+        ...storedTokens,
+        accessToken: newAccessToken
+      }
+    }
   }
 
-  // Initialize auth state from localStorage on app load
+  // Initialize auth state from cookies on app load
   function initAuth() {
-    if (import.meta.client) {
-      const storedTokens = localStorage.getItem('auth:tokens')
-      if (storedTokens) {
-        try {
-          const parsedTokens = JSON.parse(storedTokens) as AuthTokens
-          tokens.accessToken = parsedTokens.accessToken
-          tokens.refreshToken = parsedTokens.refreshToken
-          isAuthenticated.value = true
+    if (cookie.value) {
+      // console.log('Initializing auth state from cookies')
+      try {
+        const { accessToken, refreshToken } = cookie.value
+        tokens.accessToken = accessToken
+        tokens.refreshToken = refreshToken
+        isAuthenticated.value = true
 
-          // Fetch user details with the tokens
-          nuxtApp.$api<User>('/users/me')
-            .then((userData: User) => {
-              user.value = userData
-            })
-            .catch(() => {
-              // If this fails, tokens might be invalid
-              clearAuth()
-            })
-        } catch (e) {
-          clearAuth()
-        }
+        // Fetch user details with the tokens
+        nuxtApp.$api<User>('/users/me', { method: 'GET' })
+          .then((userData: User) => {
+            user.value = userData
+          })
+          .catch(() => {
+            console.log('Failed to fetch user details')
+            // If this fails, tokens might be invalid
+            // clearAuth()
+          })
+      } catch (e) {
+        console.log('Failed to parse tokens from cookies')
+        // clearAuth()
       }
     }
   }
