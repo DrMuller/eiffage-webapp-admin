@@ -5,12 +5,19 @@ export default defineNuxtConfig({
   ssr: false,
 
   modules: [
+    '@nuxt/ui',
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
     '@nuxt/scripts'
   ],
+
+  css: ['~/assets/css/index.css'],
+
+  colorMode: {
+    preference: 'light'
+  },
 
   runtimeConfig: {
     public: {
