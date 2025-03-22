@@ -2,9 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-blue-50">
     <div class="p-6 bg-white rounded-lg shadow-sm">
       <div class="mb-8">
-        <div class="flex mb-4">
-          <!-- <img src="/logo.png" alt="Futurz Logo" class="h-10"> -->
-        </div>
+        <NuxtImg src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6" />
         <h1 class="text-3xl font-bold">Démarrer avec Futurz</h1>
       </div>
 
