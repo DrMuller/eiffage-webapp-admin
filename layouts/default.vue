@@ -1,7 +1,7 @@
 <template>
   <div class="layout-default">
     <aside>
-      <div class="aside-container">
+      <div class="aside-container bg-gray-50">
         <AppNavBar class="" />
       </div>
     </aside>
@@ -13,8 +13,6 @@
 
 
 <style lang="css" scoped>
-@import "~/assets/css/_variables.css";
-
 .layout-default {
   position: relative;
   display: grid;
@@ -30,6 +28,5 @@
 
 .aside-container {
   position: fixed;
-  background-color: var(--ui-color-gray-50);
 }
 </style>
