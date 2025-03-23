@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-blue-50">
     <div class="p-8 bg-white rounded-lg shadow-sm">
-      <div class="mb-8 text-center">
+      <div class="mb-8">
         <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
         <h1 class="text-3xl font-bold">Connexion à Futurz</h1>
       </div>
@@ -9,7 +9,7 @@
       <form @submit.prevent="handleSubmit">
         <div class="mb-6">
           <label for="email" class="block mb-2 text-gray-700">Email</label>
-          <input id="email" v-model="email" type="email" required placeholder="email"
+          <input id="email" v-model="email" type="email" required placeholder="john.doe@gmail.com"
             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <p v-if="emailError" class="mt-1 text-sm text-orange-600">L'email doit être valide</p>
         </div>

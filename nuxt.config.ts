@@ -26,5 +26,17 @@ export default defineNuxtConfig({
   },
   image: {
     provider: 'ipx'
+  },
+
+  nitro: {
+    preset: 'static',
+    prerender: {
+      crawlLinks: true,
+      failOnError: false,
+      routes: ['/auth/reset-password/placeholder-token']
+    }
+  },
+  experimental: {
+    payloadExtraction: false
   }
 })
