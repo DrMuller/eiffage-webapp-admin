@@ -13,6 +13,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "estree-walker": "2.0.2",
     "@internationalized/date": "^3.7.0",
     "@nuxt/eslint": "1.2.0",
     "@nuxt/fonts": "0.11.0",
