@@ -29,14 +29,17 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'static',
-    prerender: {
-      crawlLinks: true,
-      failOnError: false,
-      routes: ['/auth/reset-password/placeholder-token']
-    }
+    preset: 'static'
   },
   experimental: {
     payloadExtraction: false
+  },
+
+  app: {
+    baseURL: '/'
+  },
+
+  routeRules: {
+    '/auth/reset-password/**': { swr: false }
   }
 })

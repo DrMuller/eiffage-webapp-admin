@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeMount } from 'vue';
 
 const route = useRoute();
 const token = ref('');
@@ -17,14 +17,15 @@ useHead({
     title: 'Réinitialiser le mot de passe | Futurz'
 });
 
-onMounted(() => {
-    token.value = route.params.token as string;
+// Add this to handle both client and server rendering
+onBeforeMount(() => {
+    if (import.meta.client) {
+        token.value = route.params.token as string;
 
-    // TODO: Validate the token with an API call
-    // This would be a call to check if the token is valid
-    // For now, we'll assume the token is valid if it's at least 32 characters long
-    if (!token.value || token.value.length < 32) {
-        isInvalidToken.value = true;
+        // Token validation logic
+        if (!token.value || token.value.length < 32) {
+            isInvalidToken.value = true;
+        }
     }
 });
 
