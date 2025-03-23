@@ -2,9 +2,7 @@
     <div class="min-h-screen flex items-center justify-center bg-blue-50">
         <div class="p-8 bg-white rounded-lg shadow-sm">
             <div class="mb-8 text-center">
-                <div class="flex justify-center mb-4">
-                    <!-- <img src="/logo.png" alt="Futurz Logo" class="h-10"> -->
-                </div>
+                <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
                 <h1 class="text-3xl font-bold">Créer un nouveau mot de passe</h1>
                 <p class="text-sm text-gray-500 mt-2">
                     Veuillez entrer votre nouveau mot de passe ci-dessous

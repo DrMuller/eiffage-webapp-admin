@@ -8,13 +8,13 @@ export default defineNuxtRouteMiddleware((to) => {
   if (!isAuthenticated.value && to.meta.requiresAuth) {
     // Redirect to login page with the returnUrl
     return navigateTo({
-      path: '/signin',
+      path: '/auth/signin',
       query: { redirect: to.fullPath }
     })
   }
 
   // If user is authenticated and trying to access login page
-  if (isAuthenticated.value && to.path === '/signin') {
+  if (isAuthenticated.value && to.path === '/auth/signin') {
     // Redirect to home page
     return navigateTo('/')
   }

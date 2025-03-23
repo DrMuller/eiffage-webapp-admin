@@ -2,7 +2,7 @@
   <div class="sidebar">
     <!-- Logo section -->
     <div class="logo-container">
-      <NuxtImg src="~/assets/logo_futurz.webp" alt="Futurz" class="w-6 h-6" />
+      <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
       <span class="logo-text">Futurz</span>
     </div>
 
