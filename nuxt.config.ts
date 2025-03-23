@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  ssr: false,
+  ssr: true,
 
   modules: [
     '@nuxt/ui',
@@ -28,18 +28,4 @@ export default defineNuxtConfig({
     provider: 'ipx'
   },
 
-  nitro: {
-    preset: 'static'
-  },
-  experimental: {
-    payloadExtraction: false
-  },
-
-  app: {
-    baseURL: '/'
-  },
-
-  routeRules: {
-    '/auth/reset-password/**': { swr: false }
-  }
 })
