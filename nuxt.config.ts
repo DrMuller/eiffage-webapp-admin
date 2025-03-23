@@ -2,7 +2,17 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  ssr: true,
+  ssr: false, // SPA mode
+
+  nitro: {
+    preset: 'static'
+  },
+
+  routeRules: {
+    '/auth/reset-password/**': {
+      prerender: false
+    }
+  },
 
   modules: [
     '@nuxt/ui',
