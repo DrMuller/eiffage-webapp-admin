@@ -8,51 +8,51 @@
         <div class="flex items-center body">
             <label class="mr-4 font-medium">Valeur nominale par action</label>
             <UInput class="w-32" placeholder="18 200" />
-            <UButton icon="i-heroicons-information-circle" color="neutral" variant="ghost" class="ml-1" size="xs"
-                aria-label="Info" />
+            <UButton icon="material-symbols-light:info-outline-rounded" color="neutral" variant="ghost" class="ml-1"
+                size="xs" aria-label="Info" />
         </div>
 
-        <UTable sticky :columns="columns" :data="localOrdinaryShares" class="w-full" hover>
-            <template #name-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model="editingShare.name" class="w-full" />
-                <span v-else>{{ row.original.name }}</span>
-            </template>
-            <template #date-cell="{ row }">
-                <DatePicker v-if="editingRow === row.index" v-model="editingShare.date" class="w-full" />
-                <span v-else>{{ row.original.date.toLocaleDateString('fr-FR') }}</span>
-            </template>
-            <template #nb_shares-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model.number="editingShare.nb_shares" class="w-full"
-                    type="number" @update:model-value="updateAmount" />
-                <span v-else>{{ row.original.nb_shares }}</span>
-            </template>
-            <template #share_price-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model.number="editingShare.share_price" class="w-full"
-                    type="number" step="0.01" @update:model-value="updateAmount" />
-                <span v-else>{{ row.original.share_price.toFixed(2) }} €</span>
-            </template>
-            <template #actions-cell="{ row }">
-                <div v-if="editingRow === row.index" class="flex justify-end">
-                    <UButton color="success" variant="ghost" icon="material-symbols-light:check-rounded" size="sm"
-                        aria-label="Save" @click="saveShare()" />
-                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:close-rounded" size="sm"
-                        aria-label="Cancel" @click="cancelEdit()" />
-                </div>
-                <div v-else class="flex justify-end">
-                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:edit-square-outline-rounded"
-                        size="sm" aria-label="Edit" @click="editShare(row.index)" />
-                    <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
-                        size="sm" aria-label="Delete" @click="openDeleteModal(row.index)" />
-                </div>
-            </template>
-            <template #header-cell="{ column }">
-                <div class="flex items-center">
-                    {{ column.id ? (column.id === 'actions' ? '' : column.id) : '' }}
-                    <UButton v-if="column.id && column.id !== 'actions'" icon="i-heroicons-information-circle"
-                        color="neutral" variant="ghost" class="ml-1" size="xs" aria-label="Info" />
-                </div>
-            </template>
-        </UTable>
+        <div class="relative overflow-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="top-0 border-b-1 border-t-1 border-gray-200 bg-white">
+                    <tr>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Intitulé de l'émission
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Date de l'émission
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Nombre d'action émises
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Prix de souscription
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold" />
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    <OrdinarySharesItem v-for="(share, index) in localOrdinaryShares" :key="index" :share="share"
+                        :index="index" @update="updateShare" @delete="deleteShare" />
+                </tbody>
+            </table>
+        </div>
 
         <template #footer>
             <div v-if="!isAddingNewShare">
@@ -92,24 +92,12 @@
             </div>
         </template>
     </UCard>
-
-    <!-- Delete Confirmation Modal -->
-    <UModal v-model="isDeleteModalOpen">
-        <div class="p-4">
-            <h3 class="text-lg font-medium mb-3">Confirmation de suppression</h3>
-            <p class="mb-4">Êtes-vous sûr de vouloir supprimer cette émission d'actions ?</p>
-            <div class="flex justify-end gap-2">
-                <UButton color="neutral" variant="ghost" @click="cancelDelete">Annuler</UButton>
-                <UButton color="error" @click="confirmDelete">Supprimer</UButton>
-            </div>
-        </div>
-    </UModal>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
 import type { OrdinaryShares } from '~/types/model';
-import type { TableColumn } from '@nuxt/ui';
+import OrdinarySharesItem from './OrdinarySharesItem.vue';
 
 // Define component props
 const props = defineProps<{
@@ -122,46 +110,10 @@ const emit = defineEmits<{
     'add:ordinary-share': [share: OrdinaryShares];
 }>();
 
-// Modal state
-const isDeleteModalOpen = ref(false);
-const shareToDeleteIndex = ref<number | null>(null);
-
 // Create local reactive copy of props
 const localOrdinaryShares = computed({
     get: () => props.ordinaryShares,
     set: (value) => emit('update:ordinary-shares', value)
-});
-
-const columns: TableColumn<OrdinaryShares>[] = [
-    {
-        accessorKey: 'name',
-        header: 'Intitulé de l\'émission'
-    },
-    {
-        accessorKey: 'date',
-        header: 'Date de l\'émission'
-    },
-    {
-        accessorKey: 'nb_shares',
-        header: 'Nombre d\'action émises'
-    },
-    {
-        accessorKey: 'share_price',
-        header: 'Prix de souscription'
-    },
-    {
-        id: 'actions',
-        header: ''
-    }
-];
-
-const editingRow = ref<number | null>(null);
-const editingShare = ref<OrdinaryShares>({
-    name: '',
-    date: new Date(),
-    nb_shares: 0,
-    share_price: 0,
-    amount: 0
 });
 
 const isAddingNewShare = ref(false);
@@ -173,43 +125,18 @@ const newShare = reactive<OrdinaryShares>({
     amount: 0
 });
 
+// Update a share
+const updateShare = (index: number, updatedShare: OrdinaryShares) => {
+    const updatedShares = [...localOrdinaryShares.value];
+    updatedShares[index] = updatedShare;
+    localOrdinaryShares.value = updatedShares;
+};
+
 // Delete share with confirmation dialog
-const openDeleteModal = (index: number) => {
-    shareToDeleteIndex.value = index;
-    isDeleteModalOpen.value = true;
-};
-
-const confirmDelete = () => {
-    if (shareToDeleteIndex.value !== null) {
-        const updatedShares = [...localOrdinaryShares.value];
-        updatedShares.splice(shareToDeleteIndex.value, 1);
-        localOrdinaryShares.value = updatedShares;
-        isDeleteModalOpen.value = false;
-        shareToDeleteIndex.value = null;
-    }
-};
-
-const cancelDelete = () => {
-    isDeleteModalOpen.value = false;
-    shareToDeleteIndex.value = null;
-};
-
-const editShare = (index: number) => {
-    editingRow.value = index;
-    editingShare.value = { ...localOrdinaryShares.value[index] };
-};
-
-const saveShare = () => {
-    if (editingRow.value !== null) {
-        const updatedShares = [...localOrdinaryShares.value];
-        updatedShares[editingRow.value] = { ...editingShare.value };
-        localOrdinaryShares.value = updatedShares;
-        editingRow.value = null;
-    }
-};
-
-const cancelEdit = () => {
-    editingRow.value = null;
+const deleteShare = (index: number) => {
+    const updatedShares = [...localOrdinaryShares.value];
+    updatedShares.splice(index, 1);
+    localOrdinaryShares.value = updatedShares;
 };
 
 const startAddShare = () => {
@@ -225,13 +152,6 @@ const startAddShare = () => {
 
 const cancelAddShare = () => {
     isAddingNewShare.value = false;
-};
-
-// Calculate amount when shares or price change
-const updateAmount = () => {
-    if (editingRow.value !== null) {
-        editingShare.value.amount = editingShare.value.nb_shares * editingShare.value.share_price;
-    }
 };
 
 // Also update amount for new shares

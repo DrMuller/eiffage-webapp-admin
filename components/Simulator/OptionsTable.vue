@@ -4,52 +4,61 @@
             <span class="text-lg font-semibold mb-4">Historique - Les émissions d'options (BSPCE, BSA)</span>
         </template>
 
-        <UTable :columns="columns" :data="localOptions" class="w-full" hover>
-            <template #name-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model="editingOption.name" class="w-full" />
-                <span v-else>{{ row.original.name }}</span>
-            </template>
-            <template #date-cell="{ row }">
-                <DatePicker v-if="editingRow === row.index" v-model="editingOption.date" class="w-full" />
-                <span v-else>{{ row.original.date.toLocaleDateString('fr-FR') }}</span>
-            </template>
-            <template #nb_options-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model.number="editingOption.nb_options" class="w-full"
-                    type="number" />
-                <span v-else>{{ row.original.nb_options }}</span>
-            </template>
-            <template #strike-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model.number="editingOption.strike" class="w-full"
-                    type="number" step="0.01" />
-                <span v-else>{{ row.original.strike.toFixed(2) }} €</span>
-            </template>
-            <template #nb_dead_options-cell="{ row }">
-                <UInput v-if="editingRow === row.index" v-model.number="editingOption.nb_dead_options" class="w-full"
-                    type="number" />
-                <span v-else>{{ row.original.nb_dead_options }}</span>
-            </template>
-            <template #actions-cell="{ row }">
-                <div v-if="editingRow === row.index" class="flex justify-end">
-                    <UButton color="success" variant="ghost" icon="material-symbols-light:check-rounded" size="sm"
-                        aria-label="Save" @click="saveOption()" />
-                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:close-rounded" size="sm"
-                        aria-label="Cancel" @click="cancelEdit()" />
-                </div>
-                <div v-else class="flex justify-end">
-                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:edit-square-outline-rounded"
-                        size="sm" aria-label="Edit" @click="editOption(row.index)" />
-                    <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
-                        size="sm" aria-label="Delete" @click="deleteOption(row.index)" />
-                </div>
-            </template>
-            <template #header-cell="{ column }">
-                <div class="flex items-center">
-                    {{ column.id ? (column.id === 'actions' ? '' : column.id) : '' }}
-                    <UButton v-if="column.id && column.id !== 'actions'" icon="i-heroicons-information-circle"
-                        color="neutral" variant="ghost" class="ml-1" size="xs" aria-label="Info" />
-                </div>
-            </template>
-        </UTable>
+        <div class="relative overflow-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="top-0 border-b-1 border-t-1 border-gray-200 bg-white">
+                    <tr>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Intitulé du plan d'options
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Date du plan
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Nombre d'options émises
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Prix d'exercice
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Nombre d'options caduques à ce jour
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                            <div class="flex items-center">
+                                Nombre d'options vives
+                                <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
+                                    variant="ghost" class="ml-1" size="xs" aria-label="Info" />
+                            </div>
+                        </th>
+                        <th class="px-4 py-3.5 text-xs font-bold" />
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    <OptionsItem v-for="(option, index) in localOptions" :key="index" :option="option" :index="index"
+                        @update="updateOption" @delete="deleteOption" />
+                </tbody>
+            </table>
+        </div>
 
         <template #footer>
             <div v-if="!isAddingNewOption">
@@ -99,8 +108,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import type { Options } from '~/types/model';
-import type { TableColumn } from '@nuxt/ui';
-
+import OptionsItem from './OptionsItem.vue';
 
 // Define component props
 const props = defineProps<{
@@ -119,43 +127,6 @@ const localOptions = computed({
     set: (value) => emit('update:options', value)
 });
 
-const columns: TableColumn<Options>[] = [
-    {
-        accessorKey: 'name',
-        header: 'Intitulé du plan d\'options'
-    },
-    {
-        accessorKey: 'date',
-        header: 'Date du plan'
-    },
-    {
-        accessorKey: 'nb_options',
-        header: 'Nombre d\'options émises'
-    },
-    {
-        accessorKey: 'strike',
-        header: 'Prix d\'exercice'
-    },
-    {
-        accessorKey: 'nb_dead_options',
-        header: 'Nombre d\'options caduques à ce jour'
-    },
-    {
-        id: 'actions',
-        header: ''
-    }
-];
-
-const editingRow = ref<number | null>(null);
-const editingOption = ref<Options>({
-    name: '',
-    date: new Date(),
-    nb_options: 0,
-    strike: 0,
-    nb_dead_options: 0,
-    nb_alive_options: 0
-});
-
 const isAddingNewOption = ref(false);
 const newOption = reactive<Options>({
     name: '',
@@ -171,37 +142,22 @@ watch([() => newOption.nb_options, () => newOption.nb_dead_options], () => {
     newOption.nb_alive_options = Math.max(0, newOption.nb_options - newOption.nb_dead_options);
 });
 
-watch([() => editingOption.value.nb_options, () => editingOption.value.nb_dead_options], () => {
-    editingOption.value.nb_alive_options = Math.max(0, editingOption.value.nb_options - editingOption.value.nb_dead_options);
-});
-
 const updateAliveOptions = () => {
     newOption.nb_alive_options = Math.max(0, newOption.nb_options - newOption.nb_dead_options);
 };
 
-// Prefixed with underscore to indicate it's not used in the current UI
-const _deleteOption = (index: number) => {
+// Update an option
+const updateOption = (index: number, updatedOption: Options) => {
     const updatedOptions = [...localOptions.value];
-    updatedOptions.splice(index, 1);
+    updatedOptions[index] = updatedOption;
     localOptions.value = updatedOptions;
 };
 
-const editOption = (index: number) => {
-    editingRow.value = index;
-    editingOption.value = { ...localOptions.value[index] };
-};
-
-const saveOption = () => {
-    if (editingRow.value !== null) {
-        const updatedOptions = [...localOptions.value];
-        updatedOptions[editingRow.value] = { ...editingOption.value };
-        localOptions.value = updatedOptions;
-        editingRow.value = null;
-    }
-};
-
-const cancelEdit = () => {
-    editingRow.value = null;
+// Delete option
+const deleteOption = (index: number) => {
+    const updatedOptions = [...localOptions.value];
+    updatedOptions.splice(index, 1);
+    localOptions.value = updatedOptions;
 };
 
 const startAddOption = () => {

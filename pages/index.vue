@@ -44,7 +44,7 @@
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg"> -->
-      <SimulatorOptionsTable :options="options" @update:options="updateOptions" @add:option="addOption" />
+      <SimulatorOptionsTable class="mb-8" :options="options" @update:options="updateOptions" @add:option="addOption" />
       <!-- </div> -->
     </div>
   </div>
