@@ -102,6 +102,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import type { AuthTokens, User } from '~/types/auth'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -134,7 +135,7 @@ async function handleSubmit() {
 
   try {
     // Register the user
-    const tokens = await $api('/auth/signup', {
+    const tokens = await $api<AuthTokens>('/auth/signup', {
       method: 'POST',
       body: {
         firstName: firstName.value,
@@ -147,7 +148,7 @@ async function handleSubmit() {
     })
 
     // Get user details
-    const user = await $api('/users/me', {
+    const user = await $api<User>('/users/me', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${tokens.accessToken}`
@@ -155,7 +156,7 @@ async function handleSubmit() {
     })
 
     setAuth(user, tokens)
-    router.push('/dashboard')
+    router.push('/')
   } catch (err) {
     error.value = err.message || 'Failed to sign up'
   } finally {

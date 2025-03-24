@@ -2,13 +2,13 @@
   <div class="sidebar">
     <!-- Logo section -->
     <div class="logo-container">
-      <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
+      <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10">
       <span class="logo-text">Futurz</span>
     </div>
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <NuxtLink to="/dashboard" class="nav-item">
+      <NuxtLink to="/" class="nav-item">
         <div class="icon">
           <UIcon name="material-symbols-light:home-rounded" class="w-6 h-6" />
         </div>
@@ -59,7 +59,7 @@ const handleLogout = () => {
 }
 
 .logo-text {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: #333;
 }
