@@ -32,15 +32,17 @@
                 <span v-else>{{ row.original.share_price.toFixed(2) }} €</span>
             </template>
             <template #actions-cell="{ row }">
-                <div v-if="editingRow === row.index" class="flex gap-2">
-                    <UButton color="success" variant="ghost" icon="i-heroicons-check" size="sm" aria-label="Save"
-                        @click="saveShare()" />
-                    <UButton color="neutral" variant="ghost" icon="i-heroicons-x-mark" size="sm" aria-label="Cancel"
-                        @click="cancelEdit()" />
+                <div v-if="editingRow === row.index" class="flex justify-end">
+                    <UButton color="success" variant="ghost" icon="material-symbols-light:check-rounded" size="sm"
+                        aria-label="Save" @click="saveShare()" />
+                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:close-rounded" size="sm"
+                        aria-label="Cancel" @click="cancelEdit()" />
                 </div>
                 <div v-else class="flex justify-end">
-                    <UButton color="neutral" variant="ghost" icon="i-heroicons-pencil-square" size="sm"
-                        aria-label="Edit" @click="editShare(row.index)" />
+                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:edit-square-outline-rounded"
+                        size="sm" aria-label="Edit" @click="editShare(row.index)" />
+                    <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
+                        size="sm" aria-label="Delete" @click="openDeleteModal(row.index)" />
                 </div>
             </template>
             <template #header-cell="{ column }">
@@ -90,6 +92,18 @@
             </div>
         </template>
     </UCard>
+
+    <!-- Delete Confirmation Modal -->
+    <UModal v-model="isDeleteModalOpen">
+        <div class="p-4">
+            <h3 class="text-lg font-medium mb-3">Confirmation de suppression</h3>
+            <p class="mb-4">Êtes-vous sûr de vouloir supprimer cette émission d'actions ?</p>
+            <div class="flex justify-end gap-2">
+                <UButton color="neutral" variant="ghost" @click="cancelDelete">Annuler</UButton>
+                <UButton color="error" @click="confirmDelete">Supprimer</UButton>
+            </div>
+        </div>
+    </UModal>
 </template>
 
 <script setup lang="ts">
@@ -107,6 +121,10 @@ const emit = defineEmits<{
     'update:ordinary-shares': [shares: OrdinaryShares[]];
     'add:ordinary-share': [share: OrdinaryShares];
 }>();
+
+// Modal state
+const isDeleteModalOpen = ref(false);
+const shareToDeleteIndex = ref<number | null>(null);
 
 // Create local reactive copy of props
 const localOrdinaryShares = computed({
@@ -155,11 +173,25 @@ const newShare = reactive<OrdinaryShares>({
     amount: 0
 });
 
-// Prefixed with underscore to indicate it's not used in the current UI
-const _deleteShare = (index: number) => {
-    const updatedShares = [...localOrdinaryShares.value];
-    updatedShares.splice(index, 1);
-    localOrdinaryShares.value = updatedShares;
+// Delete share with confirmation dialog
+const openDeleteModal = (index: number) => {
+    shareToDeleteIndex.value = index;
+    isDeleteModalOpen.value = true;
+};
+
+const confirmDelete = () => {
+    if (shareToDeleteIndex.value !== null) {
+        const updatedShares = [...localOrdinaryShares.value];
+        updatedShares.splice(shareToDeleteIndex.value, 1);
+        localOrdinaryShares.value = updatedShares;
+        isDeleteModalOpen.value = false;
+        shareToDeleteIndex.value = null;
+    }
+};
+
+const cancelDelete = () => {
+    isDeleteModalOpen.value = false;
+    shareToDeleteIndex.value = null;
 };
 
 const editShare = (index: number) => {

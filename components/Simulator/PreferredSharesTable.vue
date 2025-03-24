@@ -50,15 +50,17 @@
                 <span v-else>{{ row.original.tri }} %</span>
             </template>
             <template #actions-cell="{ row }">
-                <div v-if="editingRow === row.index" class="flex gap-2">
-                    <UButton color="success" variant="ghost" icon="i-heroicons-check" size="sm" aria-label="Save"
-                        @click="saveShare()" />
-                    <UButton color="neutral" variant="ghost" icon="i-heroicons-x-mark" size="sm" aria-label="Cancel"
-                        @click="cancelEdit()" />
+                <div v-if="editingRow === row.index" class="flex justify-end">
+                    <UButton color="success" variant="ghost" icon="material-symbols-light:check-rounded" size="sm"
+                        aria-label="Save" @click="saveShare()" />
+                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:close-rounded" size="sm"
+                        aria-label="Cancel" @click="cancelEdit()" />
                 </div>
                 <div v-else class="flex justify-end">
-                    <UButton color="error" variant="ghost" icon="i-heroicons-pencil-square" size="sm" aria-label="Edit"
-                        @click="editShare(row.index)" />
+                    <UButton color="neutral" variant="ghost" icon="material-symbols-light:edit-square-outline-rounded"
+                        size="sm" aria-label="Edit" @click="editShare(row.index)" />
+                    <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
+                        size="sm" aria-label="Delete" @click="deleteShare(row.index)" />
                 </div>
             </template>
             <template #header-cell="{ column }">

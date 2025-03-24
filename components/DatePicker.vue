@@ -50,13 +50,34 @@ const df = new DateFormatter(props.locale, {
 
 // Watch for external changes to the Date model
 watch(() => props.modelValue, (newDate) => {
-    internalCalendarDate.value = dateToCalendarDate(newDate)
-})
+    // Prevent recursive updates by comparing date values
+    const newCalendarDate = dateToCalendarDate(newDate)
+    if (newCalendarDate.year !== internalCalendarDate.value.year ||
+        newCalendarDate.month !== internalCalendarDate.value.month ||
+        newCalendarDate.day !== internalCalendarDate.value.day) {
+        internalCalendarDate.value = newCalendarDate
+    }
+}, { deep: true })
 
 // When internal CalendarDate changes, emit the corresponding Date
+const isInternalUpdate = shallowRef(false)
 watch(internalCalendarDate, (newCalendarDate) => {
-    emit('update:modelValue', calendarDateToDate(newCalendarDate))
-})
+    if (isInternalUpdate.value) {
+        isInternalUpdate.value = false
+        return
+    }
+
+    const newDate = calendarDateToDate(newCalendarDate)
+    const currentDate = props.modelValue
+
+    // Only emit update if dates are actually different
+    if (newDate.getFullYear() !== currentDate.getFullYear() ||
+        newDate.getMonth() !== currentDate.getMonth() ||
+        newDate.getDate() !== currentDate.getDate()) {
+        isInternalUpdate.value = true
+        emit('update:modelValue', newDate)
+    }
+}, { deep: true })
 
 const formattedDate = computed(() => {
     return internalCalendarDate.value
