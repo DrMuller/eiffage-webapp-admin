@@ -1,0 +1,93 @@
+{
+    "companyName": "Acme",
+    "estimatedTransferDate": "2027-01-10",
+    "ordinaryShares": [
+        {
+            "name": "AO fondateurs",
+            "date": "2024-03-19",
+            "nb_shares": 9900,
+            "share_price": 40.00,
+            "amount": 396000.00
+        },
+        {
+            "name": "AO C-levels",
+            "date": "2024-04-12",
+            "nb_shares": 3685,
+            "share_price": 312.00,
+            "amount": 1149720.00
+        }
+    ],
+    "preferenceShares": [
+        {
+            "title": "PRE SEED 2021",
+            "date": "2021-02-01",
+            "liquidationRank": 2,
+            "shares": 9900,
+            "price": 40.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 16
+        },
+        {
+            "title": "SEED 2022",
+            "date": "2022-04-12",
+            "liquidationRank": 1,
+            "shares": 3685,
+            "price": 312.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 18
+        },
+        {
+            "title": "SEED 2022",
+            "date": "2022-04-12",
+            "liquidationRank": 1,
+            "shares": 3685,
+            "price": 312.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 18
+        },
+        {
+            "title": "SEED 2022",
+            "date": "2022-04-12",
+            "liquidationRank": 1,
+            "shares": 3685,
+            "price": 312.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 18
+        },
+        {
+            "title": "SEED 2022",
+            "date": "2022-04-12",
+            "liquidationRank": 1,
+            "shares": 3685,
+            "price": 312.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 18
+        },
+        {
+            "title": "SEED 2022",
+            "date": "2022-04-12",
+            "liquidationRank": 1,
+            "shares": 3685,
+            "price": 312.00,
+            "participationType": "Non participating",
+            "multiple": 1,
+            "tri": 18
+        }
+    ],
+    "carveOutValue": "10",
+    "options": [
+        {
+            "name": "BSPCE 2022",
+            "date": "2022-04-12",
+            "nb_options": 464,
+            "strike": 280.30,
+            "nb_dead_options": 0,
+            "nb_alive_options": 464
+        }
+    ]
+}

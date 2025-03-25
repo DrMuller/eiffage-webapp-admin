@@ -94,7 +94,7 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm mb-1">Intitulé de l'émission</label>
-                            <UInput v-model="newShare.title" class="w-full" required />
+                            <UInput v-model="newShare.name" class="w-full" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Date de l'émission</label>
@@ -102,30 +102,30 @@
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Rang</label>
-                            <UInput v-model.number="newShare.liquidationRank" class="w-full" type="number" min="1"
-                                required />
+                            <UInput v-model.number="newShare.seniority" class="w-full" type="number" min="1" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Nombre d'action émises</label>
-                            <UInput v-model.number="newShare.shares" class="w-full" type="number" required />
+                            <UInput v-model.number="newShare.nb_shares" class="w-full" type="number" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Prix de souscription</label>
-                            <UInput v-model.number="newShare.price" class="w-full" type="number" step="0.01" required />
+                            <UInput v-model.number="newShare.share_price" class="w-full" type="number" step="0.01"
+                                required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Type de participation</label>
-                            <USelect v-model="newShare.participationType" class="w-full"
+                            <USelect v-model="newShare.pref_type" class="w-full"
                                 :options="['Participating', 'Non participating']" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Multiple</label>
-                            <UInput v-model.number="newShare.multiple" class="w-full" type="number" step="0.1" min="1"
-                                required />
+                            <UInput v-model.number="newShare.pref_multiple" class="w-full" type="number" step="0.1"
+                                min="1" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">TRI (%)</label>
-                            <UInput v-model.number="newShare.tri" class="w-full" type="number" required />
+                            <UInput v-model.number="newShare.pref_tri" class="w-full" type="number" required />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
@@ -140,31 +140,20 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
+import type { PreferredShares } from '~/types/model';
 import PreferredSharesItem from './PreferredSharesItem.vue';
-
-// Define the interface for a preference share
-interface PreferenceShare {
-    title: string;
-    date: Date;
-    liquidationRank: number;
-    shares: number;
-    price: number;
-    participationType: string;
-    multiple: number;
-    tri: number;
-}
 
 // Define component props
 const props = defineProps<{
-    preferenceShares: PreferenceShare[];
+    preferenceShares: PreferredShares[];
     carveOutValue: string;
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:preference-shares': [shares: PreferenceShare[]];
+    'update:preference-shares': [shares: PreferredShares[]];
     'update:carve-out': [value: string];
-    'add:preference-share': [share: PreferenceShare];
+    'add:preference-share': [share: PreferredShares];
 }>();
 
 // Create local reactive copies of the props
@@ -179,15 +168,19 @@ const localCarveOutValue = computed({
 });
 
 const isAddingNewShare = ref(false);
-const newShare = reactive<PreferenceShare>({
-    title: '',
+const newShare = reactive<PreferredShares>({
+    name: '',
     date: new Date(),
-    liquidationRank: 1,
-    shares: 0,
-    price: 0,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 0
+    seniority: 1,
+    nb_shares: 0,
+    share_price: 0,
+    amount: 0,
+    pref_type: 'Non participating',
+    pref_multiple: 1,
+    pref_tri: 0,
+    pref_effective_multiple: 1,
+    pref_pps: 0,
+    pref_amount: 0
 });
 
 // Update carve out value
@@ -196,7 +189,7 @@ const updateCarveOut = () => {
 };
 
 // Update a share
-const updateShare = (index: number, updatedShare: PreferenceShare) => {
+const updateShare = (index: number, updatedShare: PreferredShares) => {
     const updatedShares = [...localPreferenceShares.value];
     updatedShares[index] = updatedShare;
     localPreferenceShares.value = updatedShares;
@@ -212,14 +205,18 @@ const deleteShare = (index: number) => {
 const startAddShare = () => {
     isAddingNewShare.value = true;
     Object.assign(newShare, {
-        title: '',
+        name: '',
         date: new Date(),
-        liquidationRank: 1,
-        shares: 0,
-        price: 0,
-        participationType: 'Non participating',
-        multiple: 1,
-        tri: 0
+        seniority: 1,
+        nb_shares: 0,
+        share_price: 0,
+        amount: 0,
+        pref_type: 'Non participating',
+        pref_multiple: 1,
+        pref_tri: 0,
+        pref_effective_multiple: 1,
+        pref_pps: 0,
+        pref_amount: 0
     });
 };
 
@@ -228,16 +225,24 @@ const cancelAddShare = () => {
 };
 
 const addShare = () => {
+    // Calculate derived values
+    const amount = newShare.nb_shares * newShare.share_price;
+    const pref_amount = amount * newShare.pref_multiple;
+
     // Create a new share object (to avoid reference issues)
-    const shareToAdd = {
-        title: newShare.title,
-        date: newShare.date,
-        liquidationRank: newShare.liquidationRank,
-        shares: newShare.shares,
-        price: newShare.price,
-        participationType: newShare.participationType,
-        multiple: newShare.multiple,
-        tri: newShare.tri
+    const shareToAdd: PreferredShares = {
+        name: newShare.name,
+        date: new Date(newShare.date),
+        seniority: newShare.seniority,
+        nb_shares: newShare.nb_shares,
+        share_price: newShare.share_price,
+        amount: amount,
+        pref_type: newShare.pref_type,
+        pref_multiple: newShare.pref_multiple,
+        pref_tri: newShare.pref_tri,
+        pref_effective_multiple: newShare.pref_multiple, // This might need a different calculation
+        pref_pps: newShare.share_price, // This might need a different calculation
+        pref_amount: pref_amount
     };
 
     console.log('Adding new preferred share:', shareToAdd);

@@ -51,8 +51,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { OrdinaryShares, Options } from '~/types/model';
+import { ref, onMounted } from 'vue';
+import type { OrdinaryShares, PreferredShares, Options } from '~/types/model';
+import { useSimulation } from '~/composables/useSimulation';
 
 useHead({ title: 'Dashboard' })
 
@@ -62,118 +63,115 @@ definePageMeta({
   requiresAuth: true
 })
 
-// Basic company information
-const companyName = ref('Acme');
-const estimatedTransferDate = ref(new Date('01/10/2027'));
+// Initialize reactive refs
+const companyName = ref('');
+const estimatedTransferDate = ref(new Date());
+const ordinaryShares = ref<OrdinaryShares[]>([]);
+const preferenceShares = ref<PreferredShares[]>([]);
+const carveOutValue = ref('');
+const options = ref<Options[]>([]);
 
-// Ordinary shares data
-const ordinaryShares = ref<OrdinaryShares[]>([
-  {
-    name: 'AO fondateurs',
-    date: new Date(),
-    nb_shares: 9900,
-    share_price: 40.00,
-    amount: 396000.00
-  },
-  {
-    name: 'AO C-levels',
-    date: new Date('04/12/2024'),
-    nb_shares: 3685,
-    share_price: 312.00,
-    amount: 1149720.00
-  }
-]);
-
-console.log(ordinaryShares.value);
-
-// Preference shares data
-interface PreferenceShare {
-  title: string;
-  date: Date;
-  liquidationRank: number;
-  shares: number;
-  price: number;
-  participationType: string;
-  multiple: number;
-  tri: number;
+// Interface for JSON data (with string dates)
+interface SimulationJsonData {
+  companyName: string;
+  estimatedTransferDate: string;
+  ordinaryShares: Array<{
+    name: string;
+    date: string;
+    nb_shares: number;
+    share_price: number;
+    amount: number;
+  }>;
+  preferenceShares: Array<{
+    title: string;
+    date: string;
+    liquidationRank: number;
+    shares: number;
+    price: number;
+    participationType: string;
+    multiple: number;
+    tri: number;
+  }>;
+  carveOutValue: string;
+  options: Array<{
+    name: string;
+    date: string;
+    nb_options: number;
+    strike: number;
+    nb_dead_options: number;
+    nb_alive_options: number;
+  }>;
 }
 
-const preferenceShares = ref<PreferenceShare[]>([
-  {
-    title: 'PRE SEED 2021',
-    date: new Date('02/01/2021'),
-    liquidationRank: 2,
-    shares: 9900,
-    price: 40.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 16
-  },
-  {
-    title: 'SEED 2022',
-    date: new Date('04/12/2022'),
-    liquidationRank: 1,
-    shares: 3685,
-    price: 312.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 18
-  },
-  {
-    title: 'SEED 2022',
-    date: new Date('04/12/2022'),
-    liquidationRank: 1,
-    shares: 3685,
-    price: 312.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 18
-  },
-  {
-    title: 'SEED 2022',
-    date: new Date('04/12/2022'),
-    liquidationRank: 1,
-    shares: 3685,
-    price: 312.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 18
-  },
-  {
-    title: 'SEED 2022',
-    date: new Date('04/12/2022'),
-    liquidationRank: 1,
-    shares: 3685,
-    price: 312.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 18
-  },
-  {
-    title: 'SEED 2022',
-    date: new Date('04/12/2022'),
-    liquidationRank: 1,
-    shares: 3685,
-    price: 312.00,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 18
-  }
-]);
+// Function to transform JSON data to proper types
+const transformData = (jsonData: SimulationJsonData) => {
+  return {
+    companyName: jsonData.companyName,
+    estimatedTransferDate: new Date(jsonData.estimatedTransferDate),
+    ordinaryShares: jsonData.ordinaryShares.map(share => ({
+      ...share,
+      date: new Date(share.date)
+    })) as OrdinaryShares[],
+    preferenceShares: jsonData.preferenceShares.map(share => {
+      const amount = share.shares * share.price;
+      const pref_amount = amount * share.multiple;
 
-const carveOutValue = ref('10');
+      return {
+        name: share.title,
+        date: new Date(share.date),
+        seniority: share.liquidationRank,
+        nb_shares: share.shares,
+        share_price: share.price,
+        amount: amount,
+        pref_type: share.participationType,
+        pref_multiple: share.multiple,
+        pref_tri: share.tri,
+        pref_effective_multiple: share.multiple, // This might need a different calculation
+        pref_pps: share.price, // This might need a different calculation
+        pref_amount: pref_amount
+      };
+    }) as PreferredShares[],
+    carveOutValue: jsonData.carveOutValue,
+    options: jsonData.options.map(option => ({
+      ...option,
+      date: new Date(option.date)
+    })) as Options[]
+  };
+};
 
-// Options data
-const options = ref<Options[]>([
-  {
-    name: 'BSPCE 2022',
-    date: new Date('04/12/2022'),
-    nb_options: 464,
-    strike: 280.30,
-    nb_dead_options: 0,
-    nb_alive_options: 464
+// Load initial data
+onMounted(async () => {
+  try {
+    const { fetchLastSimulation } = useSimulation();
+    const simulation = await fetchLastSimulation();
+
+    if (simulation) {
+      companyName.value = simulation.name;
+      // Use current date as default for estimated transfer date
+      estimatedTransferDate.value = new Date();
+      ordinaryShares.value = simulation.ordinary_shares;
+      preferenceShares.value = simulation.preferred_shares;
+      // Use empty string as default for carve out value
+      carveOutValue.value = '';
+      options.value = simulation.options;
+    } else {
+      // Fallback to JSON data if no simulation exists
+      const response = await fetch('/data/initial-simulation.json');
+      const jsonData: SimulationJsonData = await response.json();
+      const transformedData = transformData(jsonData);
+
+      // Update reactive refs with transformed data
+      companyName.value = transformedData.companyName;
+      estimatedTransferDate.value = transformedData.estimatedTransferDate;
+      ordinaryShares.value = transformedData.ordinaryShares;
+      preferenceShares.value = transformedData.preferenceShares;
+      carveOutValue.value = transformedData.carveOutValue;
+      options.value = transformedData.options;
+    }
+  } catch (error) {
+    console.error('Error loading simulation data:', error);
   }
-]);
+});
 
 // Update handlers for each table
 const updateOrdinaryShares = (updatedShares: OrdinaryShares[]) => {
@@ -185,7 +183,7 @@ const addOrdinaryShare = (newShare: OrdinaryShares) => {
   ordinaryShares.value = [...ordinaryShares.value, newShare];
 };
 
-const updatePreferenceShares = (updatedShares: PreferenceShare[]) => {
+const updatePreferenceShares = (updatedShares: PreferredShares[]) => {
   preferenceShares.value = updatedShares;
 };
 
@@ -193,7 +191,7 @@ const updateCarveOut = (value: string) => {
   carveOutValue.value = value;
 };
 
-const addPreferenceShare = (newShare: PreferenceShare) => {
+const addPreferenceShare = (newShare: PreferredShares) => {
   console.log('Parent received new preference share:', newShare);
   preferenceShares.value = [...preferenceShares.value, newShare];
 };
@@ -208,7 +206,6 @@ const addOption = (newOption: Options) => {
 };
 
 const createSimulation = () => {
-  // Implementation for creating a simulation would go here
   console.log('Creating simulation with data:', {
     companyName: companyName.value,
     estimatedTransferDate: estimatedTransferDate.value,

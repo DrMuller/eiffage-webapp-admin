@@ -2,12 +2,12 @@
     <tr class="hover:bg-blue-50">
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model="editedShare.title" class="w-full"
-                    :ui="{ base: showTitleError ? 'ring-red-500 border-red-500' : '' }" required
-                    @focus="showTitleError = false" />
+                <UInput v-model="editedShare.name" class="w-full"
+                    :ui="{ base: showNameError ? 'ring-red-500 border-red-500' : '' }" required
+                    @focus="showNameError = false" />
             </div>
             <div v-else>
-                {{ share.title }}
+                {{ share.name }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -20,63 +20,63 @@
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model.number="editedShare.liquidationRank" class="w-full" type="number" min="1"
+                <UInput v-model.number="editedShare.seniority" class="w-full" type="number" min="1"
                     :ui="{ base: showRankError ? 'ring-red-500 border-red-500' : '' }" required
                     @focus="showRankError = false" />
             </div>
             <div v-else>
-                {{ share.liquidationRank }}
+                {{ share.seniority }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model.number="editedShare.shares" class="w-full" type="number"
+                <UInput v-model.number="editedShare.nb_shares" class="w-full" type="number"
                     :ui="{ base: showSharesError ? 'ring-red-500 border-red-500' : '' }" required
-                    @focus="showSharesError = false" />
+                    @focus="showSharesError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.shares }}
+                {{ share.nb_shares }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model.number="editedShare.price" class="w-full" type="number" step="0.01"
+                <UInput v-model.number="editedShare.share_price" class="w-full" type="number" step="0.01"
                     :ui="{ base: showPriceError ? 'ring-red-500 border-red-500' : '' }" required
-                    @focus="showPriceError = false" />
+                    @focus="showPriceError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.price.toFixed(2) }} €
+                {{ share.share_price.toFixed(2) }} €
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <USelect v-model="editedShare.participationType" class="w-full"
+                <USelect v-model="editedShare.pref_type" class="w-full"
                     :options="['Participating', 'Non participating']"
                     :ui="{ base: showParticipationError ? 'ring-red-500 border-red-500' : '' }" required
                     @focus="showParticipationError = false" />
             </div>
             <div v-else>
-                {{ share.participationType }}
+                {{ share.pref_type }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model.number="editedShare.multiple" class="w-full" type="number" step="0.1" min="1"
+                <UInput v-model.number="editedShare.pref_multiple" class="w-full" type="number" step="0.1" min="1"
                     :ui="{ base: showMultipleError ? 'ring-red-500 border-red-500' : '' }" required
-                    @focus="showMultipleError = false" />
+                    @focus="showMultipleError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.multiple }}
+                {{ share.pref_multiple }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <UInput v-model.number="editedShare.tri" class="w-full" type="number"
+                <UInput v-model.number="editedShare.pref_tri" class="w-full" type="number"
                     :ui="{ base: showTriError ? 'ring-red-500 border-red-500' : '' }" required
                     @focus="showTriError = false" />
             </div>
             <div v-else>
-                {{ share.tri }} %
+                {{ share.pref_tri }} %
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -98,31 +98,20 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-
-// Define interface for preferred share
-interface PreferenceShare {
-    title: string;
-    date: Date;
-    liquidationRank: number;
-    shares: number;
-    price: number;
-    participationType: string;
-    multiple: number;
-    tri: number;
-}
+import type { PreferredShares } from '~/types/model';
 
 const props = defineProps<{
-    share: PreferenceShare;
+    share: PreferredShares;
     index: number;
 }>();
 
 const emit = defineEmits<{
-    'update': [index: number, share: PreferenceShare];
+    'update': [index: number, share: PreferredShares];
     'delete': [index: number];
 }>();
 
 const isEditing = ref(false);
-const showTitleError = ref(false);
+const showNameError = ref(false);
 const showRankError = ref(false);
 const showSharesError = ref(false);
 const showPriceError = ref(false);
@@ -130,15 +119,19 @@ const showParticipationError = ref(false);
 const showMultipleError = ref(false);
 const showTriError = ref(false);
 
-const editedShare = reactive<PreferenceShare>({
-    title: '',
+const editedShare = reactive<PreferredShares>({
+    name: '',
     date: new Date(),
-    liquidationRank: 1,
-    shares: 0,
-    price: 0,
-    participationType: 'Non participating',
-    multiple: 1,
-    tri: 0
+    seniority: 1,
+    nb_shares: 0,
+    share_price: 0,
+    amount: 0,
+    pref_type: 'Non participating',
+    pref_multiple: 1,
+    pref_tri: 0,
+    pref_effective_multiple: 1,
+    pref_pps: 0,
+    pref_amount: 0
 });
 
 // Function to start editing
@@ -148,7 +141,7 @@ const startEdit = () => {
     isEditing.value = true;
 
     // Reset error states
-    showTitleError.value = false;
+    showNameError.value = false;
     showRankError.value = false;
     showSharesError.value = false;
     showPriceError.value = false;
@@ -157,42 +150,50 @@ const startEdit = () => {
     showTriError.value = false;
 };
 
+// Function to update amount and preference-related values
+const updateAmount = () => {
+    editedShare.amount = editedShare.nb_shares * editedShare.share_price;
+    editedShare.pref_pps = editedShare.share_price;
+    editedShare.pref_amount = editedShare.amount * editedShare.pref_multiple;
+    editedShare.pref_effective_multiple = editedShare.pref_multiple; // This might need a different calculation
+};
+
 // Function to save changes
 const saveEdit = () => {
     let hasError = false;
 
     // Validate required fields
-    if (!editedShare.title) {
-        showTitleError.value = true;
+    if (!editedShare.name) {
+        showNameError.value = true;
         hasError = true;
     }
 
-    if (!editedShare.liquidationRank || editedShare.liquidationRank < 1) {
+    if (!editedShare.seniority || editedShare.seniority < 1) {
         showRankError.value = true;
         hasError = true;
     }
 
-    if (!editedShare.shares || editedShare.shares <= 0) {
+    if (!editedShare.nb_shares || editedShare.nb_shares <= 0) {
         showSharesError.value = true;
         hasError = true;
     }
 
-    if (!editedShare.price || editedShare.price <= 0) {
+    if (!editedShare.share_price || editedShare.share_price <= 0) {
         showPriceError.value = true;
         hasError = true;
     }
 
-    if (!editedShare.participationType) {
+    if (!editedShare.pref_type) {
         showParticipationError.value = true;
         hasError = true;
     }
 
-    if (!editedShare.multiple || editedShare.multiple < 1) {
+    if (!editedShare.pref_multiple || editedShare.pref_multiple < 1) {
         showMultipleError.value = true;
         hasError = true;
     }
 
-    if (editedShare.tri === undefined || editedShare.tri === null) {
+    if (editedShare.pref_tri === undefined || editedShare.pref_tri === null) {
         showTriError.value = true;
         hasError = true;
     }
@@ -200,6 +201,9 @@ const saveEdit = () => {
     if (hasError) {
         return;
     }
+
+    // Ensure all calculated values are up to date
+    updateAmount();
 
     emit('update', props.index, { ...editedShare });
     isEditing.value = false;
@@ -210,7 +214,7 @@ const cancelEdit = () => {
     isEditing.value = false;
 
     // Reset error states
-    showTitleError.value = false;
+    showNameError.value = false;
     showRankError.value = false;
     showSharesError.value = false;
     showPriceError.value = false;

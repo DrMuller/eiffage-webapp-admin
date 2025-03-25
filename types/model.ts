@@ -1,3 +1,17 @@
+export interface Simulation {
+    id: string;
+    name: string;
+    created_at: Date;
+    updated_at: Date;
+    ordinary_shares: OrdinaryShares[];
+    preferred_shares: PreferredShares[];
+    options: Options[];
+    companyName: string;
+    estimatedTransferDate: Date;
+    estimatedExitDate: Date;
+    carveOutValue: number;
+}
+
 // Interface for AO (Ordinary Shares) items
 export interface OrdinaryShares {
     name: string;
