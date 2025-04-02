@@ -88,7 +88,8 @@ const formattedDate = computed(() => {
 
 <template>
     <UPopover>
-        <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+        <UButton class="bg-white border border-gray-300 text-gray-600 w-[140px]" variant="ghost"
+            icon="i-lucide-calendar">
             {{ formattedDate }}
         </UButton>
 
