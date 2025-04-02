@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeMount } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 
 const route = useRoute();
 const token = ref('');
@@ -14,13 +14,13 @@ definePageMeta({
     layout: 'empty'
 });
 useHead({
-    title: 'Réinitialiser le mot de passe | Futurz'
+    title: 'Réinitialiser le mot de passe | Eiffage'
 });
 
 // Add this to handle both client and server rendering
 onBeforeMount(() => {
     if (import.meta.client) {
-        token.value = route.params.token as string;
+        token.value = route.query.token as string;
 
         // Token validation logic
         if (!token.value || token.value.length < 32) {

@@ -3,7 +3,7 @@
 
         <div class="p-8 bg-white rounded-lg shadow-sm">
             <div class="mb-8 text-center">>
-                <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
+                <!-- <img src="/logo.webp" alt="Eiffage" class="w-10 h-10 mb-6"> -->
                 <h1 class="text-3xl font-bold">Réinitialisation de mot de passe</h1>
             </div>
 
@@ -60,6 +60,5 @@ const resendEmail = async () => {
             email: props.email,
         }
     });
-    console.log('Resending password reset email');
 };
 </script>

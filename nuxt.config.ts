@@ -2,6 +2,15 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon-72x72.png' },
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon-144x144.png' }
+      ]
+    }
+  },
+
   // SPA mode
   ssr: false,
 
@@ -21,8 +30,18 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxt/scripts'
+    '@nuxt/scripts',
+    '@nuxtjs/i18n',
   ],
+
+  fonts: {
+    families: [
+      { name: 'DM Serif Text', provider: 'google' },
+      { name: 'Montserrat', provider: 'google' }
+    ]
+  },
+
+  plugins: ['~/plugins/i18n.ts'],
 
   css: ['~/assets/css/index.css'],
 
@@ -32,7 +51,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:9000'
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:9001'
     }
   },
 

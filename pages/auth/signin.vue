@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'empty' })
-useHead({ title: 'Connexion | Futurz' })
+useHead({ title: 'Connexion | Eiffage' })
 </script>
 
 <style scoped></style>

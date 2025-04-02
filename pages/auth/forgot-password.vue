@@ -9,7 +9,7 @@
 import { ref } from 'vue';
 definePageMeta({ layout: 'empty' })
 useHead({
-    title: 'Mot de passe oublié | Futurz'
+    title: 'Mot de passe oublié | Eiffage'
 });
 
 const emailSent = ref(false);

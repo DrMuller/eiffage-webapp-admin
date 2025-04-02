@@ -2,9 +2,25 @@ export default defineAppConfig({
     colorMode: {
         preference: 'light'
     },
+    toaster: {
+        position: 'top-center' as const,
+        expand: true,
+        duration: 2000
+    },
     ui: {
-        colors: {
-            primary: 'blue',
+        inputNumber: {
+            slots: {
+                root: '*:pe-2.5',
+                increment: 'hidden',
+                decrement: 'hidden'
+            },
+        },
+        tooltip: {
+            slots: {
+                content: 'flex items-center gap-1 bg-black text-white shadow-sm rounded-md px-4 py-3 text-sm select-none data-[state=delayed-open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] pointer-events-auto max-w-96 h-full',
+                arrow: 'fill-black',
+                text: 'h-full whitespace-normal overflow-hidden break-words',
+            }
         },
         table: {
             slots: {
@@ -14,8 +30,8 @@ export default defineAppConfig({
                 thead: 'relative [&>tr]:after:absolute [&>tr]:after:inset-x-0 [&>tr]:after:bottom-0 [&>tr]:after:h-px [&>tr]:after:bg-(--ui-border-accented)',
                 tbody: 'divide-y divide-(--ui-border) [&>tr]:data-[selectable=true]:hover:bg-(--ui-bg-elevated)/50 [&>tr]:data-[selectable=true]:focus-visible:outline-(--ui-primary)',
                 tr: 'data-[selected=true]:bg-(--ui-bg-elevated)/50',
-                th: 'px-4 py-3.5 text-xs text-(--ui-text-highlighted) text-left rtl:text-right font-semibold [&:has([role=checkbox])]:pe-0',
-                td: 'p-4 text-xs text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0',
+                th: 'px-4 py-4 text-xs text-(--ui-text-highlighted) text-left rtl:text-right font-semibold [&:has([role=checkbox])]:pe-0 first:pl-4 last:pr-4',
+                td: 'px-2 py-2 text-sm text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0 first:pl-4 last:pr-4',
                 empty: 'py-6 text-center text-sm text-(--ui-text-muted)',
                 loading: 'py-6 text-center'
             },
@@ -105,9 +121,9 @@ export default defineAppConfig({
         card: {
             slots: {
                 root: 'rounded-[calc(var(--ui-radius)*2)]',
-                header: 'p-4 sm:px-6 bg-gray-50 rounded-[calc(var(--ui-radius)*2)]',
+                header: 'p-4 sm:px-6 bg-gray-50 rounded-t-[calc(var(--ui-radius)*2)]',
                 body: 'sm:p-0 p-0 [&>div.body]:p-4',
-                footer: 'p-4 sm:px-6 bg-gray-50 rounded-[calc(var(--ui-radius)*2)]'
+                footer: 'p-4 sm:px-6 bg-gray-50 rounded-b-[calc(var(--ui-radius)*2)]'
             }
         }
     }

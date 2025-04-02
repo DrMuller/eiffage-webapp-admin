@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-blue-50">
-    <div class="p-8 bg-white rounded-lg shadow-sm">
+    <div class="p-8 bg-white rounded-lg shadow-sm w-[400px]">
       <div class="mb-8">
-        <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
-        <h1 class="text-3xl font-bold">Connexion à Futurz</h1>
+        <!-- <img src="/logo.webp" alt="Eiffage" class="w-10 h-10 mb-6"> -->
+        <h1 class="text-3xl font-bold">Connexion à Eiffage</h1>
       </div>
 
       <form @submit.prevent="handleSubmit">
-        <div class="mb-6">
+        <div class="mb-4">
           <label for="email" class="block mb-2 text-gray-700">Email</label>
           <input id="email" v-model="email" type="email" required placeholder="john.doe@gmail.com"
             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -53,13 +53,6 @@
           class="w-full py-3 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
         </button>
-
-        <div class="mt-6 text-center">
-          <p class="text-sm text-gray-600">
-            Vous n'avez pas de compte ?
-            <NuxtLink to="/auth/signup" class="text-blue-600 hover:underline">Cliquez ici</NuxtLink> pour le créer
-          </p>
-        </div>
       </form>
     </div>
   </div>
@@ -79,7 +72,7 @@ const isLoading = ref(false)
 const router = useRouter()
 
 const { $api } = useNuxtApp()
-const { setAuth } = useAuth()
+const { setAuth, updateAccessToken } = useAuth()
 
 async function handleSubmit() {
   // error.value = ''
@@ -103,13 +96,12 @@ async function handleSubmit() {
         password: password.value
       }
     })
+    await updateAccessToken(tokens.accessToken)
+
 
     // Get user details
     const user = await $api<User>('/users/me', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${tokens.accessToken}`
-      }
+      method: 'GET'
     })
 
     setAuth(user, tokens)

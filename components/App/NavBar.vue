@@ -2,38 +2,48 @@
   <div class="sidebar">
     <!-- Logo section -->
     <div class="logo-container">
-      <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10">
-      <span class="logo-text">Futurz</span>
+      <img src="/full-logo.png" alt="Eiffage">
     </div>
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <NuxtLink to="/" class="nav-item">
-        <div class="icon">
-          <UIcon name="material-symbols-light:home-rounded" class="w-6 h-6" />
-        </div>
-        <span>Simulateur</span>
+      <NuxtLink v-if="isAdmin" to="/employes" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/users') }">
+        <UIcon name="i-heroicons-users" class="w-5 h-5" />
+        <span>Employés</span>
       </NuxtLink>
-
-      <NuxtLink to="/simulation" class="nav-item">
-        <UIcon name="material-symbols-light:table-chart-view" class="w-5 h-5" />
-        <span>Résultats</span>
+      <NuxtLink to="/competences" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/skills') }">
+        <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
+        <span>Compétences</span>
       </NuxtLink>
     </nav>
 
-    <!-- Logout button at the bottom -->
+    <!-- User info and logout at the bottom -->
     <div class="logout-container">
+      <div class="user-info">
+        <div class="user-name">{{ user?.firstName }} {{ user?.lastName }}</div>
+        <div class="user-email">{{ user?.email }}</div>
+      </div>
       <button class="logout-btn" @click="handleLogout">
-        <UIcon name="material-symbols-light:exit-to-app-rounded" class="w-5 h-5" />
-        <span>Déconnexion</span>
+        <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
+        <span>Sign Out</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { clearAuth } = useAuth()
+import { computed } from 'vue'
+
+const { clearAuth, user } = useAuth()
 const router = useRouter()
+const route = useRoute()
+
+// Check if user has admin role
+const isAdmin = computed(() => {
+  return user.value?.roles?.includes('ADMIN') || false
+})
 
 const handleLogout = () => {
   clearAuth()
@@ -47,6 +57,8 @@ const handleLogout = () => {
   flex-direction: column;
   width: 220px;
   height: 100vh;
+  background-color: white;
+  border-right: 1px solid #e5e7eb;
 }
 
 .logo-container {
@@ -59,9 +71,12 @@ const handleLogout = () => {
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-links {
@@ -75,37 +90,47 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  color: #666;
+  color: #6b7280;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   gap: 12px;
   font-size: 14px;
+  border-radius: 6px;
+  margin: 2px 8px;
 }
 
 .nav-item:hover {
   background-color: #f3f4f6;
+  color: #374151;
 }
 
 .nav-item.router-link-active {
-  background-color: #f3f4f6;
-  color: #1a56db;
+  background-color: #dbeafe;
+  color: #1d4ed8;
   font-weight: 500;
-}
-
-.icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  color: #4c82db;
-  /* Blue color for icons */
 }
 
 .logout-container {
   margin-top: auto;
   padding: 16px;
   border-top: 1px solid #f0f0f0;
+}
+
+.user-info {
+  margin-bottom: 12px;
+  padding: 0 16px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
 }
 
 .logout-btn {
@@ -116,13 +141,16 @@ const handleLogout = () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #6b7280;
   gap: 12px;
   font-size: 14px;
   text-align: left;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .logout-btn:hover {
-  color: #1a56db;
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 </style>

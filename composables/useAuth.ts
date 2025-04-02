@@ -1,5 +1,5 @@
 import { ref, reactive } from 'vue'
-import type { AuthTokens, User } from '~/types/auth'
+import type { AuthTokens, User, LoginRequest, SignupRequest, LoginResponse, RefreshTokenResponse } from '~/types/auth'
 
 // State will be preserved across component instances
 const user = ref<User | null>(null)
@@ -8,6 +8,7 @@ const tokens = reactive<AuthTokens>({
   refreshToken: ''
 })
 const isAuthenticated = ref(false)
+
 
 // Cookie options
 const cookieOptions = {
@@ -18,7 +19,9 @@ const cookieOptions = {
 }
 
 export const useAuth = () => {
-  const nuxtApp = useNuxtApp()
+
+  const { $api } = useNuxtApp()
+
   const cookie = useCookie('auth:tokens', {
     ...cookieOptions,
     encode: (value: AuthTokens | null) => encodeURIComponent(JSON.stringify(value)),
@@ -65,7 +68,7 @@ export const useAuth = () => {
   }
 
   // Initialize auth state from cookies on app load
-  function initAuth() {
+  async function initAuth() {
     if (cookie.value) {
       // console.log('Initializing auth state from cookies')
       try {
@@ -75,19 +78,94 @@ export const useAuth = () => {
         isAuthenticated.value = true
 
         // Fetch user details with the tokens
-        nuxtApp.$api<User>('/users/me', { method: 'GET' })
-          .then((userData: User) => {
-            user.value = userData
-          })
-          .catch(() => {
-            console.log('Failed to fetch user details')
-            // If this fails, tokens might be invalid
-            // clearAuth()
-          })
+        const userData = await $api<User>('/users/me', { method: 'GET' })
+        user.value = userData
       } catch (e) {
-        console.log('Failed to parse tokens from cookies')
+        console.log('Failed to fetch user details')
+        // If this fails, tokens might be invalid
         // clearAuth()
       }
+    }
+  }
+
+  // Auth API methods
+  async function signup(data: SignupRequest): Promise<LoginResponse> {
+    try {
+      const response = await $api<LoginResponse>('/auth/signup', {
+        method: 'POST',
+        body: data
+      })
+      
+      setAuth(response.user, response.tokens)
+      return response
+    } catch (error) {
+      console.error('Signup failed:', error)
+      throw error
+    }
+  }
+
+  async function signin(data: LoginRequest): Promise<LoginResponse> {
+    try {
+      const response = await $api<LoginResponse>('/auth/signin', {
+        method: 'POST',
+        body: data
+      })
+      
+      setAuth(response.user, response.tokens)
+      return response
+    } catch (error) {
+      console.error('Signin failed:', error)
+      throw error
+    }
+  }
+
+  async function signout(): Promise<void> {
+    try {
+      clearAuth()
+      await navigateTo('/auth/signin')
+    } catch (error) {
+      console.error('Signout failed:', error)
+      throw error
+    }
+  }
+
+  async function refreshAccessToken(): Promise<string> {
+    try {
+      const response = await $api<RefreshTokenResponse>('/auth/refresh', {
+        method: 'POST',
+        body: { refreshToken: tokens.refreshToken }
+      })
+      
+      updateAccessToken(response.accessToken)
+      return response.accessToken
+    } catch (error) {
+      console.error('Token refresh failed:', error)
+      clearAuth()
+      throw error
+    }
+  }
+
+  async function requestPasswordReset(email: string): Promise<void> {
+    try {
+      await $api('/auth/reset-password-token', {
+        method: 'POST',
+        body: { email }
+      })
+    } catch (error) {
+      console.error('Password reset request failed:', error)
+      throw error
+    }
+  }
+
+  async function resetPassword(password: string, token: string): Promise<void> {
+    try {
+      await $api('/auth/reset-password', {
+        method: 'POST',
+        body: { password, token }
+      })
+    } catch (error) {
+      console.error('Password reset failed:', error)
+      throw error
     }
   }
 
@@ -99,6 +177,12 @@ export const useAuth = () => {
     getAccessToken,
     getRefreshToken,
     updateAccessToken,
-    initAuth
+    initAuth,
+    signup,
+    signin,
+    signout,
+    refreshAccessToken,
+    requestPasswordReset,
+    resetPassword
   }
 }

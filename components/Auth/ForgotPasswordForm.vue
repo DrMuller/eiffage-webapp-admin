@@ -2,7 +2,7 @@
     <div class="min-h-screen flex items-center justify-center bg-blue-50">
         <div class="p-8 bg-white rounded-lg shadow-sm">
             <div class="mb-8 text-center">
-                <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
+                <!-- <img src="/logo.webp" alt="Eiffage" class="w-10 h-10 mb-6"> -->
                 <h1 class="text-3xl font-bold">Récupération de compte</h1>
                 <p class="text-sm text-gray-500 mt-2">
                     Entrez votre adresse email pour réinitialiser votre mot de passe
