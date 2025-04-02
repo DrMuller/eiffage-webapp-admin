@@ -1,8 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  ssr: false, // SPA mode
+
+  // SPA mode
+  ssr: false,
 
   nitro: {
     preset: 'static'
@@ -34,8 +35,10 @@ export default defineNuxtConfig({
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:9000'
     }
   },
+
   image: {
     provider: 'ipx'
   },
 
+  compatibilityDate: '2025-04-02',
 })
