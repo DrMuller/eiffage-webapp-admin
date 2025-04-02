@@ -25,10 +25,7 @@ import {
 import { computed } from 'vue'
 import { Line } from 'vue-chartjs'
 
-// Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, LinearScale, CategoryScale, PointElement, LineElement, Filler)
-
-// Types
 type DataPoint = { x: number; y: number }
 
 interface SeriesItem {

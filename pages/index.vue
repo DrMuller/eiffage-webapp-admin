@@ -4,9 +4,14 @@
       <div class="px-6 py-4">
         <div class="flex justify-between items-center">
           <h1 class="text-2xl font-bold">Simulateur</h1>
-          <UButton color="primary" icon="i-heroicons-document-text" cursor-pointer @click="createSimulation">
-            Créer la simulation
-          </UButton>
+          <div class="flex items-center">
+            <UButton color="primary" icon="material-symbols-light:article" cursor-pointer @click="createSimulation">
+              Créer la simulation
+            </UButton>
+            <UButton color="error" icon="material-symbols-light:delete-outline" cursor-pointer class="ml-2"
+              @click="resetToDefault">
+            </UButton>
+          </div>
         </div>
       </div>
     </div>
@@ -24,10 +29,6 @@
               <label class="block mb-2 font-medium">Nom de la société</label>
               <UInput v-model="companyName" class="w-full" />
             </div>
-            <div>
-              <label class="block mb-2 font-medium">Date de la cession estimée</label>
-              <DatePicker v-model="estimatedTransferDate" class="w-full" />
-            </div>
           </div>
         </div>
       </UCard>
@@ -38,9 +39,9 @@
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
-      <SimulatorPreferredSharesTable class="mb-8" :preference-shares="preferenceShares" :carve-out-value="carveOutValue"
-        @update:preference-shares="updatePreferenceShares" @update:carve-out="updateCarveOut"
-        @add:preference-share="addPreferenceShare" />
+      <SimulatorPreferredSharesTable class="mb-8" :preference-shares="preferenceShares" :carve-out="carveOut"
+        :estimated-transfer-date="estimatedTransferDate" @update:preference-shares="updatePreferenceShares"
+        @update:carve-out="updateCarveOut" @add:preference-share="addPreferenceShare" />
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg"> -->
@@ -51,10 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useSimulation } from '~/composables/useSimulation';
-import type { Simulation } from '~/types/simulation';
 import type { CommonShare, Option, PrefShare, SimulationRequest } from '~/types/simulationRequest';
+import { useToast } from '#imports';
 useHead({ title: 'Dashboard' })
 
 // Define route meta
@@ -66,120 +67,36 @@ definePageMeta({
 // Initialize reactive refs
 const companyName = ref('');
 const estimatedTransferDate = ref(new Date());
-const ordinaryShares = ref<CommonShare[]>([]);
+const ordinaryShares = ref<CommonShare[]>([{
+  name: `Capital social (prix de souscription = valeur nominale d'une action)`,
+  date: new Date(),
+  nb_shares: 0,
+  share_price: 0,
+  amount: 0
+}]);
 const preferenceShares = ref<PrefShare[]>([]);
-const carveOutValue = ref('');
+const carveOut = ref(0);
 const options = ref<Option[]>([]);
 
-// Interface for JSON data (with string dates)
-interface SimulationJsonData {
-  companyName: string;
-  estimatedTransferDate: string;
-  ordinaryShares: Array<{
-    name: string;
-    date: string;
-    nb_shares: number;
-    share_price: number;
-    amount: number;
-  }>;
-  preferenceShares: Array<{
-    title: string;
-    date: string;
-    liquidationRank: number;
-    shares: number;
-    price: number;
-    participationType: string;
-    multiple: number;
-    tri: number;
-  }>;
-  carveOutValue: string;
-  options: Array<{
-    name: string;
-    date: string;
-    nb_options: number;
-    strike: number;
-    nb_dead_options: number;
-    nb_alive_options: number;
-  }>;
+const toast = useToast();
+
+const { fetchLastSimulation } = useSimulation();
+const simulation = await fetchLastSimulation();
+
+if (simulation) {
+  companyName.value = simulation.request.company_name;
+  estimatedTransferDate.value = simulation.request.estimated_transfer_date;
+  ordinaryShares.value = simulation.request.common_shares;
+  preferenceShares.value = simulation.request.pref_shares;
+  carveOut.value = simulation.request.carve_out;
+  options.value = simulation.request.options;
 }
 
-// Function to transform JSON data to proper types
-const transformData = (jsonData: SimulationJsonData) => {
-  return {
-    companyName: jsonData.companyName,
-    estimatedTransferDate: new Date(jsonData.estimatedTransferDate),
-    ordinaryShares: jsonData.ordinaryShares.map(share => ({
-      ...share,
-      date: new Date(share.date)
-    })) as CommonShare[],
-    preferenceShares: jsonData.preferenceShares.map(share => {
-      const amount = share.shares * share.price;
-      const pref_amount = amount * share.multiple;
-
-      return {
-        name: share.title,
-        date: new Date(share.date),
-        seniority: share.liquidationRank,
-        nb_shares: share.shares,
-        share_price: share.price,
-        amount: amount,
-        pref_type: share.participationType,
-        pref_multiple: share.multiple,
-        pref_tri: share.tri,
-        pref_effective_multiple: share.multiple, // This might need a different calculation
-        pref_pps: share.price, // This might need a different calculation
-        pref_amount: pref_amount
-      };
-    }) as PreferredShares[],
-    carveOutValue: jsonData.carveOutValue,
-    options: jsonData.options.map(option => ({
-      ...option,
-      date: new Date(option.date)
-    })) as Options[]
-  };
-};
-
-// Load initial data
-onMounted(async () => {
-  try {
-    const { fetchLastSimulation } = useSimulation();
-    const simulation = await fetchLastSimulation();
-
-    if (simulation) {
-      companyName.value = simulation.request.company_name;
-      // Use current date as default for estimated transfer date
-      estimatedTransferDate.value = new Date();
-      ordinaryShares.value = simulation.request.common_shares;
-      preferenceShares.value = simulation.request.pref_shares;
-      // Use empty string as default for carve out value
-      carveOutValue.value = '';
-      options.value = simulation.request.options;
-    } else {
-      // Fallback to JSON data if no simulation exists
-      // const response = await fetch('/data/initial-simulation.json');
-      // const jsonData: SimulationJsonData = await response.json();
-      // const transformedData = transformData(jsonData);
-
-      // // Update reactive refs with transformed data
-      // companyName.value = transformedData.companyName;
-      // estimatedTransferDate.value = transformedData.estimatedTransferDate;
-      // ordinaryShares.value = transformedData.ordinaryShares;
-      // preferenceShares.value = transformedData.preferenceShares;
-      // carveOutValue.value = transformedData.carveOutValue;
-      // options.value = transformedData.options;
-    }
-  } catch (error) {
-    console.error('Error loading simulation data:', error);
-  }
-});
-
-// Update handlers for each table
 const updateOrdinaryShares = (updatedShares: CommonShare[]) => {
   ordinaryShares.value = updatedShares;
 };
 
 const addOrdinaryShare = (newShare: CommonShare) => {
-  console.log('Parent received new share:', newShare);
   ordinaryShares.value = [...ordinaryShares.value, newShare];
 };
 
@@ -187,12 +104,11 @@ const updatePreferenceShares = (updatedShares: PrefShare[]) => {
   preferenceShares.value = updatedShares;
 };
 
-const updateCarveOut = (value: string) => {
-  carveOutValue.value = value;
+const updateCarveOut = (value: number) => {
+  carveOut.value = value;
 };
 
 const addPreferenceShare = (newShare: PrefShare) => {
-  console.log('Parent received new preference share:', newShare);
   preferenceShares.value = [...preferenceShares.value, newShare];
 };
 
@@ -205,7 +121,49 @@ const addOption = (newOption: Option) => {
   options.value = [...options.value, newOption];
 };
 
+const resetToDefault = () => {
+  companyName.value = '';
+  estimatedTransferDate.value = new Date();
+  ordinaryShares.value = [{
+    name: `Capital social (prix de souscription = valeur nominale d'une action)`,
+    date: new Date(),
+    nb_shares: 0,
+    share_price: 0,
+    amount: 0
+  }];
+  preferenceShares.value = [];
+  carveOut.value = 0;
+  options.value = [];
+};
+
 const createSimulation = async () => {
+  // Validation checks
+  if (!companyName.value) {
+    toast.add({ title: 'Erreur de validation', description: 'Le nom de la société est requis.', color: 'error' });
+    return;
+  }
+
+  const isOrdinaryShareValid = ordinaryShares.value.some(
+    share => share.date && share.nb_shares > 0 && share.share_price > 0
+  );
+  if (!isOrdinaryShareValid) {
+    toast.add({ title: 'Erreur de validation', description: 'Au moins une action ordinaire doit être entièrement remplie (date, nb actions > 0, prix > 0).', color: 'error' });
+    return;
+  }
+
+  const isPreferenceShareValid = preferenceShares.value.some(
+    share => share.date && share.nb_shares > 0 && share.share_price > 0
+  );
+  if (preferenceShares.value.length > 0 && !isPreferenceShareValid) { // Only validate if there are preference shares added
+    toast.add({ title: 'Erreur de validation', description: 'Au moins une action de préférence doit être entièrement remplie (date, nb actions > 0, prix > 0).', color: 'error' });
+    return;
+  }
+
+  if (!estimatedTransferDate.value) {
+    toast.add({ title: 'Erreur de validation', description: 'La date de cession estimée est requise.', color: 'error' });
+    return;
+  }
+
   const request: SimulationRequest = {
     company_name: companyName.value,
     common_shares: ordinaryShares.value,
@@ -213,12 +171,14 @@ const createSimulation = async () => {
     options: options.value,
     params: {
       nominal: 0,
-      carve_out: 0
-    }
+      carve_out: carveOut.value
+    },
+    estimated_transfer_date: estimatedTransferDate.value,
+    carve_out: carveOut.value
   };
   const { createSimulation } = useSimulation();
   const result = await createSimulation(request);
-  console.log('Simulation created:', result);
+  navigateTo(`/simulation/${result._id}`);
 };
 </script>
 

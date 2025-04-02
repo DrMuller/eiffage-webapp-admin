@@ -15,7 +15,7 @@
         <span>Simulateur</span>
       </NuxtLink>
 
-      <NuxtLink to="/auth/signin" class="nav-item">
+      <NuxtLink to="/simulation" class="nav-item">
         <UIcon name="material-symbols-light:table-chart-view" class="w-5 h-5" />
         <span>Résultats</span>
       </NuxtLink>
