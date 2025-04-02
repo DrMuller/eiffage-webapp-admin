@@ -9,6 +9,9 @@
             <UInput v-model="localCarveOutValue" class="w-32" @update:model-value="updateCarveOut" />
             <UButton icon="material-symbols-light:info-outline-rounded" color="neutral" variant="ghost" class="ml-1"
                 size="xs" aria-label="Info" />
+            <label class="ml-4 font-medium">Date de la cession estimée</label>
+            <DatePicker v-model="localEstimatedTransferDate" class="w-32"
+                @update:model-value="updateEstimatedTransferDate" />
         </div>
 
         <div class="relative overflow-auto">
@@ -151,13 +154,15 @@ import PreferredSharesItem from './PreferredSharesItem.vue';
 // Define component props
 const props = defineProps<{
     preferenceShares: PrefShare[];
-    carveOutValue: string;
+    carveOut: number;
+    estimatedTransferDate: Date;
 }>();
 
 // Define emits
 const emit = defineEmits<{
     'update:preference-shares': [shares: PrefShare[]];
-    'update:carve-out': [value: string];
+    'update:carve-out': [value: number];
+    'update:estimated-transfer-date': [date: Date];
     'add:preference-share': [share: PrefShare];
 }>();
 
@@ -168,8 +173,13 @@ const localPreferenceShares = computed({
 });
 
 const localCarveOutValue = computed({
-    get: () => props.carveOutValue,
+    get: () => props.carveOut,
     set: (value) => emit('update:carve-out', value)
+});
+
+const localEstimatedTransferDate = computed({
+    get: () => props.estimatedTransferDate,
+    set: (value) => emit('update:estimated-transfer-date', value)
 });
 
 const isAddingNewShare = ref(false);
@@ -191,6 +201,11 @@ const newShare = reactive<PrefShare>({
 // Update carve out value
 const updateCarveOut = () => {
     emit('update:carve-out', localCarveOutValue.value);
+};
+
+// Update estimated transfer date
+const updateEstimatedTransferDate = () => {
+    emit('update:estimated-transfer-date', localEstimatedTransferDate.value);
 };
 
 // Update a share
@@ -249,8 +264,6 @@ const addShare = () => {
         pref_share_price: newShare.share_price, // This might need a different calculation
         pref_amount: pref_amount
     };
-
-    console.log('Adding new preferred share:', shareToAdd);
 
     // Emit the event with the new share
     emit('add:preference-share', shareToAdd);

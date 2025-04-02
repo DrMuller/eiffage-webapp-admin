@@ -1,5 +1,7 @@
 export interface SimulationRequest {
     company_name: string;
+    estimated_transfer_date: Date;
+    carve_out: number;
     pref_shares: PrefShare[];
     common_shares: CommonShare[];
     options: Option[];

@@ -38,9 +38,11 @@ export interface SimulationResult {
 } 
 
 export interface Simulation {
-    id: string;
+    _id: string;
+    userId: string;
+    company_name: string;
+    results: SimulationResult;
+    request: SimulationRequest;
     created_at: Date;
     updated_at: Date;
-    result: SimulationResult;
-    request: SimulationRequest;
 } 
