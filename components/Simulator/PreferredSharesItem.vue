@@ -35,7 +35,7 @@
                     @focus="showSharesError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.nb_shares }}
+                {{ formattedNbShares }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -45,18 +45,22 @@
                     @focus="showPriceError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.share_price.toFixed(2) }} €
+                {{ formattedSharePrice }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div v-if="isEditing">
-                <USelect v-model="editedShare.pref_type" class="w-full"
-                    :options="['Participating', 'Non participating']"
-                    :ui="{ base: showParticipationError ? 'ring-red-500 border-red-500' : '' }" required
+                <USelect v-model="editedShare.pref_type" class="w-full" :items="[{
+                    label: 'Participating',
+                    value: 'P'
+                }, {
+                    label: 'Non participating',
+                    value: 'NP'
+                }]" :ui="{ base: showParticipationError ? 'ring-red-500 border-red-500' : '' }" required
                     @focus="showParticipationError = false" />
             </div>
             <div v-else>
-                {{ share.pref_type }}
+                {{ share.pref_type === 'P' ? 'Participating' : 'Non participating' }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -66,7 +70,7 @@
                     @focus="showMultipleError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.pref_multiple }}
+                {{ formattedPrefMultiple }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -76,7 +80,7 @@
                     @focus="showTriError = false" />
             </div>
             <div v-else>
-                {{ share.pref_tri }} %
+                {{ formattedPrefTri }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -97,16 +101,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import type { PreferredShares } from '~/types/model';
+import { ref, reactive, computed } from 'vue';
+import type { PrefShare } from '~/types/simulationRequest';
 
 const props = defineProps<{
-    share: PreferredShares;
+    share: PrefShare;
     index: number;
 }>();
 
 const emit = defineEmits<{
-    'update': [index: number, share: PreferredShares];
+    'update': [index: number, share: PrefShare];
     'delete': [index: number];
 }>();
 
@@ -119,19 +123,36 @@ const showParticipationError = ref(false);
 const showMultipleError = ref(false);
 const showTriError = ref(false);
 
-const editedShare = reactive<PreferredShares>({
+const editedShare = reactive<PrefShare>({
     name: '',
     date: new Date(),
     seniority: 1,
     nb_shares: 0,
     share_price: 0,
     amount: 0,
-    pref_type: 'Non participating',
+    pref_type: 'NP',
     pref_multiple: 1,
     pref_tri: 0,
     pref_effective_multiple: 1,
-    pref_pps: 0,
+    pref_share_price: 0,
     pref_amount: 0
+});
+
+// Computed properties for formatting
+const formattedNbShares = computed(() => {
+    return props.share.nb_shares.toLocaleString('fr-FR');
+});
+
+const formattedSharePrice = computed(() => {
+    return `${props.share.share_price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} €`;
+});
+
+const formattedPrefMultiple = computed(() => {
+    return props.share.pref_multiple.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+});
+
+const formattedPrefTri = computed(() => {
+    return `${props.share.pref_tri.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
 });
 
 // Function to start editing
@@ -153,7 +174,7 @@ const startEdit = () => {
 // Function to update amount and preference-related values
 const updateAmount = () => {
     editedShare.amount = editedShare.nb_shares * editedShare.share_price;
-    editedShare.pref_pps = editedShare.share_price;
+    editedShare.pref_share_price = editedShare.share_price;
     editedShare.pref_amount = editedShare.amount * editedShare.pref_multiple;
     editedShare.pref_effective_multiple = editedShare.pref_multiple; // This might need a different calculation
 };
@@ -229,4 +250,5 @@ const confirmDelete = () => {
         emit('delete', props.index);
     }
 };
+
 </script>

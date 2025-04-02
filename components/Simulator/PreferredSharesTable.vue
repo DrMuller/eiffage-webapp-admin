@@ -115,8 +115,13 @@
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Type de participation</label>
-                            <USelect v-model="newShare.pref_type" class="w-full"
-                                :options="['Participating', 'Non participating']" required />
+                            <USelect v-model="newShare.pref_type" class="w-full" :items="[{
+                                label: 'Participating',
+                                value: 'P'
+                            }, {
+                                label: 'Non participating',
+                                value: 'NP'
+                            }]" required />
                         </div>
                         <div>
                             <label class="block text-sm mb-1">Multiple</label>
@@ -140,20 +145,20 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import type { PreferredShares } from '~/types/model';
+import type { PrefShare } from '~/types/simulationRequest';
 import PreferredSharesItem from './PreferredSharesItem.vue';
 
 // Define component props
 const props = defineProps<{
-    preferenceShares: PreferredShares[];
+    preferenceShares: PrefShare[];
     carveOutValue: string;
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:preference-shares': [shares: PreferredShares[]];
+    'update:preference-shares': [shares: PrefShare[]];
     'update:carve-out': [value: string];
-    'add:preference-share': [share: PreferredShares];
+    'add:preference-share': [share: PrefShare];
 }>();
 
 // Create local reactive copies of the props
@@ -168,18 +173,18 @@ const localCarveOutValue = computed({
 });
 
 const isAddingNewShare = ref(false);
-const newShare = reactive<PreferredShares>({
+const newShare = reactive<PrefShare>({
     name: '',
     date: new Date(),
     seniority: 1,
     nb_shares: 0,
     share_price: 0,
     amount: 0,
-    pref_type: 'Non participating',
+    pref_type: 'NP',
     pref_multiple: 1,
     pref_tri: 0,
     pref_effective_multiple: 1,
-    pref_pps: 0,
+    pref_share_price: 0,
     pref_amount: 0
 });
 
@@ -189,7 +194,7 @@ const updateCarveOut = () => {
 };
 
 // Update a share
-const updateShare = (index: number, updatedShare: PreferredShares) => {
+const updateShare = (index: number, updatedShare: PrefShare) => {
     const updatedShares = [...localPreferenceShares.value];
     updatedShares[index] = updatedShare;
     localPreferenceShares.value = updatedShares;
@@ -211,11 +216,11 @@ const startAddShare = () => {
         nb_shares: 0,
         share_price: 0,
         amount: 0,
-        pref_type: 'Non participating',
+        pref_type: 'NP',
         pref_multiple: 1,
         pref_tri: 0,
         pref_effective_multiple: 1,
-        pref_pps: 0,
+        pref_share_price: 0,
         pref_amount: 0
     });
 };
@@ -230,7 +235,7 @@ const addShare = () => {
     const pref_amount = amount * newShare.pref_multiple;
 
     // Create a new share object (to avoid reference issues)
-    const shareToAdd: PreferredShares = {
+    const shareToAdd: PrefShare = {
         name: newShare.name,
         date: new Date(newShare.date),
         seniority: newShare.seniority,
@@ -241,7 +246,7 @@ const addShare = () => {
         pref_multiple: newShare.pref_multiple,
         pref_tri: newShare.pref_tri,
         pref_effective_multiple: newShare.pref_multiple, // This might need a different calculation
-        pref_pps: newShare.share_price, // This might need a different calculation
+        pref_share_price: newShare.share_price, // This might need a different calculation
         pref_amount: pref_amount
     };
 

@@ -52,9 +52,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { OrdinaryShares, PreferredShares, Options } from '~/types/model';
 import { useSimulation } from '~/composables/useSimulation';
-
+import type { Simulation } from '~/types/simulation';
+import type { CommonShare, Option, PrefShare, SimulationRequest } from '~/types/simulationRequest';
 useHead({ title: 'Dashboard' })
 
 // Define route meta
@@ -66,10 +66,10 @@ definePageMeta({
 // Initialize reactive refs
 const companyName = ref('');
 const estimatedTransferDate = ref(new Date());
-const ordinaryShares = ref<OrdinaryShares[]>([]);
-const preferenceShares = ref<PreferredShares[]>([]);
+const ordinaryShares = ref<CommonShare[]>([]);
+const preferenceShares = ref<PrefShare[]>([]);
 const carveOutValue = ref('');
-const options = ref<Options[]>([]);
+const options = ref<Option[]>([]);
 
 // Interface for JSON data (with string dates)
 interface SimulationJsonData {
@@ -111,7 +111,7 @@ const transformData = (jsonData: SimulationJsonData) => {
     ordinaryShares: jsonData.ordinaryShares.map(share => ({
       ...share,
       date: new Date(share.date)
-    })) as OrdinaryShares[],
+    })) as CommonShare[],
     preferenceShares: jsonData.preferenceShares.map(share => {
       const amount = share.shares * share.price;
       const pref_amount = amount * share.multiple;
@@ -146,27 +146,27 @@ onMounted(async () => {
     const simulation = await fetchLastSimulation();
 
     if (simulation) {
-      companyName.value = simulation.name;
+      companyName.value = simulation.request.company_name;
       // Use current date as default for estimated transfer date
       estimatedTransferDate.value = new Date();
-      ordinaryShares.value = simulation.ordinary_shares;
-      preferenceShares.value = simulation.preferred_shares;
+      ordinaryShares.value = simulation.request.common_shares;
+      preferenceShares.value = simulation.request.pref_shares;
       // Use empty string as default for carve out value
       carveOutValue.value = '';
-      options.value = simulation.options;
+      options.value = simulation.request.options;
     } else {
       // Fallback to JSON data if no simulation exists
-      const response = await fetch('/data/initial-simulation.json');
-      const jsonData: SimulationJsonData = await response.json();
-      const transformedData = transformData(jsonData);
+      // const response = await fetch('/data/initial-simulation.json');
+      // const jsonData: SimulationJsonData = await response.json();
+      // const transformedData = transformData(jsonData);
 
-      // Update reactive refs with transformed data
-      companyName.value = transformedData.companyName;
-      estimatedTransferDate.value = transformedData.estimatedTransferDate;
-      ordinaryShares.value = transformedData.ordinaryShares;
-      preferenceShares.value = transformedData.preferenceShares;
-      carveOutValue.value = transformedData.carveOutValue;
-      options.value = transformedData.options;
+      // // Update reactive refs with transformed data
+      // companyName.value = transformedData.companyName;
+      // estimatedTransferDate.value = transformedData.estimatedTransferDate;
+      // ordinaryShares.value = transformedData.ordinaryShares;
+      // preferenceShares.value = transformedData.preferenceShares;
+      // carveOutValue.value = transformedData.carveOutValue;
+      // options.value = transformedData.options;
     }
   } catch (error) {
     console.error('Error loading simulation data:', error);
@@ -174,16 +174,16 @@ onMounted(async () => {
 });
 
 // Update handlers for each table
-const updateOrdinaryShares = (updatedShares: OrdinaryShares[]) => {
+const updateOrdinaryShares = (updatedShares: CommonShare[]) => {
   ordinaryShares.value = updatedShares;
 };
 
-const addOrdinaryShare = (newShare: OrdinaryShares) => {
+const addOrdinaryShare = (newShare: CommonShare) => {
   console.log('Parent received new share:', newShare);
   ordinaryShares.value = [...ordinaryShares.value, newShare];
 };
 
-const updatePreferenceShares = (updatedShares: PreferredShares[]) => {
+const updatePreferenceShares = (updatedShares: PrefShare[]) => {
   preferenceShares.value = updatedShares;
 };
 
@@ -191,29 +191,34 @@ const updateCarveOut = (value: string) => {
   carveOutValue.value = value;
 };
 
-const addPreferenceShare = (newShare: PreferredShares) => {
+const addPreferenceShare = (newShare: PrefShare) => {
   console.log('Parent received new preference share:', newShare);
   preferenceShares.value = [...preferenceShares.value, newShare];
 };
 
-const updateOptions = (updatedOptions: Options[]) => {
+const updateOptions = (updatedOptions: Option[]) => {
   options.value = updatedOptions;
 };
 
-const addOption = (newOption: Options) => {
+const addOption = (newOption: Option) => {
   console.log('Parent received new option:', newOption);
   options.value = [...options.value, newOption];
 };
 
-const createSimulation = () => {
-  console.log('Creating simulation with data:', {
-    companyName: companyName.value,
-    estimatedTransferDate: estimatedTransferDate.value,
-    ordinaryShares: ordinaryShares.value,
-    preferenceShares: preferenceShares.value,
-    carveOutValue: carveOutValue.value,
-    options: options.value
-  });
+const createSimulation = async () => {
+  const request: SimulationRequest = {
+    company_name: companyName.value,
+    common_shares: ordinaryShares.value,
+    pref_shares: preferenceShares.value,
+    options: options.value,
+    params: {
+      nominal: 0,
+      carve_out: 0
+    }
+  };
+  const { createSimulation } = useSimulation();
+  const result = await createSimulation(request);
+  console.log('Simulation created:', result);
 };
 </script>
 

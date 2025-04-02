@@ -1,19 +1,19 @@
 import { ref } from 'vue'
-import type { Simulation } from '~/types/model'
+import type { Simulation } from '~/types/simulation'
+import type { SimulationRequest } from '~/types/simulationRequest'
 
 export const useSimulation = () => {
     const simulations = ref<Simulation[]>([])
     const loading = ref(false)
     const error = ref<string | null>(null)
+    const { $api } = useNuxtApp()
 
-    // Fetch all simulations
     const fetchLastSimulation = async () => {
         loading.value = true
         error.value = null
         try {
-            const { data, error: fetchError } = await useFetch<Simulation>('/simulations')
-            if (fetchError.value) throw fetchError.value
-            return data.value
+            const data = await $api<Simulation>('/simulations')
+            return data
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulations'
         } finally {
@@ -21,29 +21,12 @@ export const useSimulation = () => {
         }
     }
 
-    // Fetch all simulations
-    // const fetchSimulations = async () => {
-    //     loading.value = true
-    //     error.value = null
-    //     try {
-    //         const { data, error: fetchError } = await useFetch<Simulation[]>('/simulations')
-    //         if (fetchError.value) throw fetchError.value
-    //         simulations.value = data.value || []
-    //     } catch (e) {
-    //         error.value = e instanceof Error ? e.message : 'Failed to fetch simulations'
-    //     } finally {
-    //         loading.value = false
-    //     }
-    // }
-
-    // Fetch a single simulation by ID
     const fetchSimulationById = async (id: string) => {
         loading.value = true
         error.value = null
         try {
-            const { data, error: fetchError } = await useFetch<Simulation>(`/simulations/${id}`)
-            if (fetchError.value) throw fetchError.value
-            return data.value
+            const data = await $api<Simulation>(`/simulations/${id}`)
+            return data
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulation'
             return null
@@ -52,18 +35,16 @@ export const useSimulation = () => {
         }
     }
 
-    // Create a new simulation
-    const createSimulation = async (simulation: Omit<Simulation, 'id'>) => {
+    const createSimulation = async (request: Omit<SimulationRequest, 'id'>) => {
         loading.value = true
         error.value = null
         try {
-            const { data, error: createError } = await useFetch<Simulation>('/simulations', {
+            const data = await $api<Simulation>('/simulations', {
                 method: 'POST',
-                body: simulation
+                body: request
             })
-            if (createError.value) throw createError.value
-            simulations.value.push(data.value!)
-            return data.value
+            simulations.value.push(data)
+            return data
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to create simulation'
             return null
@@ -73,20 +54,19 @@ export const useSimulation = () => {
     }
 
     // Update an existing simulation
-    const updateSimulation = async (id: string, simulation: Partial<Simulation>) => {
+    const updateSimulation = async (id: string, request: Partial<SimulationRequest>) => {
         loading.value = true
         error.value = null
         try {
-            const { data, error: updateError } = await useFetch<Simulation>(`/simulations/${id}`, {
+            const data = await $api<Simulation>(`/simulations/${id}`, {
                 method: 'PUT',
-                body: simulation
+                body: request
             })
-            if (updateError.value) throw updateError.value
             const index = simulations.value.findIndex(s => s.id === id)
             if (index !== -1) {
-                simulations.value[index] = data.value!
+                simulations.value[index] = data
             }
-            return data.value
+            return data
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to update simulation'
             return null
@@ -100,10 +80,9 @@ export const useSimulation = () => {
         loading.value = true
         error.value = null
         try {
-            const { error: deleteError } = await useFetch(`/simulations/${id}`, {
+            await $api(`/simulations/${id}`, {
                 method: 'DELETE'
             })
-            if (deleteError.value) throw deleteError.value
             simulations.value = simulations.value.filter(s => s.id !== id)
             return true
         } catch (e) {

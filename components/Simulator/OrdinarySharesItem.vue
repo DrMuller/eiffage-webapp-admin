@@ -25,7 +25,7 @@
                     @focus="showSharesError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.nb_shares }}
+                {{ formattedNbShares }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -35,7 +35,7 @@
                     @focus="showPriceError = false" @update:model-value="updateAmount" />
             </div>
             <div v-else>
-                {{ share.share_price.toFixed(2) }} €
+                {{ formattedSharePrice }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -56,16 +56,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import type { OrdinaryShares } from '~/types/model';
+import { ref, reactive, computed } from 'vue';
+import type { CommonShare } from '~/types/simulationRequest';
 
 const props = defineProps<{
-    share: OrdinaryShares;
+    share: CommonShare;
     index: number;
 }>();
 
 const emit = defineEmits<{
-    'update': [index: number, share: OrdinaryShares];
+    'update': [index: number, share: CommonShare];
     'delete': [index: number];
 }>();
 
@@ -74,12 +74,21 @@ const showNameError = ref(false);
 const showSharesError = ref(false);
 const showPriceError = ref(false);
 
-const editedShare = reactive<OrdinaryShares>({
+const editedShare = reactive<CommonShare>({
     name: '',
     date: new Date(),
     nb_shares: 0,
     share_price: 0,
     amount: 0
+});
+
+// Computed properties for formatting
+const formattedNbShares = computed(() => {
+    return props.share.nb_shares.toLocaleString('fr-FR');
+});
+
+const formattedSharePrice = computed(() => {
+    return `${props.share.share_price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} €`;
 });
 
 // Function to start editing

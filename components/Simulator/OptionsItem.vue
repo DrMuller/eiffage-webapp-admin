@@ -25,7 +25,7 @@
                     @focus="showOptionsError = false" @update:model-value="updateAliveOptions" />
             </div>
             <div v-else>
-                {{ option.nb_options }}
+                {{ formattedNbOptions }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -35,7 +35,7 @@
                     @focus="showStrikeError = false" />
             </div>
             <div v-else>
-                {{ option.strike.toFixed(2) }} €
+                {{ formattedStrike }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -45,7 +45,7 @@
                     @focus="showDeadOptionsError = false" @update:model-value="updateAliveOptions" />
             </div>
             <div v-else>
-                {{ option.nb_dead_options }}
+                {{ formattedDeadOptions }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -53,7 +53,7 @@
                 {{ editedOption.nb_alive_options }}
             </div>
             <div v-else>
-                {{ option.nb_alive_options }}
+                {{ formattedAliveOptions }}
             </div>
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
@@ -74,16 +74,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import type { Options } from '~/types/model';
+import { ref, reactive, computed } from 'vue';
+import type { Option } from '~/types/simulationRequest';
 
 const props = defineProps<{
-    option: Options;
+    option: Option;
     index: number;
 }>();
 
 const emit = defineEmits<{
-    'update': [index: number, option: Options];
+    'update': [index: number, option: Option];
     'delete': [index: number];
 }>();
 
@@ -93,13 +93,30 @@ const showOptionsError = ref(false);
 const showStrikeError = ref(false);
 const showDeadOptionsError = ref(false);
 
-const editedOption = reactive<Options>({
+const editedOption = reactive<Option>({
     name: '',
     date: new Date(),
     nb_options: 0,
     strike: 0,
     nb_dead_options: 0,
     nb_alive_options: 0
+});
+
+// Computed properties for formatting
+const formattedNbOptions = computed(() => {
+    return props.option.nb_options.toLocaleString('fr-FR');
+});
+
+const formattedStrike = computed(() => {
+    return `${props.option.strike.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+});
+
+const formattedDeadOptions = computed(() => {
+    return props.option.nb_dead_options.toLocaleString('fr-FR');
+});
+
+const formattedAliveOptions = computed(() => {
+    return props.option.nb_alive_options.toLocaleString('fr-FR');
 });
 
 // Function to start editing
