@@ -8,7 +8,7 @@
             <UButton type="submit" color="primary" icon="material-symbols-light:article" cursor-pointer>
               Créer la simulation
             </UButton>
-            <UButton type="button" color="error" icon="material-symbols-light:delete-outline" cursor-pointer
+            <UButton type="button" variant="ghost" icon="material-symbols-light:delete-outline" cursor-pointer
               class="ml-2" @click="resetToDefault">
             </UButton>
           </div>
@@ -41,7 +41,8 @@
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
       <SimulatorPreferredSharesTable class="mb-8" :preference-shares="preferenceShares" :carve-out="carveOut"
         :estimated-transfer-date="estimatedTransferDate" @update:preference-shares="updatePreferenceShares"
-        @update:carve-out="updateCarveOut" @add:preference-share="addPreferenceShare" />
+        @update:carve-out="updateCarveOut" @update:estimated-transfer-date="updateEstimatedTransferDate"
+        @add:preference-share="addPreferenceShare" />
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg"> -->
@@ -82,11 +83,11 @@ const simulation = await fetchLastSimulation();
 
 if (simulation) {
   companyName.value = simulation.request.company_name;
-  estimatedTransferDate.value = simulation.request.estimated_transfer_date;
   commonShares.value = simulation.request.common_shares;
   preferenceShares.value = simulation.request.pref_shares;
-  carveOut.value = simulation.request.carve_out;
   options.value = simulation.request.options;
+  carveOut.value = simulation.request.params.carve_out;
+  estimatedTransferDate.value = simulation.request.params.estimated_transfer_date;
 }
 
 const updateCommonShares = (updatedShares: CommonShare[]) => {
@@ -103,6 +104,10 @@ const updatePreferenceShares = (updatedShares: PrefShare[]) => {
 
 const updateCarveOut = (value: number) => {
   carveOut.value = value;
+};
+
+const updateEstimatedTransferDate = (value: Date) => {
+  estimatedTransferDate.value = value;
 };
 
 const addPreferenceShare = (newShare: PrefShare) => {
@@ -140,12 +145,11 @@ const createSimulation = async () => {
     pref_shares: preferenceShares.value,
     options: options.value,
     params: {
-      nominal: 0,
-      carve_out: carveOut.value
-    },
-    estimated_transfer_date: estimatedTransferDate.value,
-    carve_out: carveOut.value
+      carve_out: carveOut.value,
+      estimated_transfer_date: estimatedTransferDate.value
+    }
   };
+  console.log('Request:', request);
   const { createSimulation } = useSimulation();
   const result = await createSimulation(request);
   navigateTo(`/simulation/${result._id}`);

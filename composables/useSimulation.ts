@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import type { Simulation, SimulationResult } from '~/types/simulation'
-import type { SimulationRequest } from '~/types/simulationRequest'
+import type { PrefShare, SimulationRequest } from '~/types/simulationRequest'
 
 // Define chart series item type
 interface ChartSeriesItem {
@@ -28,16 +28,31 @@ export const useSimulation = () => {
         return dateString instanceof Date ? dateString : new Date(dateString)
     }
 
+    const transformRequest = (request: any) => {
+        return {
+            ...request,
+            params: {
+                ...request.params,
+                carve_out: request.params.carve_out / 100,
+            },
+            pref_shares: request.pref_shares.map((share: PrefShare) => ({
+                ...share,
+                pref_tri: share.pref_tri / 100
+            }))
+        }
+    }
+
     // Transform preference shares dates
-    const transformPrefShares = (prefShares: any[] = []) => {
+    const transformResponsePrefShares = (prefShares: PrefShare[] = []) => {
         return prefShares.map(share => ({
             ...share,
+            pref_tri: share.pref_tri * 100,
             date: share.date ? transformDate(share.date) : share.date
         }))
     }
 
     // Transform common shares dates
-    const transformCommonShares = (commonShares: any[] = []) => {
+    const transformResponseCommonShares = (commonShares: any[] = []) => {
         return commonShares.map(share => ({
             ...share,
             date: share.date ? transformDate(share.date) : share.date
@@ -45,35 +60,43 @@ export const useSimulation = () => {
     }
 
     // Transform options dates
-    const transformOptions = (options: any[] = []) => {
+    const transformResponseOptions = (options: any[] = []) => {
         return options.map(option => ({
             ...option,
             date: option.date ? transformDate(option.date) : option.date
         }))
     }
 
+    const transformResponseParams = (params: any) => {
+        return {
+            ...params,
+            carve_out: params.carve_out * 100,
+            estimated_transfer_date: transformDate(params.estimated_transfer_date)
+        }
+    }
+
     // Transform the simulation request object
-    const transformRequest = (request: any) => {
+    const transformResponseRequest = (request: any) => {
         if (!request) return request
 
         return {
             ...request,
-            estimated_transfer_date: transformDate(request.estimated_transfer_date),
-            pref_shares: transformPrefShares(request.pref_shares),
-            common_shares: transformCommonShares(request.common_shares),
-            options: transformOptions(request.options)
+            pref_shares: transformResponsePrefShares(request.pref_shares),
+            common_shares: transformResponseCommonShares(request.common_shares),
+            options: transformResponseOptions(request.options),
+            params: transformResponseParams(request.params)
         }
     }
 
     // Transform simulation data by converting date strings to Date objects
-    const transformSimulationData = (data: any): Simulation => {
+    const transformResponse = (data: any): Simulation => {
         if (!data) return data
 
         return {
             ...data,
             created_at: data.created_at ? transformDate(data.created_at) : data.created_at,
             updated_at: data.updated_at ? transformDate(data.updated_at) : data.updated_at,
-            request: transformRequest(data.request)
+            request: transformResponseRequest(data.request)
         } as Simulation
     }
 
@@ -82,7 +105,7 @@ export const useSimulation = () => {
         error.value = null
         try {
             const data = await $api<Simulation>('/simulations')
-            return transformSimulationData(data)
+            return transformResponse(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulations'
         } finally {
@@ -95,7 +118,7 @@ export const useSimulation = () => {
         error.value = null
         try {
             const data = await $api<Simulation>(`/simulations/${id}`)
-            return transformSimulationData(data)
+            return transformResponse(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulation'
             return null
@@ -109,9 +132,9 @@ export const useSimulation = () => {
         error.value = null
         const data = await $api<Simulation>('/simulations', {
             method: 'POST',
-            body: request
+            body: transformRequest(request)
         })
-        const transformedData = transformSimulationData(data)
+        const transformedData = transformResponse(data)
         simulations.value.push(transformedData)
         return transformedData
     }
@@ -125,7 +148,7 @@ export const useSimulation = () => {
                 method: 'PATCH',
                 body: request
             })
-            const transformedData = transformSimulationData(data)
+            const transformedData = transformResponse(data)
 
             // Update the simulation in the array
             const index = simulations.value.findIndex(s => s._id === id)

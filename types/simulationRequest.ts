@@ -1,7 +1,5 @@
 export interface SimulationRequest {
     company_name: string;
-    estimated_transfer_date: Date;
-    carve_out: number;
     pref_shares: PrefShare[];
     common_shares: CommonShare[];
     options: Option[];
@@ -39,10 +37,9 @@ export interface Option {
     nb_options: number;
     strike: number;
     nb_dead_options: number;
-    nb_alive_options: number;
 }
 
 export interface Params {
-    nominal: number;
     carve_out: number;
+    estimated_transfer_date: Date;
 }
