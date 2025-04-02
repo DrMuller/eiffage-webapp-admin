@@ -55,7 +55,6 @@
 import { ref } from 'vue';
 import { useSimulation } from '~/composables/useSimulation';
 import type { CommonShare, Option, PrefShare, SimulationRequest } from '~/types/simulationRequest';
-import { useToast } from '#imports';
 useHead({ title: 'Dashboard' })
 
 // Define route meta
@@ -77,8 +76,6 @@ const ordinaryShares = ref<CommonShare[]>([{
 const preferenceShares = ref<PrefShare[]>([]);
 const carveOut = ref(0);
 const options = ref<Option[]>([]);
-
-const toast = useToast();
 
 const { fetchLastSimulation } = useSimulation();
 const simulation = await fetchLastSimulation();
@@ -137,33 +134,6 @@ const resetToDefault = () => {
 };
 
 const createSimulation = async () => {
-  // Validation checks
-  if (!companyName.value) {
-    toast.add({ title: 'Erreur de validation', description: 'Le nom de la société est requis.', color: 'error' });
-    return;
-  }
-
-  const isOrdinaryShareValid = ordinaryShares.value.some(
-    share => share.date && share.nb_shares > 0 && share.share_price > 0
-  );
-  if (!isOrdinaryShareValid) {
-    toast.add({ title: 'Erreur de validation', description: 'Au moins une action ordinaire doit être entièrement remplie (date, nb actions > 0, prix > 0).', color: 'error' });
-    return;
-  }
-
-  const isPreferenceShareValid = preferenceShares.value.some(
-    share => share.date && share.nb_shares > 0 && share.share_price > 0
-  );
-  if (preferenceShares.value.length > 0 && !isPreferenceShareValid) { // Only validate if there are preference shares added
-    toast.add({ title: 'Erreur de validation', description: 'Au moins une action de préférence doit être entièrement remplie (date, nb actions > 0, prix > 0).', color: 'error' });
-    return;
-  }
-
-  if (!estimatedTransferDate.value) {
-    toast.add({ title: 'Erreur de validation', description: 'La date de cession estimée est requise.', color: 'error' });
-    return;
-  }
-
   const request: SimulationRequest = {
     company_name: companyName.value,
     common_shares: ordinaryShares.value,
