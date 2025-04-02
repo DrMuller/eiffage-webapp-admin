@@ -85,62 +85,10 @@
         </div>
 
         <template #footer>
-            <div v-if="!isAddingNewShare">
-                <UButton variant="ghost" icon="i-heroicons-plus" class="text-sm" @click="startAddShare">
+            <div>
+                <UButton variant="ghost" icon="i-heroicons-plus" class="text-sm" @click="addNewShare">
                     Ajouter une émission d'actions de préférence
                 </UButton>
-            </div>
-
-            <div v-else class="my-2 p-4 bg-white rounded-lg">
-                <h3 class="font-medium mb-3">Nouvelle émission d'actions de préférence</h3>
-                <form @submit.prevent="addShare">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm mb-1">Intitulé de l'émission</label>
-                            <UInput v-model="newShare.name" class="w-full" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Date de l'émission</label>
-                            <DatePicker v-model="newShare.date" class="w-full" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Rang</label>
-                            <UInput v-model.number="newShare.seniority" class="w-full" type="number" min="1" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Nombre d'action émises</label>
-                            <UInput v-model.number="newShare.nb_shares" class="w-full" type="number" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Prix de souscription</label>
-                            <UInput v-model.number="newShare.share_price" class="w-full" type="number" step="0.01"
-                                required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Type de participation</label>
-                            <USelect v-model="newShare.pref_type" class="w-full" :items="[{
-                                label: 'Participating',
-                                value: 'P'
-                            }, {
-                                label: 'Non participating',
-                                value: 'NP'
-                            }]" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">Multiple</label>
-                            <UInput v-model.number="newShare.pref_multiple" class="w-full" type="number" step="0.1"
-                                min="1" required />
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1">TRI (%)</label>
-                            <UInput v-model.number="newShare.pref_tri" class="w-full" type="number" required />
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <UButton color="neutral" variant="ghost" type="button" @click="cancelAddShare">Annuler</UButton>
-                        <UButton color="primary" type="submit">Ajouter</UButton>
-                    </div>
-                </form>
             </div>
         </template>
     </UCard>
@@ -163,7 +111,6 @@ const emit = defineEmits<{
     'update:preference-shares': [shares: PrefShare[]];
     'update:carve-out': [value: number];
     'update:estimated-transfer-date': [date: Date];
-    'add:preference-share': [share: PrefShare];
 }>();
 
 // Create local reactive copies of the props
@@ -180,22 +127,6 @@ const localCarveOutValue = computed({
 const localEstimatedTransferDate = computed({
     get: () => props.estimatedTransferDate,
     set: (value) => emit('update:estimated-transfer-date', value)
-});
-
-const isAddingNewShare = ref(false);
-const newShare = reactive<PrefShare>({
-    name: '',
-    date: new Date(),
-    seniority: 1,
-    nb_shares: 0,
-    share_price: 0,
-    amount: 0,
-    pref_type: 'NP',
-    pref_multiple: 1,
-    pref_tri: 0,
-    pref_effective_multiple: 1,
-    pref_share_price: 0,
-    pref_amount: 0
 });
 
 // Update carve out value
@@ -222,10 +153,10 @@ const deleteShare = (index: number) => {
     localPreferenceShares.value = updatedShares;
 };
 
-const startAddShare = () => {
-    isAddingNewShare.value = true;
-    Object.assign(newShare, {
-        name: '',
+// Add a new empty preferred share directly to the table
+const addNewShare = () => {
+    const newShare: PrefShare = {
+        name: 'Nouvelle émission préférence',
         date: new Date(),
         seniority: 1,
         nb_shares: 0,
@@ -237,38 +168,10 @@ const startAddShare = () => {
         pref_effective_multiple: 1,
         pref_share_price: 0,
         pref_amount: 0
-    });
-};
-
-const cancelAddShare = () => {
-    isAddingNewShare.value = false;
-};
-
-const addShare = () => {
-    // Calculate derived values
-    const amount = newShare.nb_shares * newShare.share_price;
-    const pref_amount = amount * newShare.pref_multiple;
-
-    // Create a new share object (to avoid reference issues)
-    const shareToAdd: PrefShare = {
-        name: newShare.name,
-        date: new Date(newShare.date),
-        seniority: newShare.seniority,
-        nb_shares: newShare.nb_shares,
-        share_price: newShare.share_price,
-        amount: amount,
-        pref_type: newShare.pref_type,
-        pref_multiple: newShare.pref_multiple,
-        pref_tri: newShare.pref_tri,
-        pref_effective_multiple: newShare.pref_multiple, // This might need a different calculation
-        pref_share_price: newShare.share_price, // This might need a different calculation
-        pref_amount: pref_amount
     };
 
-    // Emit the event with the new share
-    emit('add:preference-share', shareToAdd);
-
-    // Reset the form
-    isAddingNewShare.value = false;
+    // Add the new share to the local array
+    const updatedShares = [...localPreferenceShares.value, newShare];
+    localPreferenceShares.value = updatedShares;
 };
 </script>
