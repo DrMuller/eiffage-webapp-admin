@@ -8,7 +8,7 @@
             <table class="min-w-full border-collapse">
                 <thead class="top-0 border-b-1 border-t-1 border-gray-200 bg-white">
                     <tr>
-                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                        <th class="px-4 py-3.5 text-xs font-bold text-left w-[300px]">
                             <div class="flex items-center">
                                 Intitulé du plan d'options
                                 <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"

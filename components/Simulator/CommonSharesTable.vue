@@ -16,7 +16,7 @@
             <table class="min-w-full border-collapse">
                 <thead class="top-0 border-b-1 border-t-1 border-gray-200 bg-white">
                     <tr>
-                        <th class="px-4 py-3.5 text-xs font-bold text-left">
+                        <th class="px-4 py-3.5 text-xs font-bold text-left w-[300px]">
                             <div class="flex items-center">
                                 Intitulé de l'émission
                                 <UButton icon="material-symbols-light:info-outline-rounded" color="neutral"
@@ -48,7 +48,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
-                    <OrdinarySharesItem v-for="(share, index) in localOrdinaryShares" :key="index" :share="share"
+                    <CommonSharesItem v-for="(share, index) in localCommonShares" :key="index" :share="share"
                         :index="index" @update="updateShare" @delete="deleteShare" />
                 </tbody>
             </table>
@@ -65,38 +65,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { computed } from 'vue';
 import type { CommonShare } from '~/types/simulationRequest';
-import OrdinarySharesItem from './OrdinarySharesItem.vue';
+import CommonSharesItem from './CommonSharesItem.vue';
 
 // Define component props
 const props = defineProps<{
-    ordinaryShares: CommonShare[];
+    commonShares: CommonShare[];
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:ordinary-shares': [shares: CommonShare[]];
+    'update:common-shares': [shares: CommonShare[]];
 }>();
 
 // Create local reactive copy of props
-const localOrdinaryShares = computed({
-    get: () => props.ordinaryShares,
-    set: (value) => emit('update:ordinary-shares', value)
+const localCommonShares = computed({
+    get: () => props.commonShares,
+    set: (value) => emit('update:common-shares', value)
 });
 
 // Update a share
 const updateShare = (index: number, updatedShare: CommonShare) => {
-    const updatedShares = [...localOrdinaryShares.value];
+    const updatedShares = [...localCommonShares.value];
     updatedShares[index] = updatedShare;
-    localOrdinaryShares.value = updatedShares;
+    localCommonShares.value = updatedShares;
 };
 
 // Delete share with confirmation dialog
 const deleteShare = (index: number) => {
-    const updatedShares = [...localOrdinaryShares.value];
+    const updatedShares = [...localCommonShares.value];
     updatedShares.splice(index, 1);
-    localOrdinaryShares.value = updatedShares;
+    localCommonShares.value = updatedShares;
 };
 
 // Add a new empty share directly to the table
@@ -110,7 +110,7 @@ const addNewShare = () => {
     };
 
     // Add the new share to the local array
-    const updatedShares = [...localOrdinaryShares.value, newShare];
-    localOrdinaryShares.value = updatedShares;
+    const updatedShares = [...localCommonShares.value, newShare];
+    localCommonShares.value = updatedShares;
 };
 </script>

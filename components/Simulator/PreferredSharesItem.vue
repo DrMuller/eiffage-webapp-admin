@@ -1,27 +1,21 @@
 <template>
     <tr class="hover:bg-blue-50">
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model="editedShare.name" class="w-full"
-                :ui="{ base: showNameError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showNameError = false" />
+            <UInput v-model="editedShare.name" class="w-full" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <DatePicker v-model="editedShare.date" class="w-full" />
+            <DatePicker v-model="editedShare.date" class="w-full" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.seniority" class="w-full" type="number" min="1"
-                :ui="{ base: showRankError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showRankError = false" />
+            <UInput v-model.number="editedShare.seniority" class="w-full" type="number" min="1" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.nb_shares" class="w-full" type="number"
-                :ui="{ base: showSharesError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showSharesError = false" @update:model-value="updateAmount" />
+            <UInput v-model.number="editedShare.nb_shares" class="w-full" type="number" min="0" required
+                @update:model-value="updateAmount" />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.share_price" class="w-full" type="number" step="0.01"
-                :ui="{ base: showPriceError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showPriceError = false" @update:model-value="updateAmount" />
+            <UInput v-model.number="editedShare.share_price" class="w-full" type="number" step="0.01" min="0" required
+                @update:model-value="updateAmount" />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <USelect v-model="editedShare.pref_type" class="w-full" :items="[{
@@ -30,30 +24,27 @@
             }, {
                 label: 'Non participating',
                 value: 'NP'
-            }]" :ui="{ base: showParticipationError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showParticipationError = false" />
+            }]" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.pref_multiple" class="w-full" type="number" step="0.1" min="1"
-                :ui="{ base: showMultipleError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showMultipleError = false" @update:model-value="updateAmount" />
+            <UInput v-model.number="editedShare.pref_multiple" class="w-full" type="number" step="0.1" min="1" required
+                @update:model-value="updateAmount" />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.pref_tri" class="w-full" type="number"
-                :ui="{ base: showTriError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showTriError = false" />
+            <UInput v-model.number="editedShare.pref_tri" class="w-full" type="number" min="0" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div class="flex justify-end">
-                <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded" size="sm"
-                    aria-label="Delete" @click="confirmDelete" />
+                <UButton type="button" color="error" variant="ghost"
+                    icon="material-symbols-light:delete-outline-rounded" size="sm" aria-label="Delete"
+                    @click="confirmDelete" />
             </div>
         </td>
     </tr>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { reactive, onMounted, watch } from 'vue';
 import type { PrefShare } from '~/types/simulationRequest';
 
 const props = defineProps<{
@@ -65,14 +56,6 @@ const emit = defineEmits<{
     'update': [index: number, share: PrefShare];
     'delete': [index: number];
 }>();
-
-const showNameError = ref(false);
-const showRankError = ref(false);
-const showSharesError = ref(false);
-const showPriceError = ref(false);
-const showParticipationError = ref(false);
-const showMultipleError = ref(false);
-const showTriError = ref(false);
 
 const editedShare = reactive<PrefShare>({
     name: '',
@@ -101,17 +84,8 @@ watch(() => props.share, (newShare) => {
 
 // Watch for changes in edited share and emit updates
 watch(editedShare, () => {
-    // Validate before emitting
-    if (editedShare.name &&
-        editedShare.seniority >= 1 &&
-        editedShare.nb_shares > 0 &&
-        editedShare.share_price > 0 &&
-        editedShare.pref_type &&
-        editedShare.pref_multiple >= 1 &&
-        editedShare.pref_tri !== undefined) {
-        updateAmount();
-        emit('update', props.index, { ...editedShare });
-    }
+    updateAmount();
+    emit('update', props.index, { ...editedShare });
 }, { deep: true });
 
 // Function to update amount and preference-related values

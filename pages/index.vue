@@ -1,15 +1,15 @@
 <template>
-  <div>
+  <form id="simulationForm" @submit.prevent="createSimulation">
     <div class="header-container sticky top-0 backdrop-blur-sm bg-white/80 w-full z-10">
       <div class="px-6 py-4">
         <div class="flex justify-between items-center">
           <h1 class="text-2xl font-bold">Simulateur</h1>
           <div class="flex items-center">
-            <UButton color="primary" icon="material-symbols-light:article" cursor-pointer @click="createSimulation">
+            <UButton type="submit" color="primary" icon="material-symbols-light:article" cursor-pointer>
               Créer la simulation
             </UButton>
-            <UButton color="error" icon="material-symbols-light:delete-outline" cursor-pointer class="ml-2"
-              @click="resetToDefault">
+            <UButton type="button" color="error" icon="material-symbols-light:delete-outline" cursor-pointer
+              class="ml-2" @click="resetToDefault">
             </UButton>
           </div>
         </div>
@@ -26,16 +26,16 @@
         <div class="body">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block mb-2 font-medium">Nom de la société</label>
-              <UInput v-model="companyName" class="w-full" />
+              <label for="companyName" class="block mb-2 font-medium">Nom de la société</label>
+              <UInput id="companyName" v-model="companyName" class="w-full" required />
             </div>
           </div>
         </div>
       </UCard>
 
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
-      <SimulatorOrdinarySharesTable class="mb-8" :ordinary-shares="ordinaryShares"
-        @update:ordinary-shares="updateOrdinaryShares" @add:ordinary-share="addOrdinaryShare" />
+      <SimulatorCommonSharesTable class="mb-8" :common-shares="commonShares" @update:common-shares="updateCommonShares"
+        @add:common-share="addCommonShare" />
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
@@ -48,7 +48,7 @@
       <SimulatorOptionsTable class="mb-8" :options="options" @update:options="updateOptions" @add:option="addOption" />
       <!-- </div> -->
     </div>
-  </div>
+  </form>
 </template>
 
 <script setup lang="ts">
@@ -66,7 +66,7 @@ definePageMeta({
 // Initialize reactive refs
 const companyName = ref('');
 const estimatedTransferDate = ref(new Date());
-const ordinaryShares = ref<CommonShare[]>([{
+const commonShares = ref<CommonShare[]>([{
   name: `Capital social (prix de souscription = valeur nominale d'une action)`,
   date: new Date(),
   nb_shares: 0,
@@ -83,18 +83,18 @@ const simulation = await fetchLastSimulation();
 if (simulation) {
   companyName.value = simulation.request.company_name;
   estimatedTransferDate.value = simulation.request.estimated_transfer_date;
-  ordinaryShares.value = simulation.request.common_shares;
+  commonShares.value = simulation.request.common_shares;
   preferenceShares.value = simulation.request.pref_shares;
   carveOut.value = simulation.request.carve_out;
   options.value = simulation.request.options;
 }
 
-const updateOrdinaryShares = (updatedShares: CommonShare[]) => {
-  ordinaryShares.value = updatedShares;
+const updateCommonShares = (updatedShares: CommonShare[]) => {
+  commonShares.value = updatedShares;
 };
 
-const addOrdinaryShare = (newShare: CommonShare) => {
-  ordinaryShares.value = [...ordinaryShares.value, newShare];
+const addCommonShare = (newShare: CommonShare) => {
+  commonShares.value = [...commonShares.value, newShare];
 };
 
 const updatePreferenceShares = (updatedShares: PrefShare[]) => {
@@ -121,7 +121,7 @@ const addOption = (newOption: Option) => {
 const resetToDefault = () => {
   companyName.value = '';
   estimatedTransferDate.value = new Date();
-  ordinaryShares.value = [{
+  commonShares.value = [{
     name: `Capital social (prix de souscription = valeur nominale d'une action)`,
     date: new Date(),
     nb_shares: 0,
@@ -136,7 +136,7 @@ const resetToDefault = () => {
 const createSimulation = async () => {
   const request: SimulationRequest = {
     company_name: companyName.value,
-    common_shares: ordinaryShares.value,
+    common_shares: commonShares.value,
     pref_shares: preferenceShares.value,
     options: options.value,
     params: {

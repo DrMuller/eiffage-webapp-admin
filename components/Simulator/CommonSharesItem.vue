@@ -1,34 +1,31 @@
 <template>
     <tr class="hover:bg-blue-50">
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model="editedShare.name" class="w-full"
-                :ui="{ base: showNameError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showNameError = false" />
+            <UInput v-model="editedShare.name" class="w-full" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <DatePicker v-model="editedShare.date" class="w-full" />
+            <DatePicker v-model="editedShare.date" class="w-full" required />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.nb_shares" class="w-full" type="number"
-                :ui="{ base: showSharesError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showSharesError = false" @update:model-value="updateAmount" />
+            <UInput v-model.number="editedShare.nb_shares" class="w-full" type="number" min="0" required
+                @update:model-value="updateAmount" />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
-            <UInput v-model.number="editedShare.share_price" class="w-full" type="number" step="0.01"
-                :ui="{ base: showPriceError ? 'ring-red-500 border-red-500' : '' }" required
-                @focus="showPriceError = false" @update:model-value="updateAmount" />
+            <UInput v-model.number="editedShare.share_price" class="w-full" type="number" step="0.000001" min="0"
+                required @update:model-value="updateAmount" />
         </td>
         <td class="p-4 text-xs text-gray-600 whitespace-nowrap">
             <div class="flex justify-end">
-                <UButton color="error" variant="ghost" icon="material-symbols-light:delete-outline-rounded" size="sm"
-                    aria-label="Delete" @click="confirmDelete" />
+                <UButton type="button" color="error" variant="ghost"
+                    icon="material-symbols-light:delete-outline-rounded" size="sm" aria-label="Delete"
+                    @click="confirmDelete" />
             </div>
         </td>
     </tr>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { reactive, onMounted, watch } from 'vue';
 import type { CommonShare } from '~/types/simulationRequest';
 
 const props = defineProps<{
@@ -40,10 +37,6 @@ const emit = defineEmits<{
     'update': [index: number, share: CommonShare];
     'delete': [index: number];
 }>();
-
-const showNameError = ref(false);
-const showSharesError = ref(false);
-const showPriceError = ref(false);
 
 const editedShare = reactive<CommonShare>({
     name: '',
@@ -65,13 +58,8 @@ watch(() => props.share, (newShare) => {
 
 // Watch for changes in edited share and emit updates
 watch(editedShare, () => {
-    // Validate before emitting
-    if (editedShare.name &&
-        editedShare.nb_shares > 0 &&
-        editedShare.share_price > 0) {
-        updateAmount();
-        emit('update', props.index, { ...editedShare });
-    }
+    updateAmount();
+    emit('update', props.index, { ...editedShare });
 }, { deep: true });
 
 // Function to update amount when shares or price change
