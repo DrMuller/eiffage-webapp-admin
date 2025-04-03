@@ -39,9 +39,8 @@
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
-      <SimulatorPreferredSharesTable class="mb-8" :preference-shares="preferenceShares" :carve-out="carveOut"
-        :estimated-transfer-date="estimatedTransferDate" @update:preference-shares="updatePreferenceShares"
-        @update:carve-out="updateCarveOut" @update:estimated-transfer-date="updateEstimatedTransferDate"
+      <SimulatorPreferredSharesTable class="mb-8" v-model:preference-shares="preferenceShares"
+        v-model:carve-out="carveOut" v-model:estimated-transfer-date="estimatedTransferDate"
         @add:preference-share="addPreferenceShare" />
       <!-- </div> -->
 
@@ -98,18 +97,6 @@ const addCommonShare = (newShare: CommonShare) => {
   commonShares.value = [...commonShares.value, newShare];
 };
 
-const updatePreferenceShares = (updatedShares: PrefShare[]) => {
-  preferenceShares.value = updatedShares;
-};
-
-const updateCarveOut = (value: number) => {
-  carveOut.value = value;
-};
-
-const updateEstimatedTransferDate = (value: Date) => {
-  estimatedTransferDate.value = value;
-};
-
 const addPreferenceShare = (newShare: PrefShare) => {
   preferenceShares.value = [...preferenceShares.value, newShare];
 };
@@ -119,7 +106,6 @@ const updateOptions = (updatedOptions: Option[]) => {
 };
 
 const addOption = (newOption: Option) => {
-  console.log('Parent received new option:', newOption);
   options.value = [...options.value, newOption];
 };
 

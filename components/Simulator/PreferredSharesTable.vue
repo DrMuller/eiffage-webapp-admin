@@ -8,12 +8,11 @@
             <label class="font-medium">Carve-out (%)</label>
             <UButton icon="material-symbols-light:info-outline-rounded" color="neutral" variant="ghost" class="ml-1"
                 size="xs" aria-label="Info" />
-            <UInput v-model="localCarveOutValue" class="w-32" @update:model-value="updateCarveOut" />
+            <UInput v-model="localCarveOutValue" class="w-32" />
             <label class="ml-4 font-medium">Date de la cession</label>
             <UButton icon="material-symbols-light:info-outline-rounded" color="neutral" variant="ghost" class="ml-1"
                 size="xs" aria-label="Info" />
-            <DatePicker v-model="localEstimatedTransferDate" class="w-32"
-                @update:model-value="updateEstimatedTransferDate" />
+            <DatePicker v-model="localEstimatedTransferDate" class="w-32" />
         </div>
 
         <UTable :data="localPreferenceShares" :columns="columns">
@@ -115,7 +114,7 @@ const localPreferenceShares = computed({
 
 const localCarveOutValue = computed({
     get: () => props.carveOut,
-    set: (value) => emit('update:carve-out', value)
+    set: (value) => emit('update:carve-out', Number(value))
 });
 
 const localEstimatedTransferDate = computed({
@@ -222,18 +221,6 @@ const columns: TableColumn<PrefShare>[] = [
         header: ''
     }
 ];
-
-// Update carve out value
-const updateCarveOut = () => {
-    console.log('Carve out:', localCarveOutValue.value);
-    emit('update:carve-out', localCarveOutValue.value);
-};
-
-// Update estimated transfer date
-const updateEstimatedTransferDate = () => {
-    console.log('Estimated transfer date:', localEstimatedTransferDate.value);
-    emit('update:estimated-transfer-date', localEstimatedTransferDate.value);
-};
 
 // Function to update amount and preference-related values
 const updateAmount = (index: number) => {
