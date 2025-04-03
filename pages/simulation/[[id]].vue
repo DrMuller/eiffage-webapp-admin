@@ -25,8 +25,7 @@
                             en
                             premier la valeur.</p>
                         <p>Pour simplifier l'observation, une classe d'actions peut être isolée via le panneau de
-                            sélection
-                            à droite du graphique.</p>
+                            sélectionen à droite du graphique.</p>
                     </div>
                     <ChartsLine :x="chartData.exitValues" :y-series="chartData.sharePriceSeries"
                         x-axis-label="Valeur des titres (€)" y-axis-label="Prix par action (€)" :display-points="false"
@@ -39,14 +38,12 @@
                     <h2 class="text-2xl font-semibold mb-4">Valeur des titres par catégorie d'actions</h2>
                     <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
                         <p>Le graphique ci-dessous montre l'évolution de la valeur de chaque catégorie d'actions en
-                            fonction
-                            de la valeur des titres.</p>
+                            fonction de la valeur des titres.</p>
                         <p>Cette valeur est calculée en multipliant le nombre d'actions par leur prix unitaire.</p>
                         <p>En présence d'options, les petites discontinuités visibles sur la courbe des actions
-                            ordinaires
-                            correspondent aux points où les options deviennent exerçables. Leur exercice augmente le
-                            nombre
-                            d'actions, entraînant de fait une hausse de la valeur totale de la catégorie.</p>
+                            ordinaires correspondent aux points où les options deviennent exerçables. Leur exercice
+                            augmente le nombre d'actions, entraînant de fait une hausse de la valeur totale de la
+                            catégorie.</p>
                     </div>
                     <ChartsLine :x="chartData.exitValues" :y-series="chartData.proceedsSeries"
                         x-axis-label="Valeur des titres (€)" y-axis-label="Valeur de la catégorie de titres (€)"

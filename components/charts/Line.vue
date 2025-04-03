@@ -114,7 +114,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
         title: { display: true }, // Title handled by UCard
         legend: {
             display: true,
-            position: 'top' as const,
+            position: 'right' as const,
         },
     },
     // interaction: {
