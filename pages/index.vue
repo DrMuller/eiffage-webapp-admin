@@ -8,6 +8,10 @@
             <UButton type="submit" color="primary" icon="material-symbols-light:article" cursor-pointer>
               Créer la simulation
             </UButton>
+            <UButton type="button" variant="ghost" color="neutral" icon="material-symbols-light:file-copy"
+              cursor-pointer class="ml-2" @click="loadExample">
+              Charger un exemple
+            </UButton>
             <UButton type="button" variant="ghost" icon="material-symbols-light:delete-outline" cursor-pointer
               class="ml-2" @click="resetToDefault">
             </UButton>
@@ -122,6 +126,54 @@ const resetToDefault = () => {
   preferenceShares.value = [];
   carveOut.value = 0;
   options.value = [];
+};
+
+const loadExample = async () => {
+  try {
+    const exampleData = await import('~/assets/data/example-simulation.json');
+
+    // Update the form with example data
+    companyName.value = exampleData.request.company_name;
+
+    // Convert dates from JSON format to Date objects
+    const commonSharesWithDates = exampleData.request.common_shares.map((share: any) => ({
+      ...share,
+      date: new Date(share.date.$date)
+    }));
+
+    const prefSharesWithDates = exampleData.request.pref_shares.map((share: any) => ({
+      ...share,
+      pref_tri: share.pref_tri * 100, // Convert decimal to percentage
+      date: new Date(share.date.$date)
+    }));
+
+    const optionsWithDates = exampleData.request.options.map((option: any) => ({
+      ...option,
+      date: new Date(option.date.$date)
+    }));
+
+    commonShares.value = commonSharesWithDates;
+    preferenceShares.value = prefSharesWithDates;
+    options.value = optionsWithDates;
+    carveOut.value = exampleData.request.params.carve_out * 100; // Convert decimal to percentage
+    estimatedTransferDate.value = new Date(exampleData.request.params.estimated_transfer_date.$date);
+
+    // Show success notification
+    // const toast = useToast();
+    // toast.add({
+    //   title: 'Exemple chargé',
+    //   description: 'Les données d\'exemple ont été chargées avec succès',
+    //   color: 'success'
+    // });
+  } catch (error) {
+    // console.error('Failed to load example data:', error);
+    // const toast = useToast();
+    // toast.add({
+    //   title: 'Erreur',
+    //   description: 'Impossible de charger les données d\'exemple',
+    //   color: 'error'
+    // });
+  }
 };
 
 const createSimulation = async () => {
