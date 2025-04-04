@@ -130,6 +130,7 @@ export const useSimulation = () => {
     const createSimulation = async (request: Omit<SimulationRequest, 'id'>) => {
         loading.value = true
         error.value = null
+        console.log(request.pref_shares.map(share => share.date.toISOString()))
         const data = await $api<Simulation>('/simulations', {
             method: 'POST',
             body: transformRequest(request)
@@ -137,32 +138,6 @@ export const useSimulation = () => {
         const transformedData = transformResponse(data)
         simulations.value.push(transformedData)
         return transformedData
-    }
-
-    // Update an existing simulation
-    const updateSimulation = async (id: string, request: Partial<SimulationRequest>) => {
-        loading.value = true
-        error.value = null
-        try {
-            const data = await $api<Simulation>(`/simulations/${id}`, {
-                method: 'PATCH',
-                body: request
-            })
-            const transformedData = transformResponse(data)
-
-            // Update the simulation in the array
-            const index = simulations.value.findIndex(s => s._id === id)
-            if (index !== -1) {
-                simulations.value[index] = transformedData
-            }
-
-            return transformedData
-        } catch (e) {
-            error.value = e instanceof Error ? e.message : 'Failed to update simulation'
-            return null
-        } finally {
-            loading.value = false
-        }
     }
 
     // Delete a simulation
@@ -190,7 +165,6 @@ export const useSimulation = () => {
         fetchLastSimulation,
         fetchSimulationById,
         createSimulation,
-        updateSimulation,
         deleteSimulation
     }
 } 

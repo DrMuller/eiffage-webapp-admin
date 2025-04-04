@@ -10,11 +10,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- Content with a small top margin instead of large padding -->
-        <div class="mt-4 px-6">
+        <div class="mt-4 px-6 mb-8">
             <div class="space-y-12">
-                <!-- Share Price Chart -->
                 <div>
                     <h2 class="text-2xl font-semibold mb-4">Prix par action en fonction de la valeur des titres</h2>
                     <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -30,10 +27,7 @@
                     <ChartsLine :x="chartData.exitValues" :y-series="chartData.sharePriceSeries"
                         x-axis-label="Valeur des titres (€)" y-axis-label="Prix par action (€)" :display-points="false"
                         :show-tooltip="true" />
-                    <!-- TODO: Add prorata FD line with dashed style -->
                 </div>
-
-                <!-- Proceeds Chart -->
                 <div>
                     <h2 class="text-2xl font-semibold mb-4">Valeur des titres par catégorie d'actions</h2>
                     <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -49,8 +43,6 @@
                         x-axis-label="Valeur des titres (€)" y-axis-label="Valeur de la catégorie de titres (€)"
                         :display-points="false" :show-tooltip="true" />
                 </div>
-
-                <!-- Stacked Proceeds Chart -->
                 <div>
                     <h2 class="text-2xl font-semibold mb-4">Valeur des titres par empilement des catégories d'actions
                     </h2>
@@ -63,14 +55,41 @@
                     <ChartsLine :x="chartData.exitValues" :y-series="chartData.proceedsSeries"
                         x-axis-label="Valeur des titres (€)" y-axis-label="Valeur de la catégorie de titres (€)"
                         :display-points="false" :stacked="true" />
-
                 </div>
+                <h2 class="text-2xl font-semibold mb-4">Points de remboursement des différentes catégories
+                    d'actions de préférence
+                </h2>
+                <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p>Le point de remboursement d\'une catégorie d'actions correspond au moment où sa préférence
+                        financière est intégralement satisfaite.</p>
+                </div>
+                <!-- Preferred Shares Redemption Table -->
+                <UCard variant="outline" class="w-full mb-8">
+                    <div class="body">
+                        <SimulationPreferredSharesRedemptionTable :simulation="simulation" />
+                    </div>
+                </UCard>
+
+                <!-- Share Valuation Table -->
+                <h2 class="text-2xl font-semibold mb-4">Prix par action aux points de remboursement des actions de
+                    préférence</h2>
+                <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p>Les points de remboursement sont des repères clés marquant la satisfaction d’une priorité de
+                        remboursement. Le prix par action observé à ces seuils illustre les différences de captation de
+                        valeur entre les différentes classes d’actions.</p>
+                </div>
+                <UCard variant="outline" class="w-full mb-8">
+                    <div class="body">
+                        <SimulationShareValuationTable :simulation="simulation" />
+                    </div>
+                </UCard>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+
 useHead({ title: 'Dashboard' })
 definePageMeta({
     middleware: ['auth'],

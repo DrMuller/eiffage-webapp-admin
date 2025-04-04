@@ -15,7 +15,7 @@ export default defineAppConfig({
                 tbody: 'divide-y divide-(--ui-border) [&>tr]:data-[selectable=true]:hover:bg-(--ui-bg-elevated)/50 [&>tr]:data-[selectable=true]:focus-visible:outline-(--ui-primary)',
                 tr: 'data-[selected=true]:bg-(--ui-bg-elevated)/50',
                 th: 'px-4 py-3.5 text-xs text-(--ui-text-highlighted) text-left rtl:text-right font-semibold [&:has([role=checkbox])]:pe-0',
-                td: 'p-4 text-xs text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0',
+                td: 'p-4 text-sm text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0',
                 empty: 'py-6 text-center text-sm text-(--ui-text-muted)',
                 loading: 'py-6 text-center'
             },
