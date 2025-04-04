@@ -74,13 +74,30 @@
                 <h2 class="text-2xl font-semibold mb-4">Prix par action aux points de remboursement des actions de
                     préférence</h2>
                 <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
-                    <p>Les points de remboursement sont des repères clés marquant la satisfaction d’une priorité de
+                    <p>Les points de remboursement sont des repères clés marquant la satisfaction d'une priorité de
                         remboursement. Le prix par action observé à ces seuils illustre les différences de captation de
-                        valeur entre les différentes classes d’actions.</p>
+                        valeur entre les différentes classes d'actions.</p>
                 </div>
                 <UCard variant="outline" class="w-full mb-8">
                     <div class="body">
                         <SimulationShareValuationTable :simulation="simulation" />
+                    </div>
+                </UCard>
+
+                <!-- Exercise Points Table -->
+                <h2 class="text-2xl font-semibold mb-4">Points d'exercice des options</h2>
+                <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p>Le point d'exercice d'une option correspond au seuil à partir duquel son exercice devient
+                        économiquement
+                        avantageux, c'est-à-dire lorsque le prix de revente de l'action couvre au moins son prix d'achat
+                        ou prix d'exercice.</p>
+                    <p>Le tableau ci-dessous indique, pour chaque catégorie d'options, la valeur des titres à partir de
+                        laquelle les options
+                        deviennent "dans la monnaie".</p>
+                </div>
+                <UCard variant="outline" class="w-full mb-8">
+                    <div class="body">
+                        <SimulationExercisePointsTable :simulation="simulation" />
                     </div>
                 </UCard>
             </div>
@@ -125,9 +142,12 @@ const chartData = ref<ChartData>({
 });
 
 // Fetch simulation data based on the ID parameter
-const simulation = await(Array.isArray(simulationId) && simulationId[0] === undefined
+const simulation = await (Array.isArray(simulationId) && simulationId[0] === undefined
     ? fetchLastSimulation()
     : fetchSimulationById(Array.isArray(simulationId) ? simulationId[0] : simulationId as string));
+
+// Import the ExercisePointsTable component
+import SimulationExercisePointsTable from '~/components/Simulation/ExercisePointsTable.vue';
 
 if (!simulation) {
     throw createError({

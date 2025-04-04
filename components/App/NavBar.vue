@@ -15,7 +15,8 @@
         <span>Simulateur</span>
       </NuxtLink>
 
-      <NuxtLink to="/simulation" class="nav-item">
+      <NuxtLink to="/simulation" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/simulation') }">
         <UIcon name="material-symbols-light:table-chart-view" class="w-5 h-5" />
         <span>Résultats</span>
       </NuxtLink>
@@ -34,6 +35,7 @@
 <script setup lang="ts">
 const { clearAuth } = useAuth()
 const router = useRouter()
+const route = useRoute()
 
 const handleLogout = () => {
   clearAuth()
