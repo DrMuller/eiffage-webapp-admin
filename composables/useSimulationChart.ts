@@ -8,9 +8,25 @@ interface ChartSeriesItem {
     lineWidth?: number;
 }
 
-// Define a color palette for chart series
 const CHART_COLORS = {
-    PREF_SHARES_BASE: ['#004f63', '#08878a', '#77bfa8', '#2c6e49', '#4c956c'],
+    PREF_SHARES_BASE: [
+        "#004f63", // teal foncé (plus dense que #005f73)
+        "#08878a", // turquoise plus soutenu
+        "#a8d173", // lime doux, plus contrasté que #c2e59c
+        "#e6c600", // jaune plus dense que #f4e04d
+        "#e1a800", // jaune orangé plus chaud
+        "#e07c1d", // orange un peu plus saturé
+        "#d35b38", // orange/rouge plus profond
+        "#c22222", // rouge vif
+        "#a41517", // rouge foncé
+        "#870308", // rouge très foncé
+        "#5a030c", // bordeaux profond
+        "#44060a", // bordeaux foncé
+        "#32090b", // rouge brun
+        "#21080a", // rouge très sombre
+        "#140607", // presque noir
+        "#0a0304"  // noir rougeâtre
+    ],
     COMMON_SHARES: '#77bfa8',
     PRORATA_FD: '#bbbbbb'
 }

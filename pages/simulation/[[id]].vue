@@ -100,6 +100,21 @@
                         <SimulationExercisePointsTable :simulation="simulation" />
                     </div>
                 </UCard>
+
+                <!-- Share Value at Redemption Points Table -->
+                <h2 class="text-2xl font-semibold mb-4">Valeur totale des différentes catégories d'actions aux points de
+                    remboursement</h2>
+                <div class="prose prose-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p>Ce tableau, complémentaire du précédent, compare la part de la valeur économique captée par
+                        chaque classe d'actions à sa part en nombre dans le capital.</p>
+                    <p>Les actions de préférence y apparaissent comme valorisées au-delà de leur poids capitalistique,
+                        en raison de leurs droits financiers prioritaires.</p>
+                </div>
+                <UCard variant="outline" class="w-full mb-8">
+                    <div class="body">
+                        <SimulationShareValueAtRedemptionPointsTable :simulation="simulation" />
+                    </div>
+                </UCard>
             </div>
         </div>
     </div>
@@ -148,6 +163,7 @@ const simulation = await (Array.isArray(simulationId) && simulationId[0] === und
 
 // Import the ExercisePointsTable component
 import SimulationExercisePointsTable from '~/components/Simulation/ExercisePointsTable.vue';
+import SimulationShareValueAtRedemptionPointsTable from '~/components/Simulation/ShareValueAtRedemptionPointsTable.vue';
 
 if (!simulation) {
     throw createError({

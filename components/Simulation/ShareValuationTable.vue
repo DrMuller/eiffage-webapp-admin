@@ -2,13 +2,12 @@
     <div>
         <UTable :data="tableData" :columns="columns">
             <!-- Dynamic cell template for each column -->
-            <template
-v-for="breakpoint in uniqueBreakpoints" :key="breakpoint.value"
+            <template v-for="breakpoint in uniqueBreakpoints" :key="breakpoint.value"
                 #[`breakpoint-${breakpoint.value}-cell`]="{ row }">
                 <span
                     :class="isGreen(row.original.shareName, row.original[`breakpoint-${breakpoint.value}`]) ? 'text-green-500' : ''">
-                    {{ row.original.shareName }}
-                    {{ row.original[`breakpoint-${breakpoint.value}`] }}
+                    <!-- {{ row.original.shareName }}
+                    {{ row.original[`breakpoint-${breakpoint.value}`] }} -->
                     {{ formatCurrency(row.original[`breakpoint-${breakpoint.value}`]) }}
                 </span>
             </template>

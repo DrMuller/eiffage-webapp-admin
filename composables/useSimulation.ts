@@ -2,21 +2,6 @@ import { ref } from 'vue'
 import type { Simulation, SimulationResult } from '~/types/simulation'
 import type { PrefShare, SimulationRequest } from '~/types/simulationRequest'
 
-// Define chart series item type
-interface ChartSeriesItem {
-    values: number[];
-    color: string;
-    dash?: number[];
-    lineWidth?: number;
-}
-
-// Define a color palette for chart series
-const CHART_COLORS = {
-    PREF_SHARES_BASE: ['#004f63', '#08878a', '#77bfa8', '#2c6e49', '#4c956c'],
-    COMMON_SHARES: '#77bfa8',
-    PRORATA_FD: '#bbbbbb'
-}
-
 export const useSimulation = () => {
     const simulations = ref<Simulation[]>([])
     const loading = ref(false)
