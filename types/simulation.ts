@@ -35,6 +35,7 @@ export interface SimulationResult {
         nb_common_shares_fd: number;
         total_nb_shares_fd: number;
     };
+    result_at_breakpoints?: SimulationResult;
 }
 
 export interface Simulation {

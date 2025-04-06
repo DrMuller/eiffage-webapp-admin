@@ -1,20 +1,20 @@
 <template>
     <div>
-        <UTable :data="tableData" :columns="columns">
+        <UTable :data="transformedData" :columns="columns">
             <!-- Percentage cell template -->
             <template #percentageCapital-cell="{ row }">
                 {{ row.original.percentageCapital }}
             </template>
 
             <!-- Dynamic cell templates for each breakpoint -->
-            <template v-for="breakpoint in breakpoints" :key="breakpoint.id" #[`value-${breakpoint.id}-cell`]="{ row }">
+            <template v-for="exitValue in props.simulation?.results?.result_at_breakpoints?.exit_values || []"
+                :key="exitValue" #[`breakpoint-${exitValue}-cell`]="{ row }">
                 <div>
-                    <div
-                        :class="{ 'text-green-500': isHighlightedValue(row.original.percentageCapitalValue, row.original[`percentage-${breakpoint.id}`]) }">
-                        {{ row.original[`value-${breakpoint.id}`] }}
+                    <div :class="getCellClass(row.original.name, exitValue)">
+                        {{ useFormatIntCurrency(getCellValue(row.original.name, exitValue)) }}
                     </div>
                     <div class="text-gray-500 text-sm">
-                        {{ row.original[`percentage-${breakpoint.id}`] }}
+                        {{ getPercentage(row.original.name, exitValue) }}
                     </div>
                 </div>
             </template>
@@ -23,25 +23,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue';
-import { resolveComponent } from 'vue';
+import { computed } from 'vue';
 import type { TableColumn } from '@nuxt/ui';
 import type { Simulation } from '~/types/simulation';
+import { useFormatIntCurrency } from '~/composables/useFormatter';
 
-// Define breakpoint types
-interface Breakpoint {
-    id: string;
+// Define interfaces for transformed data structure
+interface CellData {
     value: number;
-    label: string;
-    sublabel?: string;
+    percentage: number;
+    isHighlighted: boolean;
 }
 
-// Define row data type
-interface ShareValueRow {
-    shareName: string;
+interface ShareData {
+    name: string;
     percentageCapital: string;
     percentageCapitalValue: number;
-    [key: string]: string | number; // For dynamic breakpoint values and percentages
+    values: Record<number, CellData>;
 }
 
 // Define props for the component
@@ -49,17 +47,16 @@ const props = defineProps<{
     simulation: Simulation;
 }>();
 
-// Determine if a value percentage should be highlighted (higher than capital percentage)
-const isHighlightedValue = (capitalPercentage: number, valuePercentage: string | number) => {
-    if (!valuePercentage) return false;
+const isHighlightedValue = (shareName: string, value: number, exitValueIndex?: number) => {
+    if (shareName === 'Actions ordinaires' && exitValueIndex !== undefined) {
+        return props.simulation.results.result_at_breakpoints?.more.all_shares_at_prorata[exitValueIndex] ?? false;
+    }
+    const prefShare = props.simulation.request.pref_shares.find(share => share.name === shareName);
+    if (prefShare) {
+        return Math.round(value) >= Math.round(prefShare.pref_amount);
+    }
 
-    // Parse percentage value (remove % and convert to number)
-    const percentValue = typeof valuePercentage === 'string'
-        ? parseFloat(valuePercentage.replace('%', ''))
-        : valuePercentage;
-
-    // Compare - if value percentage is higher than capital percentage, highlight it
-    return percentValue > capitalPercentage;
+    return false;
 };
 
 // Get percentage of fully diluted shares
@@ -82,50 +79,110 @@ const getSharePercentage = (shareName: string) => {
     return 0;
 };
 
-// Compute breakpoints based on simulation data
-const breakpoints = computed<Breakpoint[]>(() => {
-    if (!props.simulation?.results?.pref_shares_refund_breakpoints) {
+// Transform simulation data to the new format
+const transformedData = computed<ShareData[]>(() => {
+    if (!props.simulation?.results?.result_at_breakpoints ||
+        !props.simulation?.results?.pref_shares_refund_breakpoints) {
         return [];
     }
 
-    const { pref_shares_refund_breakpoints } = props.simulation.results;
-    const breakpointEntries = Object.entries(pref_shares_refund_breakpoints)
-        .filter(([key]) => key !== 'all_shares_at_prorata');
+    const { pref_shares } = props.simulation.request;
+    const resultAtBreakpoints = props.simulation.results.result_at_breakpoints;
 
-    // Create unique breakpoints with labels
-    const uniqueBreakpoints = new Map<number, Breakpoint>();
-
-    // First pass: collect all breakpoints
-    breakpointEntries.forEach(([key, value]) => {
-        if (!uniqueBreakpoints.has(value)) {
-            uniqueBreakpoints.set(value, {
-                id: key.toLowerCase().replace(/\s+/g, ''),
-                value,
-                label: `VT = ${formatCurrency(value)}`,
-                sublabel: key
-            });
-        }
-    });
-
-    // Add the prorata point if it exists
-    if (pref_shares_refund_breakpoints.all_shares_at_prorata) {
-        uniqueBreakpoints.set(pref_shares_refund_breakpoints.all_shares_at_prorata, {
-            id: 'prorata',
-            value: pref_shares_refund_breakpoints.all_shares_at_prorata,
-            label: `VT = ${formatCurrency(pref_shares_refund_breakpoints.all_shares_at_prorata)}`,
-            sublabel: 'Prorata complet'
-        });
+    // Ensure all required data is available
+    if (!resultAtBreakpoints.proceeds || !resultAtBreakpoints.exit_values) {
+        return [];
     }
 
-    // Sort by value and return as array
-    return Array.from(uniqueBreakpoints.values()).sort((a, b) => a.value - b.value);
+    const prefSharesProceeds = resultAtBreakpoints.proceeds.pref_shares;
+    const commonSharesProceeds = resultAtBreakpoints.proceeds.common_shares;
+
+    const result: ShareData[] = [];
+
+    // Process common shares
+    if (commonSharesProceeds) {
+        const commonPercentCapital = getSharePercentage('Actions ordinaires');
+        const commonShareData: ShareData = {
+            name: 'Actions ordinaires',
+            percentageCapital: `${commonPercentCapital.toFixed(1)}%`,
+            percentageCapitalValue: commonPercentCapital,
+            values: {}
+        };
+
+        resultAtBreakpoints.exit_values.forEach((exitValue, index) => {
+            const value = commonSharesProceeds[index] || 0;
+            const totalExitValue = exitValue + (resultAtBreakpoints.more.options_exercise_proceeds[index] || 0);
+            const percentage = totalExitValue > 0 ? (value / totalExitValue) * 100 : 0;
+            const isHighlighted = isHighlightedValue('Actions ordinaires', value, index);
+
+            commonShareData.values[exitValue] = {
+                value,
+                percentage,
+                isHighlighted
+            };
+        });
+
+        result.push(commonShareData);
+    }
+
+    // Process preference shares
+    pref_shares.forEach(prefShare => {
+        const percentCapital = getSharePercentage(prefShare.name);
+        const shareData: ShareData = {
+            name: prefShare.name,
+            percentageCapital: `${percentCapital.toFixed(1)}%`,
+            percentageCapitalValue: percentCapital,
+            values: {}
+        };
+
+        resultAtBreakpoints.exit_values.forEach((exitValue, index) => {
+            const value = prefSharesProceeds[prefShare.name]?.[index] || 0;
+            const totalExitValue = exitValue + (resultAtBreakpoints.more.options_exercise_proceeds[index] || 0);
+            const percentage = totalExitValue > 0 ? (value / totalExitValue) * 100 : 0;
+            const isHighlighted = isHighlightedValue(prefShare.name, value);
+
+            shareData.values[exitValue] = {
+                value,
+                percentage,
+                isHighlighted
+            };
+        });
+
+        result.push(shareData);
+    });
+
+    return result.reverse();
 });
 
-// Define table columns
-const columns = computed<TableColumn<ShareValueRow>[]>(() => {
-    const cols: TableColumn<ShareValueRow>[] = [
+// Helper functions to access the transformed data
+const getCellValue = (shareName: string, exitValue: number): number => {
+    const share = transformedData.value.find(s => s.name === shareName);
+    return share?.values[exitValue]?.value || 0;
+};
+
+const getPercentage = (shareName: string, exitValue: number): string => {
+    const share = transformedData.value.find(s => s.name === shareName);
+    const percentage = share?.values[exitValue]?.percentage || 0;
+    return `${percentage.toFixed(1)}%`;
+};
+
+const getCellClass = (shareName: string, exitValue: number): string => {
+    const share = transformedData.value.find(s => s.name === shareName);
+    return share?.values[exitValue]?.isHighlighted ? 'text-green-500' : 'text-red-500';
+};
+
+// Define table columns based on breakpoints
+const columns = computed<TableColumn<ShareData>[]>(() => {
+    if (!props.simulation?.results?.result_at_breakpoints?.exit_values) {
+        return [];
+    }
+
+    const exitValues = props.simulation.results.result_at_breakpoints.exit_values;
+
+    // First columns are static
+    const cols: TableColumn<ShareData>[] = [
         {
-            accessorKey: 'shareName',
+            accessorKey: 'name',
             header: '',
         },
         {
@@ -134,133 +191,14 @@ const columns = computed<TableColumn<ShareValueRow>[]>(() => {
         }
     ];
 
-    // Add a column for each breakpoint
-    breakpoints.value.forEach(breakpoint => {
+    // Add a column for each exit value
+    exitValues.forEach(exitValue => {
         cols.push({
-            accessorKey: `value-${breakpoint.id}`,
-            header: () => {
-                return h('div', [
-                    h('div', {}, breakpoint.label),
-                    h('div', { class: 'font-normal' }, breakpoint.sublabel)
-                ]);
-            }
+            accessorKey: `breakpoint-${exitValue}`,
+            header: `VT = ${useFormatIntCurrency(exitValue)}`,
         });
     });
 
     return cols;
 });
-
-// Generate table data from simulation results
-const tableData = computed<ShareValueRow[]>(() => {
-    if (!props.simulation?.results?.proceeds || !breakpoints.value.length) {
-        return [];
-    }
-
-    // Prepare array for rows
-    const rows: ShareValueRow[] = [];
-
-    // Get the exit values and proceeds data
-    const { exit_values, proceeds } = props.simulation.results;
-    const { pref_shares } = props.simulation.request;
-
-    // Add rows for preferred shares
-    pref_shares.forEach(prefShare => {
-        const percentCapital = getSharePercentage(prefShare.name);
-
-        const row: ShareValueRow = {
-            shareName: prefShare.name,
-            percentageCapital: `${percentCapital.toFixed(1)}%`,
-            percentageCapitalValue: percentCapital
-        };
-
-        // Add data for each breakpoint
-        breakpoints.value.forEach(breakpoint => {
-            // Find closest exit value index
-            const closestIndex = findClosestExitValueIndex(exit_values, breakpoint.value);
-
-            // Get the proceeds at this point
-            const proceedsValue = proceeds.pref_shares[prefShare.name]?.[closestIndex] || 0;
-
-            // Calculate percentage of total proceeds
-            const totalProceeds = getTotalProceeds(closestIndex);
-            const percentage = totalProceeds > 0 ? (proceedsValue / totalProceeds) * 100 : 0;
-
-            // Add to row
-            row[`value-${breakpoint.id}`] = formatCurrency(proceedsValue);
-            row[`percentage-${breakpoint.id}`] = `${percentage.toFixed(1)}%`;
-        });
-
-        rows.push(row);
-    });
-
-    // Add row for common shares
-    const commonPercentCapital = getSharePercentage('Actions ordinaires');
-    const commonRow: ShareValueRow = {
-        shareName: 'Actions ordinaires',
-        percentageCapital: `${commonPercentCapital.toFixed(1)}%`,
-        percentageCapitalValue: commonPercentCapital
-    };
-
-    // Add data for each breakpoint
-    breakpoints.value.forEach(breakpoint => {
-        // Find closest exit value index
-        const closestIndex = findClosestExitValueIndex(exit_values, breakpoint.value);
-
-        // Get the proceeds at this point
-        const proceedsValue = proceeds.common_shares[closestIndex] || 0;
-
-        // Calculate percentage of total proceeds
-        const totalProceeds = getTotalProceeds(closestIndex);
-        const percentage = totalProceeds > 0 ? (proceedsValue / totalProceeds) * 100 : 0;
-
-        // Add to row
-        commonRow[`value-${breakpoint.id}`] = formatCurrency(proceedsValue);
-        commonRow[`percentage-${breakpoint.id}`] = `${percentage.toFixed(1)}%`;
-    });
-
-    rows.push(commonRow);
-
-    return rows;
-});
-
-// Find the index of the closest exit value to a given value
-const findClosestExitValueIndex = (exitValues: number[], targetValue: number) => {
-    let closestIndex = 0;
-    let minDiff = Number.MAX_VALUE;
-
-    exitValues.forEach((value, index) => {
-        const diff = Math.abs(value - targetValue);
-        if (diff < minDiff) {
-            minDiff = diff;
-            closestIndex = index;
-        }
-    });
-
-    return closestIndex;
-};
-
-// Calculate total proceeds at a given exit value index
-const getTotalProceeds = (exitValueIndex: number) => {
-    const { proceeds } = props.simulation.results;
-
-    // Sum preferred shares proceeds
-    let total = 0;
-    Object.values(proceeds.pref_shares).forEach(values => {
-        total += values[exitValueIndex] || 0;
-    });
-
-    // Add common shares proceeds
-    total += proceeds.common_shares[exitValueIndex] || 0;
-
-    return total;
-};
-
-// Format a number as currency (EUR)
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value) + ' €';
-};
 </script>

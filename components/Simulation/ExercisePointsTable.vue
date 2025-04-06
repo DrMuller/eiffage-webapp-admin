@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue';
-import { resolveComponent } from 'vue';
+import { computed } from 'vue';
+import { useFormatCurrency, useFormatIntCurrency } from '~/composables/useFormatter';
 import type { TableColumn } from '@nuxt/ui';
 import type { Simulation } from '~/types/simulation';
 
@@ -77,19 +77,11 @@ const tableData = computed(() => {
 
         return {
             optionType: option.name,
-            exercisePrice: formatCurrency(option.strike),
+            exercisePrice: useFormatCurrency(option.strike),
             exercisableOptions: exercisableOptions.toLocaleString('fr-FR'),
-            exercisePoint: formatCurrency(options_exercise_points[option.name] || 0)
+            exercisePoint: useFormatIntCurrency(options_exercise_points[option.name] || 0)
         };
     });
 });
 
-// Format a number as currency (EUR)
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'decimal',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(value) + ' €';
-};
 </script>

@@ -6,6 +6,7 @@ interface ChartSeriesItem {
     color: string;
     dash?: number[];
     lineWidth?: number;
+    segments?: number[];
 }
 
 const CHART_COLORS = {

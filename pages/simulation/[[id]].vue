@@ -157,14 +157,11 @@ const chartData = ref<ChartData>({
 });
 
 // Fetch simulation data based on the ID parameter
-const simulation = await (Array.isArray(simulationId) && simulationId[0] === undefined
+const simulation = await(Array.isArray(simulationId) && simulationId[0] === undefined
     ? fetchLastSimulation()
     : fetchSimulationById(Array.isArray(simulationId) ? simulationId[0] : simulationId as string));
 
 // Import the ExercisePointsTable component
-import SimulationExercisePointsTable from '~/components/Simulation/ExercisePointsTable.vue';
-import SimulationShareValueAtRedemptionPointsTable from '~/components/Simulation/ShareValueAtRedemptionPointsTable.vue';
-
 if (!simulation) {
     throw createError({
         statusCode: 404,

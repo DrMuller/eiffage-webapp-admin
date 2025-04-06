@@ -1,14 +1,11 @@
 <template>
     <div>
-        <UTable :data="tableData" :columns="columns">
+        <UTable :data="transformedData" :columns="columns">
             <!-- Dynamic cell template for each column -->
-            <template v-for="breakpoint in uniqueBreakpoints" :key="breakpoint.value"
-                #[`breakpoint-${breakpoint.value}-cell`]="{ row }">
-                <span
-                    :class="isGreen(row.original.shareName, row.original[`breakpoint-${breakpoint.value}`]) ? 'text-green-500' : ''">
-                    <!-- {{ row.original.shareName }}
-                    {{ row.original[`breakpoint-${breakpoint.value}`] }} -->
-                    {{ formatCurrency(row.original[`breakpoint-${breakpoint.value}`]) }}
+            <template v-for="exitValue in props.simulation?.results?.result_at_breakpoints?.exit_values || []"
+                :key="exitValue" #[`breakpoint-${exitValue}-cell`]="{ row }">
+                <span :class="getCellClass(row.original.name, exitValue)">
+                    {{ useFormatCurrency(getCellValue(row.original.name, exitValue)) }}
                 </span>
             </template>
         </UTable>
@@ -19,145 +16,119 @@
 import { computed } from 'vue';
 import type { TableColumn } from '@nuxt/ui';
 import type { Simulation } from '~/types/simulation';
+import { useFormatCurrency } from '~/composables/useFormatter';
+
+// Define interfaces for transformed data structure
+interface CellData {
+    value: number;
+    isPositive: boolean;
+}
+
+interface ShareData {
+    name: string;
+    values: Record<number, CellData>;
+}
 
 // Define props for the component
 const props = defineProps<{
     simulation: Simulation;
 }>();
 
-const isGreen = (shareName: string, value: number) => {
-    const initialSharePrice = props.simulation.request.pref_shares.find(share => share.name === shareName)?.share_price ?? 0;
-    console.log(initialSharePrice, value)
-    return initialSharePrice <= value;
-}
-
-// Compute unique breakpoints (deduplicated)
-const uniqueBreakpoints = computed(() => {
-    if (!props.simulation?.results?.pref_shares_refund_breakpoints) {
-        return [];
-    }
-
-    const { pref_shares_refund_breakpoints } = props.simulation.results;
-
-    // Create an array of unique breakpoints with their keys
-    const breakpointSet = new Map<number, { value: number, keys: string[] }>();
-
-    Object.entries(pref_shares_refund_breakpoints)
-        .filter(([key]) => key !== 'all_shares_at_prorata')
-        .forEach(([key, value]) => {
-            if (breakpointSet.has(value)) {
-                // Add the key to existing breakpoint
-                breakpointSet.get(value)?.keys.push(key);
-            } else {
-                // Create new breakpoint entry
-                breakpointSet.set(value, { value, keys: [key] });
-            }
-        });
-
-    // Convert to array and sort by value
-    return Array.from(breakpointSet.values()).sort((a, b) => a.value - b.value);
-});
-
-// Generate table data from the simulation result
-const tableData = computed(() => {
-    if (!props.simulation?.results?.pref_shares_refund_breakpoints || !props.simulation?.results?.share_price) {
+// Transform simulation data to the new format
+const transformedData = computed<ShareData[]>(() => {
+    if (!props.simulation?.results?.result_at_breakpoints ||
+        !props.simulation?.results?.pref_shares_refund_breakpoints) {
         return [];
     }
 
     const { pref_shares } = props.simulation.request;
-    const { share_price } = props.simulation.results;
-    const breakpoints = uniqueBreakpoints.value;
+    const resultAtBreakpoints = props.simulation.results.result_at_breakpoints;
 
-    // Create rows for each key in pref_shares
-    const rows = pref_shares.map(prefShare => {
-        // Create an object with the share name as the row identifier
-        const row: Record<string, any> = {
-            shareName: prefShare.name
-        };
-
-        // Add a value for each unique breakpoint
-        breakpoints.forEach(breakpoint => {
-            // Find the index in the exit_values array that is closest to the breakpoint
-            const exitValues = props.simulation.results.exit_values;
-
-            let closestIndex = 0;
-            let minDiff = Number.MAX_VALUE;
-
-            exitValues.forEach((value, index) => {
-                const diff = Math.abs(value - breakpoint.value);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestIndex = index;
-                }
-            });
-
-            // Get the share price at that point
-            row[`breakpoint-${breakpoint.value}`] = share_price.pref_shares[prefShare.name]?.[closestIndex] || 0;
-        });
-
-        return row;
-    }).reverse();
-
-    // Add a row for common shares
-    if (props.simulation.results.share_price.common_shares) {
-        const commonRow: Record<string, any> = {
-            shareName: 'Actions ordinaires'
-        };
-
-        breakpoints.forEach(breakpoint => {
-            const exitValues = props.simulation.results.exit_values;
-
-            let closestIndex = 0;
-            let minDiff = Number.MAX_VALUE;
-
-            exitValues.forEach((value, index) => {
-                const diff = Math.abs(value - breakpoint.value);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestIndex = index;
-                }
-            });
-
-            commonRow[`breakpoint-${breakpoint.value}`] = props.simulation.results.share_price.common_shares[closestIndex] || 0;
-        });
-
-        rows.push(commonRow);
-    }
-
-    return rows;
-});
-
-// Define table columns based on breakpoints
-const columns = computed<TableColumn<any>[]>(() => {
-    if (!props.simulation?.results?.pref_shares_refund_breakpoints) {
+    // Ensure all required data is available
+    if (!resultAtBreakpoints.share_price || !resultAtBreakpoints.exit_values) {
         return [];
     }
 
+    const preSharesAtBreakpoints = resultAtBreakpoints.share_price.pref_shares;
+    const commonSharesAtBreakpoints = resultAtBreakpoints.share_price.common_shares;
+
+    const result: ShareData[] = [];
+
+    // Process common shares - still a single entry in this data structure
+    if (commonSharesAtBreakpoints) {
+        const commonShareData: ShareData = {
+            name: 'Actions ordinaires',
+            values: {}
+        };
+
+        resultAtBreakpoints.exit_values.forEach((exitValue, index) => {
+            const value = commonSharesAtBreakpoints[index] || 0;
+            const isProrata = props.simulation.results.result_at_breakpoints?.more.all_shares_at_prorata[index] ?? false;
+            commonShareData.values[exitValue] = {
+                value,
+                isPositive: isProrata
+            };
+        });
+
+        result.push(commonShareData);
+    }
+
+    // Process preference shares
+    pref_shares.forEach(prefShare => {
+        const shareData: ShareData = {
+            name: prefShare.name,
+            values: {}
+        };
+
+        resultAtBreakpoints.exit_values.forEach((exitValue, index) => {
+            const value = preSharesAtBreakpoints[prefShare.name]?.[index] || 0;
+            shareData.values[exitValue] = {
+                value,
+                isPositive: value > prefShare.share_price
+            };
+        });
+
+        result.push(shareData);
+    });
+
+    return result.reverse();
+});
+
+// Helper functions to access the transformed data
+const getCellValue = (shareName: string, exitValue: number): number => {
+    const share = transformedData.value.find(s => s.name === shareName);
+    return share?.values[exitValue]?.value || 0;
+};
+
+const getCellClass = (shareName: string, exitValue: number): string => {
+    const share = transformedData.value.find(s => s.name === shareName);
+    return share?.values[exitValue]?.isPositive ? 'text-green-500' : 'text-red-500';
+};
+
+// Define table columns based on breakpoints
+const columns = computed<TableColumn<ShareData>[]>(() => {
+    if (!props.simulation?.results?.result_at_breakpoints?.exit_values) {
+        return [];
+    }
+
+    const exitValues = props.simulation.results.result_at_breakpoints.exit_values;
+
     // First column is static - the share name
-    const cols: TableColumn<any>[] = [
+    const cols: TableColumn<ShareData>[] = [
         {
-            accessorKey: 'shareName',
+            accessorKey: 'name',
             header: '',
         }
     ];
 
-    // Add a column for each unique breakpoint
-    uniqueBreakpoints.value.forEach(breakpoint => {
+    // Add a column for each exit value
+    exitValues.forEach(exitValue => {
         cols.push({
-            accessorKey: `breakpoint-${breakpoint.value}`,
-            header: `VT = ${formatCurrency(breakpoint.value)}\n${breakpoint.keys.join(', ')}`,
+            accessorKey: `breakpoint-${exitValue}`,
+            header: `VT = ${useFormatIntCurrency(exitValue)}`,
         });
     });
 
     return cols;
 });
-
-// Format a number as currency (EUR)
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'decimal',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(value) + ' €';
-};
 </script>

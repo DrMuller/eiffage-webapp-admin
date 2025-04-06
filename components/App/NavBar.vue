@@ -9,9 +9,7 @@
     <!-- Navigation links -->
     <nav class="nav-links">
       <NuxtLink to="/" class="nav-item">
-        <div class="icon">
-          <UIcon name="material-symbols-light:home-rounded" class="w-6 h-6" />
-        </div>
+        <UIcon name="material-symbols-light:home-rounded" class="w-6 h-6" />
         <span>Simulateur</span>
       </NuxtLink>
 

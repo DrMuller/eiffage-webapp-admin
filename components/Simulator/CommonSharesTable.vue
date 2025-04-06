@@ -5,7 +5,7 @@
                 labellisées</span>
         </template>
 
-        <UTable :data="localCommonShares" :columns="columns">
+        <UTable :data="localCommonShares" :columns="columns" column-sizing-state="{ columnSizing: { 'name': 100 } }">
             <!-- Name cell template -->
             <template #name-cell="{ row }">
                 <UInput v-model="row.original.name" class="w-full" required />
@@ -18,13 +18,13 @@
 
             <!-- Number of shares cell template -->
             <template #nb_shares-cell="{ row }">
-                <UInputNumber orientation="vertical" v-model="row.original.nb_shares" class="w-full" :min="0" required
+                <UInputNumber v-model="row.original.nb_shares" orientation="vertical" class="w-full" :min="0" required
                     @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- Share price cell template -->
             <template #share_price-cell="{ row }">
-                <UInputNumber orientation="vertical" v-model="row.original.share_price" class="w-full" :step="0.01"
+                <UInputNumber v-model="row.original.share_price" orientation="vertical" class="w-full" :step="0.01"
                     :min="0" required @update:model-value="() => updateAmount(row.index)" />
             </template>
 
@@ -48,8 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue';
-import { resolveComponent } from 'vue';
+import { computed, h, resolveComponent } from 'vue';
 import type { CommonShare } from '~/types/simulationRequest';
 import type { TableColumn } from '@nuxt/ui';
 
@@ -73,33 +72,29 @@ const localCommonShares = computed({
 const columns: TableColumn<CommonShare>[] = [
     {
         accessorKey: 'name',
+        meta: {
+            class: {
+                td: 'w-[290px]',
+                th: 'w-[290px]'
+            }
+        },
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Intitulé de l\'émission',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
             ]);
         }
     },
     {
         accessorKey: 'date',
+        meta: {
+            class: {
+                td: 'w-[180px]',
+                th: 'w-[180px]'
+            }
+        },
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Date de l\'émission',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
             ]);
         }
     },
@@ -108,14 +103,6 @@ const columns: TableColumn<CommonShare>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Nombre d\'action émises',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
             ]);
         }
     },
@@ -124,14 +111,19 @@ const columns: TableColumn<CommonShare>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Prix de souscription',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
+                h(resolveComponent('UTooltip'), {
+                    arrow: true,
+                    text: "Prix payé pour souscrire à une action. Ce prix est constitué de la valeur nominale de l'action auquel il peut être ajouté une prime d'émission qui permet de tenir compte de la valeur réelle de l'entreprise."
+                }, () => [
+                    h(resolveComponent('UButton'), {
+                        icon: 'material-symbols-light:info-outline-rounded',
+                        color: 'neutral',
+                        variant: 'ghost',
+                        class: 'ml-1',
+                        size: 'xs',
+                        'aria-label': 'Info'
+                    })
+                ])
             ]);
         }
     },

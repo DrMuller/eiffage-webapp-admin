@@ -2,7 +2,27 @@ export default defineAppConfig({
     colorMode: {
         preference: 'light'
     },
+    toaster: {
+        position: 'top-center' as const,
+        expand: true,
+        duration: 2000
+    },
     ui: {
+        inputNumber: {
+            variants: {
+                test: {
+                    increment: "hidden",
+                    decrement: "hidden",
+                }
+            }
+        },
+        tooltip: {
+            slots: {
+                content: 'flex items-center gap-1 bg-black text-white shadow-sm rounded-md px-4 py-3 text-sm select-none data-[state=delayed-open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] pointer-events-auto max-w-96 h-full',
+                arrow: 'fill-black',
+                text: 'h-full whitespace-normal overflow-hidden break-words',
+            }
+        },
         colors: {
             primary: 'blue',
         },

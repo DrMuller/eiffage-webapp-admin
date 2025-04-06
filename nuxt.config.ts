@@ -21,7 +21,8 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxt/scripts'
+    '@nuxt/scripts',
+    '@nuxtjs/i18n',
   ],
 
   css: ['~/assets/css/index.css'],

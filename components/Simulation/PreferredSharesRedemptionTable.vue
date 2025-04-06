@@ -3,22 +3,22 @@
         <UTable :data="tableData" :columns="columns">
             <!-- Subscription price cell template -->
             <template #subscriptionPrice-cell="{ row }">
-                {{ formatCurrency(row.original.subscriptionPrice) }}
+                {{ useFormatCurrency(row.original.subscriptionPrice) }}
             </template>
 
             <!-- Preference per share cell template -->
             <template #preferencePerShare-cell="{ row }">
-                {{ formatCurrency(row.original.preferencePerShare) }}
+                {{ useFormatCurrency(row.original.preferencePerShare) }}
             </template>
 
             <!-- Total preference cell template -->
             <template #totalPreference-cell="{ row }">
-                {{ formatCurrency(row.original.totalPreference) }}
+                {{ useFormatIntCurrency(row.original.totalPreference) }}
             </template>
 
             <!-- Redemption point cell template -->
             <template #redemptionPoint-cell="{ row }">
-                {{ formatCurrency(row.original.redemptionPoint) }}
+                {{ useFormatIntCurrency(row.original.redemptionPoint) }}
             </template>
         </UTable>
     </div>
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui';
 import type { Simulation } from '~/types/simulation';
+import { useFormatCurrency, useFormatIntCurrency } from '~/composables/useFormatter';
 
 // Define props for the component
 const props = defineProps<{
@@ -136,12 +137,4 @@ const columns = computed<TableColumn<ShareRedemptionData>[]>(() => [
     },
 ]);
 
-// Format a number as currency (EUR)
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-    }).format(value) + ' €';
-};
 </script>

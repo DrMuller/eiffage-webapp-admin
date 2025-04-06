@@ -17,19 +17,19 @@
 
             <!-- Number of options cell template -->
             <template #nb_options-cell="{ row }">
-                <UInputNumber orientation="vertical" v-model="row.original.nb_options" class="w-full" :min="0"
+                <UInputNumber v-model="row.original.nb_options" orientation="vertical" class="w-full" :min="0"
                     required />
             </template>
 
             <!-- Strike price cell template -->
             <template #strike-cell="{ row }">
-                <UInputNumber orientation="vertical" v-model="row.original.strike" class="w-full" :step="0.01" :min="0"
+                <UInputNumber v-model="row.original.strike" orientation="vertical" class="w-full" :step="0.01" :min="0"
                     required />
             </template>
 
             <!-- Dead options cell template -->
             <template #nb_dead_options-cell="{ row }">
-                <UInputNumber orientation="vertical" v-model="row.original.nb_dead_options" class="w-full" :min="0"
+                <UInputNumber v-model="row.original.nb_dead_options" orientation="vertical" class="w-full" :min="0"
                     required />
             </template>
 
@@ -53,8 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue';
-import { resolveComponent } from 'vue';
+import { computed, h, resolveComponent } from 'vue';
 import type { Option } from '~/types/simulationRequest';
 import type { TableColumn } from '@nuxt/ui';
 
@@ -78,33 +77,42 @@ const localOptions = computed({
 const columns: TableColumn<Option>[] = [
     {
         accessorKey: 'name',
+        meta: {
+            class: {
+                td: 'w-[290px]',
+                th: 'w-[290px]'
+            }
+        },
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Intitulé du plan d\'options',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
+                h(resolveComponent('UTooltip'), {
+                    arrow: true,
+                    text: "Par hypothèse une option (BSPCE ou BSA) est un bon qui donne le droit de souscrire une action ordinaire."
+                }, () => [
+                    h(resolveComponent('UButton'), {
+                        icon: 'material-symbols-light:info-outline-rounded',
+                        color: 'neutral',
+                        variant: 'ghost',
+                        class: 'ml-1',
+                        size: 'xs',
+                        'aria-label': 'Info'
+                    })
+                ])
             ]);
         }
     },
     {
         accessorKey: 'date',
+        meta: {
+            class: {
+                td: 'w-[180px]',
+                th: 'w-[180px]'
+            }
+        },
         header: () => {
             return h('div', { class: 'flex items-center' }, [
-                'Date du plan',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
+                'Date du plan'
             ]);
         }
     },
@@ -113,14 +121,6 @@ const columns: TableColumn<Option>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Nombre d\'options émises',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
             ]);
         }
     },
@@ -129,14 +129,7 @@ const columns: TableColumn<Option>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Prix d\'exercice',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
+
             ]);
         }
     },
@@ -144,15 +137,7 @@ const columns: TableColumn<Option>[] = [
         accessorKey: 'nb_dead_options',
         header: () => {
             return h('div', { class: 'flex items-center' }, [
-                'Nombre d\'options caduques à ce jour',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
+                'Nombre d\'options caduques à ce jour'
             ]);
         }
     },
