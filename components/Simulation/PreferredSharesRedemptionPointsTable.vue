@@ -101,19 +101,7 @@ const columns = computed<TableColumn<ShareRedemptionData>[]>(() => [
     },
     {
         accessorKey: 'subscriptionPrice',
-        header: () => {
-            return h('div', { class: 'flex items-center' }, [
-                'Prix de souscription',
-                h(resolveComponent('UButton'), {
-                    icon: 'material-symbols-light:info-outline-rounded',
-                    color: 'neutral',
-                    variant: 'ghost',
-                    class: 'ml-1',
-                    size: 'xs',
-                    'aria-label': 'Info'
-                })
-            ]);
-        }
+        header: 'Prix de souscription',
     },
     {
         accessorKey: 'participationType',
