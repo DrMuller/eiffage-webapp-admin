@@ -115,7 +115,6 @@ export const useSimulation = () => {
     const createSimulation = async (request: Omit<SimulationRequest, 'id'>) => {
         loading.value = true
         error.value = null
-        console.log(request.pref_shares.map(share => share.date.toISOString()))
         const data = await $api<Simulation>('/simulations', {
             method: 'POST',
             body: transformRequest(request)

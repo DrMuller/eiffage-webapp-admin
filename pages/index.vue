@@ -187,7 +187,6 @@ const createSimulation = async () => {
       estimated_transfer_date: estimatedTransferDate.value
     }
   };
-  console.log('Request:', request);
   const { createSimulation } = useSimulation();
   const result = await createSimulation(request);
   navigateTo(`/simulation/${result._id}`);

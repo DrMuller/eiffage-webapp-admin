@@ -60,6 +60,5 @@ const resendEmail = async () => {
             email: props.email,
         }
     });
-    console.log('Resending password reset email');
 };
 </script>
