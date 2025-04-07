@@ -66,7 +66,7 @@
                 <!-- Preferred Shares Redemption Table -->
                 <UCard variant="outline" class="w-full mb-8">
                     <div class="body">
-                        <SimulationPreferredSharesRedemptionTable :simulation="simulation" />
+                        <SimulationPreferredSharesRedemptionPointsTable :simulation="simulation" />
                     </div>
                 </UCard>
 
@@ -80,7 +80,7 @@
                 </div>
                 <UCard variant="outline" class="w-full mb-8">
                     <div class="body">
-                        <SimulationShareValuationTable :simulation="simulation" />
+                        <SimulationShareValuationRedemptionPointsTable :simulation="simulation" />
                     </div>
                 </UCard>
 
@@ -97,7 +97,7 @@
                 </div>
                 <UCard variant="outline" class="w-full mb-8">
                     <div class="body">
-                        <SimulationExercisePointsTable :simulation="simulation" />
+                        <SimulationOptionExercisePointsTable :simulation="simulation" />
                     </div>
                 </UCard>
 
@@ -112,7 +112,7 @@
                 </div>
                 <UCard variant="outline" class="w-full mb-8">
                     <div class="body">
-                        <SimulationShareValueAtRedemptionPointsTable :simulation="simulation" />
+                        <SimulationTotalValueRedemptionPointsTable :simulation="simulation" />
                     </div>
                 </UCard>
             </div>
