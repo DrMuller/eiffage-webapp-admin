@@ -25,6 +25,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
   ],
 
+  plugins: ['~/plugins/i18n.ts'],
+
   css: ['~/assets/css/index.css'],
 
   colorMode: {

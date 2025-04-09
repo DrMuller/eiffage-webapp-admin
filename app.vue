@@ -1,7 +1,7 @@
 <template>
-  <UApp :toaster="appConfig.toaster" :tooltip="appConfig">
+  <UApp :toaster="appConfig.toaster">
     <div class="app">
-      <NuxtLoadingIndicator color="hsl(133 66% 74% / 95%)" error-color="hsl(10 100% 62% / 95%)" />
+      <NuxtLoadingIndicator color="#0034DF" error-color="#ed492c" />
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>

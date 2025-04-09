@@ -1,7 +1,7 @@
 <template>
     <UCard variant="outline">
         <template #header>
-            <span class="text-lg font-semibold mb-4">Historique - Les émissions d'options (BSPCE, BSA)</span>
+            <span class="text-lg font-semibold mb-4">Historique - Émissions d'options (BSPCE, BSA)</span>
         </template>
 
         <UTable :data="localOptions" :columns="columns">
@@ -36,8 +36,8 @@
             <!-- Actions cell template -->
             <template #actions-cell="{ row }">
                 <div class="flex justify-end">
-                    <UButton type="button" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
-                        size="md" aria-label="Delete" @click="() => deleteOption(row.index)" />
+                    <UButton type="button" color="error" icon="material-symbols-light:delete-outline-rounded" size="md"
+                        aria-label="Delete" @click="() => deleteOption(row.index)" />
                 </div>
             </template>
         </UTable>
@@ -90,19 +90,6 @@ const columns: TableColumn<Option>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Intitulé du plan d\'options',
-                h(resolveComponent('UTooltip'), {
-                    arrow: true,
-                    text: "Par hypothèse une option (BSPCE ou BSA) est un bon qui donne le droit de souscrire une action ordinaire."
-                }, () => [
-                    h(resolveComponent('UButton'), {
-                        icon: 'material-symbols-light:help',
-                        // color: 'black',
-                        variant: 'ghost',
-                        class: 'ml-1',
-                        size: 'xs',
-                        // 'aria-label': 'Info'
-                    })
-                ])
             ]);
         }
     },
@@ -125,14 +112,26 @@ const columns: TableColumn<Option>[] = [
         header: () => {
             return h('div', { class: 'flex items-center' }, [
                 'Nombre d\'options émises',
+                h(resolveComponent('UTooltip'), {
+                    arrow: true,
+                    text: "Par hypothèse une option (BSPCE ou BSA) est un bon qui donne le droit de souscrire une action ordinaire."
+                }, () => [
+                    h(resolveComponent('UButton'), {
+                        icon: 'material-symbols-light:help',
+                        variant: 'ghost',
+                        class: 'ml-1 text-gray-600',
+                        size: 'xs',
+                    })
+                ])
             ]);
+
         }
     },
     {
         accessorKey: 'strike',
         header: () => {
             return h('div', { class: 'flex items-center' }, [
-                'Prix d\'exercice',
+                'Prix d\'exercice (€)',
 
             ]);
         }
@@ -147,7 +146,13 @@ const columns: TableColumn<Option>[] = [
     },
     {
         id: 'actions',
-        header: ''
+        header: '',
+        meta: {
+            class: {
+                td: 'w-[54px]',
+                th: 'w-[54px]'
+            }
+        }
     }
 ];
 

@@ -9,12 +9,11 @@ export default defineAppConfig({
     },
     ui: {
         inputNumber: {
-            variants: {
-                test: {
-                    increment: "hidden",
-                    decrement: "hidden",
-                }
-            }
+            slots: {
+                root: '*:pe-2.5',
+                increment: 'hidden',
+                decrement: 'hidden'
+            },
         },
         tooltip: {
             slots: {
@@ -22,9 +21,6 @@ export default defineAppConfig({
                 arrow: 'fill-black',
                 text: 'h-full whitespace-normal overflow-hidden break-words',
             }
-        },
-        colors: {
-            primary: 'blue',
         },
         table: {
             slots: {
@@ -34,8 +30,8 @@ export default defineAppConfig({
                 thead: 'relative [&>tr]:after:absolute [&>tr]:after:inset-x-0 [&>tr]:after:bottom-0 [&>tr]:after:h-px [&>tr]:after:bg-(--ui-border-accented)',
                 tbody: 'divide-y divide-(--ui-border) [&>tr]:data-[selectable=true]:hover:bg-(--ui-bg-elevated)/50 [&>tr]:data-[selectable=true]:focus-visible:outline-(--ui-primary)',
                 tr: 'data-[selected=true]:bg-(--ui-bg-elevated)/50',
-                th: 'px-4 py-3.5 text-xs text-(--ui-text-highlighted) text-left rtl:text-right font-semibold [&:has([role=checkbox])]:pe-0',
-                td: 'p-4 text-sm text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0',
+                th: 'px-2 py-2 text-xs text-(--ui-text-highlighted) text-left rtl:text-right font-semibold [&:has([role=checkbox])]:pe-0 first:pl-4 last:pr-4',
+                td: 'px-2 py-2 text-sm text-(--ui-text-muted) whitespace-nowrap [&:has([role=checkbox])]:pe-0 first:pl-4 last:pr-4',
                 empty: 'py-6 text-center text-sm text-(--ui-text-muted)',
                 loading: 'py-6 text-center'
             },

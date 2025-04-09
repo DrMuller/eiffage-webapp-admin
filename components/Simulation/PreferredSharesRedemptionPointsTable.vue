@@ -101,7 +101,7 @@ const columns = computed<TableColumn<ShareRedemptionData>[]>(() => [
     },
     {
         accessorKey: 'subscriptionPrice',
-        header: 'Prix de souscription',
+        header: 'Prix de souscription d\'une action(€)',
     },
     {
         accessorKey: 'participationType',

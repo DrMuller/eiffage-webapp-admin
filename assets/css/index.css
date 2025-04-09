@@ -4,3 +4,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --ui-color-primary-500: #0034DF;
+    --ui-color-primary-600: #002ec5;
+    --ui-color-primary-700: #0028ac;
+    --ui-color-primary-800: #002293;
+    --ui-color-primary-900: #001c7a;
+    --ui-color-primary-950: #001661;
+    --ui-color-primary-400: #1f4aea;
+    --ui-color-primary-300: #4367f1;
+    --ui-color-primary-200: #6684f5;
+    --ui-color-primary-100: #99aefa;
+    --ui-color-primary-50: #ccd8fc;
+
+    --ui-color-error-500: #ed492c;
+    --ui-color-error-600: #d53e23;
+    --ui-color-error-700: #bc331a;
+    --ui-color-error-800: #a32811;
+    --ui-color-error-900: #8a1d08;
+    --ui-color-error-950: #711200;
+    --ui-color-error-400: #f16b53;
+    --ui-color-error-300: #f48d7a;
+    --ui-color-error-200: #f7afa2;
+    --ui-color-error-100: #fad1c9;
+    --ui-color-error-50: #fdf3f1;
+}

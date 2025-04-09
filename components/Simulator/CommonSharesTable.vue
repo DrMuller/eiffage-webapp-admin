@@ -1,8 +1,7 @@
 <template>
     <UCard variant="outline">
         <template #header>
-            <span class="text-lg font-semibold mb-4">Historique - Les émissions d'actions ordinaires non
-                labellisées</span>
+            <span class="text-lg font-semibold mb-4">Historique - Émissions d'actions ordinaires</span>
         </template>
 
         <UTable :data="localCommonShares" :columns="columns" column-sizing-state="{ columnSizing: { 'name': 100 } }">
@@ -31,8 +30,8 @@
             <!-- Actions cell template -->
             <template #actions-cell="{ row }">
                 <div class="flex justify-end">
-                    <UButton type="button" variant="ghost" icon="material-symbols-light:delete-outline-rounded"
-                        size="md" aria-label="Delete" @click="() => deleteShare(row.index)" />
+                    <UButton type="button" color="error" icon="material-symbols-light:delete-outline-rounded" size="md"
+                        aria-label="Delete" @click="() => deleteShare(row.index)" />
                 </div>
             </template>
         </UTable>
@@ -113,18 +112,16 @@ const columns: TableColumn<CommonShare>[] = [
         accessorKey: 'share_price',
         header: () => {
             return h('div', { class: 'flex items-center' }, [
-                'Prix de souscription',
+                'Prix de souscription d\'une action(€)',
                 h(resolveComponent('UTooltip'), {
                     arrow: true,
                     text: "Prix payé pour souscrire à une action. Ce prix est constitué de la valeur nominale de l'action auquel il peut être ajouté une prime d'émission qui permet de tenir compte de la valeur réelle de l'entreprise."
                 }, () => [
                     h(resolveComponent('UButton'), {
-                        icon: 'material-symbols-light:info-outline-rounded',
-                        color: 'neutral',
+                        icon: 'material-symbols-light:help',
                         variant: 'ghost',
-                        class: 'ml-1',
+                        class: 'ml-1 text-gray-600',
                         size: 'xs',
-                        'aria-label': 'Info'
                     })
                 ])
             ]);
@@ -132,7 +129,13 @@ const columns: TableColumn<CommonShare>[] = [
     },
     {
         id: 'actions',
-        header: ''
+        header: '',
+        meta: {
+            class: {
+                td: 'w-[54px]',
+                th: 'w-[54px]'
+            }
+        }
     }
 ];
 

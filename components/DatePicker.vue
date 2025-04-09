@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import { shallowRef, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
     modelValue: {
@@ -15,12 +16,9 @@ const props = defineProps({
         type: String as () => 'full' | 'long' | 'medium' | 'short',
         default: 'medium'
     },
-    locale: {
-        type: String,
-        default: 'fr-FR'
-    }
 })
 
+const { locale } = useI18n()
 const emit = defineEmits(['update:modelValue'])
 
 // Convert Date to CalendarDate
@@ -43,11 +41,6 @@ const calendarDateToDate = (calendarDate: CalendarDate): Date => {
 
 // Initialize internal CalendarDate from the provided Date
 const internalCalendarDate = shallowRef<CalendarDate>(dateToCalendarDate(props.modelValue))
-
-console.log(props.locale)
-const df = new DateFormatter(props.locale, {
-    dateStyle: props.dateFormat
-})
 
 // Watch for external changes to the Date model
 watch(() => props.modelValue, (newDate) => {
@@ -81,21 +74,25 @@ watch(internalCalendarDate, (newCalendarDate) => {
 }, { deep: true })
 
 const formattedDate = computed(() => {
-    return internalCalendarDate.value
-        ? df.format(internalCalendarDate.value.toDate(getLocalTimeZone()))
-        : props.placeholder
+    const date = internalCalendarDate.value.toDate(getLocalTimeZone())
+    const formatter = new Intl.DateTimeFormat(locale.value, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    })
+    return formatter.format(date)
 })
 </script>
 
 <template>
     <UPopover>
-        <UButton class="bg-white border border-gray-300 text-gray-600 min-w-24" variant="ghost"
+        <UButton class="bg-white border border-gray-300 text-gray-600 min-w-40" variant="ghost"
             icon="i-lucide-calendar">
             {{ formattedDate }}
         </UButton>
 
         <template #content>
-            <UCalendar v-model="internalCalendarDate" class="p-2" />
+            <UCalendar v-model="internalCalendarDate" :locale="locale" class="p-2" />
         </template>
     </UPopover>
 </template>

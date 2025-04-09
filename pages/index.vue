@@ -4,16 +4,17 @@
       <div class="px-6 py-4">
         <div class="flex justify-between items-center">
           <h1 class="text-2xl font-bold">Simulateur</h1>
-          <div class="flex items-center">
-            <UButton type="submit" color="primary" icon="material-symbols-light:article" cursor-pointer>
-              Créer la simulation
+          <div class="flex items-center gap-2">
+            <UButton type="button" color="error" variant="ghost" icon="material-symbols-light:delete-outline"
+              cursor-pointer @click="resetToDefault">
+              Supprimer toute la saisie
             </UButton>
             <UButton type="button" variant="ghost" color="neutral" icon="material-symbols-light:file-copy"
-              cursor-pointer class="ml-2" @click="loadExample">
+              cursor-pointer @click="loadExample">
               Charger un exemple
             </UButton>
-            <UButton type="button" variant="ghost" icon="material-symbols-light:delete-outline" cursor-pointer
-              class="ml-2" @click="resetToDefault">
+            <UButton type="submit" color="primary" icon="material-symbols-light:article" cursor-pointer>
+              Créer la simulation
             </UButton>
           </div>
         </div>
@@ -43,8 +44,8 @@
       <!-- </div> -->
 
       <!-- <div class="bg-white p-6 rounded-lg shadow-md mb-8"> -->
-      <SimulatorPreferredSharesTable class="mb-8" v-model:preference-shares="preferenceShares"
-        v-model:carve-out="carveOut" v-model:estimated-transfer-date="estimatedTransferDate"
+      <SimulatorPreferredSharesTable v-model:preference-shares="preferenceShares" v-model:carve-out="carveOut"
+        v-model:estimated-transfer-date="estimatedTransferDate" class="mb-8"
         @add:preference-share="addPreferenceShare" />
       <!-- </div> -->
 
