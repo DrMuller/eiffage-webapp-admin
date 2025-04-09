@@ -41,20 +41,20 @@
 
             <!-- Seniority cell template -->
             <template #seniority-cell="{ row }">
-                <UInputNumber v-model="row.original.seniority" orientation="vertical" class="w-full" :min="1"
-                    required />
+                <UInputNumber v-model="row.original.seniority" orientation="vertical" class="w-full" :min="1" required
+                    :locale="locale" />
             </template>
 
             <!-- Shares count cell template -->
             <template #nb_shares-cell="{ row }">
                 <UInputNumber v-model="row.original.nb_shares" orientation="vertical" class="w-full" :min="0" required
-                    @update:model-value="() => updateAmount(row.index)" />
+                    :locale="locale" @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- Share price cell template -->
             <template #share_price-cell="{ row }">
                 <UInputNumber v-model="row.original.share_price" orientation="vertical" class="w-full" :step="0.01"
-                    :min="0" required @update:model-value="() => updateAmount(row.index)" />
+                    :min="0" required :locale="locale" @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- Preference type cell template -->
@@ -71,13 +71,13 @@
             <!-- Multiple cell template -->
             <template #pref_multiple-cell="{ row }">
                 <UInputNumber v-model="row.original.pref_multiple" orientation="vertical" class="w-full" :step="0.1"
-                    :min="1" required @update:model-value="() => updateAmount(row.index)" />
+                    :min="1" required :locale="locale" @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- TRI cell template -->
             <template #pref_tri-cell="{ row }">
                 <UInputNumber v-model="row.original.pref_tri" orientation="vertical" class="w-full" :min="0"
-                    :ui="{ increment: 'hidden', decrement: 'hidden', base: 'pe-2.5' }" required />
+                    :ui="{ increment: 'hidden', decrement: 'hidden', base: 'pe-2.5' }" required :locale="locale" />
             </template>
 
             <!-- Actions cell template -->
@@ -103,6 +103,7 @@
 import { computed, h, resolveComponent } from 'vue';
 import type { PrefShare } from '~/types/simulationRequest';
 import type { TableColumn } from '@nuxt/ui';
+import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
@@ -118,6 +119,8 @@ const emit = defineEmits<{
     'update:estimated-transfer-date': [date: Date];
 }>();
 
+// Get current locale
+const { locale } = useI18n();
 
 // Create local reactive copies of the props
 const localPreferenceShares = computed({

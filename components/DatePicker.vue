@@ -44,6 +44,7 @@ const calendarDateToDate = (calendarDate: CalendarDate): Date => {
 // Initialize internal CalendarDate from the provided Date
 const internalCalendarDate = shallowRef<CalendarDate>(dateToCalendarDate(props.modelValue))
 
+console.log(props.locale)
 const df = new DateFormatter(props.locale, {
     dateStyle: props.dateFormat
 })
@@ -88,7 +89,8 @@ const formattedDate = computed(() => {
 
 <template>
     <UPopover>
-        <UButton class="bg-white border border-gray-300 text-gray-600" variant="ghost" icon="i-lucide-calendar">
+        <UButton class="bg-white border border-gray-300 text-gray-600 min-w-24" variant="ghost"
+            icon="i-lucide-calendar">
             {{ formattedDate }}
         </UButton>
 

@@ -17,20 +17,20 @@
 
             <!-- Number of options cell template -->
             <template #nb_options-cell="{ row }">
-                <UInputNumber v-model="row.original.nb_options" orientation="vertical" class="w-full" :min="0"
-                    required />
+                <UInputNumber v-model="row.original.nb_options" orientation="vertical" class="w-full" :min="0" required
+                    :locale="locale" />
             </template>
 
             <!-- Strike price cell template -->
             <template #strike-cell="{ row }">
                 <UInputNumber v-model="row.original.strike" orientation="vertical" class="w-full" :step="0.01" :min="0"
-                    required />
+                    required :locale="locale" />
             </template>
 
             <!-- Dead options cell template -->
             <template #nb_dead_options-cell="{ row }">
                 <UInputNumber v-model="row.original.nb_dead_options" orientation="vertical" class="w-full" :min="0"
-                    required />
+                    required :locale="locale" />
             </template>
 
             <!-- Actions cell template -->
@@ -56,6 +56,7 @@
 import { computed, h, resolveComponent } from 'vue';
 import type { Option } from '~/types/simulationRequest';
 import type { TableColumn } from '@nuxt/ui';
+import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
@@ -66,6 +67,9 @@ const props = defineProps<{
 const emit = defineEmits<{
     'update:options': [options: Option[]];
 }>();
+
+// Get current locale
+const { locale } = useI18n();
 
 // Create local reactive copy of props
 const localOptions = computed({
@@ -91,12 +95,12 @@ const columns: TableColumn<Option>[] = [
                     text: "Par hypothèse une option (BSPCE ou BSA) est un bon qui donne le droit de souscrire une action ordinaire."
                 }, () => [
                     h(resolveComponent('UButton'), {
-                        icon: 'material-symbols-light:info-outline-rounded',
-                        color: 'neutral',
+                        icon: 'material-symbols-light:help',
+                        // color: 'black',
                         variant: 'ghost',
                         class: 'ml-1',
                         size: 'xs',
-                        'aria-label': 'Info'
+                        // 'aria-label': 'Info'
                     })
                 ])
             ]);
