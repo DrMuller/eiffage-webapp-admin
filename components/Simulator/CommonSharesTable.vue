@@ -19,13 +19,13 @@
             <!-- Number of shares cell template -->
             <template #nb_shares-cell="{ row }">
                 <UInputNumber v-model="row.original.nb_shares" orientation="vertical" class="w-full" :min="0" required
-                    @update:model-value="() => updateAmount(row.index)" />
+                    :locale="locale" @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- Share price cell template -->
             <template #share_price-cell="{ row }">
                 <UInputNumber v-model="row.original.share_price" orientation="vertical" class="w-full" :step="0.01"
-                    :min="0" required @update:model-value="() => updateAmount(row.index)" />
+                    :min="0" required :locale="locale" @update:model-value="() => updateAmount(row.index)" />
             </template>
 
             <!-- Actions cell template -->
@@ -51,6 +51,7 @@
 import { computed, h, resolveComponent } from 'vue';
 import type { CommonShare } from '~/types/simulationRequest';
 import type { TableColumn } from '@nuxt/ui';
+import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
@@ -68,6 +69,8 @@ const localCommonShares = computed({
     set: (value) => emit('update:common-shares', value)
 });
 
+// Get current locale
+const { locale } = useI18n();
 // Define table columns
 const columns: TableColumn<CommonShare>[] = [
     {
