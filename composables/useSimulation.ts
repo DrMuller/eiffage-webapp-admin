@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Simulation, SimulationResult } from '~/types/simulation'
+import type { Simulation } from '~/types/simulation'
 import type { PrefShare, SimulationRequest } from '~/types/simulationRequest'
 
 export const useSimulation = () => {
@@ -22,7 +22,7 @@ export const useSimulation = () => {
             },
             pref_shares: request.pref_shares.map((share: PrefShare) => ({
                 ...share,
-                pref_tri: share.pref_tri / 100
+                pref_tri: share.pref_tri ? share.pref_tri / 100 : undefined
             }))
         }
     }
@@ -31,7 +31,7 @@ export const useSimulation = () => {
     const transformResponsePrefShares = (prefShares: PrefShare[] = []) => {
         return prefShares.map(share => ({
             ...share,
-            pref_tri: share.pref_tri * 100,
+            pref_tri: share.pref_tri ? share.pref_tri * 100 : undefined,
             date: share.date ? transformDate(share.date) : share.date
         }))
     }

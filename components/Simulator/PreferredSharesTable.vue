@@ -21,6 +21,8 @@
                     size="xs" aria-label="Info" />
             </UTooltip>
             <DatePicker v-model="localEstimatedTransferDate" />
+            <UButton type="button" class="ml-4" color="error" icon="material-symbols-light:delete-outline-rounded"
+                size="md" aria-label="Delete" required @click="() => clearEstimatedTransferDate()" />
         </div>
 
         <UTable :data="localPreferenceShares" :columns="columns">
@@ -81,8 +83,7 @@
 
             <!-- TRI cell template -->
             <template #pref_tri-cell="{ row }">
-                <UInputNumber v-model="row.original.pref_tri" orientation="vertical" class="w-full" :min="0" required
-                    :locale="locale" />
+                <UInputNumber v-model="row.original.pref_tri" orientation="vertical" class="w-full" :locale="locale" />
             </template>
 
             <!-- Actions cell template -->
@@ -125,14 +126,14 @@ import { useI18n } from 'vue-i18n';
 const props = defineProps<{
     preferenceShares: PrefShare[];
     carveOut: number;
-    estimatedTransferDate: Date;
+    estimatedTransferDate?: Date;
 }>();
 
 // Define emits
 const emit = defineEmits<{
     'update:preference-shares': [shares: PrefShare[]];
     'update:carve-out': [value: number];
-    'update:estimated-transfer-date': [date: Date];
+    'update:estimated-transfer-date': [date: Date | undefined];
 }>();
 
 // Get current locale
@@ -292,6 +293,11 @@ const columns: TableColumn<PrefShare>[] = [
         }
     }
 ];
+
+// Function to clear estimated transfer date
+const clearEstimatedTransferDate = () => {
+    emit('update:estimated-transfer-date', undefined);
+};
 
 // Function to update amount and preference-related values
 const updateAmount = (index: number) => {

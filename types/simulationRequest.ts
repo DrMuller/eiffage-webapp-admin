@@ -16,7 +16,7 @@ export interface PrefShare {
     amount: number;
     pref_type: 'P' | 'NP';  // Participating or Non-participating
     pref_multiple: number;
-    pref_tri: number;
+    pref_tri?: number;
     pref_effective_multiple: number;
     pref_share_price: number;
     pref_amount: number;
@@ -41,5 +41,5 @@ export interface Option {
 
 export interface Params {
     carve_out: number;
-    estimated_transfer_date: Date;
+    estimated_transfer_date?: Date;
 }

@@ -8,13 +8,13 @@
         </div>
 
         <form @submit.prevent="handleSubmit">
-          <div class="mb-6">
+          <div class="mb-4">
             <label for="email" class="block mb-2 text-gray-700">Email</label>
             <input id="email" v-model="email" type="email" required placeholder="john.doe@gmail.com"
               class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
-          <div class="flex gap-4 mb-6">
+          <div class="flex gap-4 mb-4">
             <div class="w-1/2">
               <label for="lastName" class="block mb-2 text-gray-700">Nom</label>
               <input id="lastName" v-model="lastName" type="text" required placeholder="nom"
@@ -27,7 +27,7 @@
             </div>
           </div>
 
-          <div class="mb-2">
+          <div class="mb-4">
             <label for="phone" class="block mb-2 text-gray-700">Numéro de téléphone</label>
             <div class="flex">
               <div class="flex items-center px-3 py-3 bg-white border border-r-0 border-gray-300 rounded-l-md">
@@ -40,7 +40,7 @@
           </div>
           <p v-if="phoneError" class="mb-4 text-sm text-orange-600">Le numéro doit être valide</p>
 
-          <div class="mb-6">
+          <div class="mb-4">
             <label for="password" class="block mb-2 text-gray-700">Mot de passe</label>
             <div class="relative">
               <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required

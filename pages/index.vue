@@ -70,7 +70,7 @@ definePageMeta({
 
 // Initialize reactive refs
 const companyName = ref('');
-const estimatedTransferDate = ref(new Date());
+const estimatedTransferDate = ref<Date | undefined>(undefined);
 const commonShares = ref<CommonShare[]>([{
   name: `Capital social (prix de souscription = valeur nominale d'une action)`,
   date: new Date(),
@@ -116,7 +116,7 @@ const addOption = (newOption: Option) => {
 
 const resetToDefault = () => {
   companyName.value = '';
-  estimatedTransferDate.value = new Date();
+  estimatedTransferDate.value = undefined;
   commonShares.value = [{
     name: `Capital social (prix de souscription = valeur nominale d'une action)`,
     date: new Date(),
@@ -139,25 +139,25 @@ const loadExample = async () => {
     // Convert dates from JSON format to Date objects
     const commonSharesWithDates = exampleData.request.common_shares.map((share: any) => ({
       ...share,
-      date: new Date(share.date.$date)
+      date: new Date(share.date)
     }));
 
     const prefSharesWithDates = exampleData.request.pref_shares.map((share: any) => ({
       ...share,
       pref_tri: share.pref_tri * 100, // Convert decimal to percentage
-      date: new Date(share.date.$date)
+      date: new Date(share.date)
     }));
 
     const optionsWithDates = exampleData.request.options.map((option: any) => ({
       ...option,
-      date: new Date(option.date.$date)
+      date: new Date(option.date)
     }));
 
     commonShares.value = commonSharesWithDates;
     preferenceShares.value = prefSharesWithDates;
     options.value = optionsWithDates;
     carveOut.value = exampleData.request.params.carve_out * 100; // Convert decimal to percentage
-    estimatedTransferDate.value = new Date(exampleData.request.params.estimated_transfer_date.$date);
+    estimatedTransferDate.value = new Date(exampleData.request.params.estimated_transfer_date);
 
     // Show success notification
     // const toast = useToast();
@@ -167,7 +167,7 @@ const loadExample = async () => {
     //   color: 'success'
     // });
   } catch (error) {
-    // console.error('Failed to load example data:', error);
+    console.error('Failed to load example data:', error);
     // const toast = useToast();
     // toast.add({
     //   title: 'Erreur',
