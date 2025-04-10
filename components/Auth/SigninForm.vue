@@ -7,7 +7,7 @@
       </div>
 
       <form @submit.prevent="handleSubmit">
-        <div class="mb-6">
+        <div class="mb-4">
           <label for="email" class="block mb-2 text-gray-700">Email</label>
           <input id="email" v-model="email" type="email" required placeholder="john.doe@gmail.com"
             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
