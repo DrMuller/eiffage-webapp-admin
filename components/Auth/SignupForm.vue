@@ -94,19 +94,20 @@
               Vous avez déjà compte ?
               <NuxtLink to="/auth/signin" class="text-blue-600 hover:underline">Connectez-vous ici</NuxtLink>
             </p>
+            <div class="mt-4 text-center text-sm">
+              <span>
+                Pour en apprendre plus,
+                <NuxtLink class=" text-blue-600 hover:underline" target="_blank"
+              to="https://calendly.com/futurz/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_futurz">
+              parlez à notre équipe
+              </NuxtLink>
+              </span>
+            </div>
           </div>
         </form>
       </div>
     </div>
-    <div class="mt-6 ml-6">
-      <span>
-        Pour en apprendre plus,
-        <NuxtLink class="text-blue-600 hover:underline" target="_blank"
-          to="https://calendly.com/futurz/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_futurz">
-          parlez à notre équipe
-        </NuxtLink>
-      </span>
-    </div>
+
   </div>
 </template>
 
