@@ -48,18 +48,18 @@
 
 <script setup lang="ts">
 import { computed, h, resolveComponent } from 'vue';
-import type { CommonShare } from '~/types/simulationRequest';
+import type { CommonShareRequest } from '~/types/captable';
 import type { TableColumn } from '@nuxt/ui';
 import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
-    commonShares: CommonShare[];
+    commonShares: CommonShareRequest[];
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:common-shares': [shares: CommonShare[]];
+    'update:common-shares': [shares: CommonShareRequest[]];
 }>();
 
 // Create local reactive copy of props
@@ -71,7 +71,7 @@ const localCommonShares = computed({
 // Get current locale
 const { locale } = useI18n();
 // Define table columns
-const columns: TableColumn<CommonShare>[] = [
+const columns: TableColumn<CommonShareRequest>[] = [
     {
         accessorKey: 'name',
         meta: {

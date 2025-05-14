@@ -118,20 +118,20 @@
 
 <script setup lang="ts">
 import { computed, h, resolveComponent } from 'vue';
-import type { PrefShare } from '~/types/simulationRequest';
+import type { PrefShareRequest } from '~/types/captable';
 import type { TableColumn } from '@nuxt/ui';
 import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
-    preferenceShares: PrefShare[];
+    preferenceShares: PrefShareRequest[];
     carveOut: number;
     estimatedTransferDate?: Date;
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:preference-shares': [shares: PrefShare[]];
+    'update:preference-shares': [shares: PrefShareRequest[]];
     'update:carve-out': [value: number];
     'update:estimated-transfer-date': [date: Date | undefined];
 }>();
@@ -156,7 +156,7 @@ const localEstimatedTransferDate = computed({
 });
 
 // Define table columns
-const columns: TableColumn<PrefShare>[] = [
+const columns: TableColumn<PrefShareRequest>[] = [
     {
         accessorKey: 'name',
         meta: {
@@ -303,9 +303,6 @@ const clearEstimatedTransferDate = () => {
 const updateAmount = (index: number) => {
     const share = localPreferenceShares.value[index];
     share.amount = share.nb_shares * share.share_price;
-    share.pref_share_price = share.share_price;
-    share.pref_amount = share.amount * share.pref_multiple;
-    share.pref_effective_multiple = share.pref_multiple;
 
     // Update the shares array to trigger reactivity
     const updatedShares = [...localPreferenceShares.value];
@@ -323,7 +320,7 @@ const deleteShare = (index: number) => {
 
 // Add a new empty preferred share directly to the table
 const addNewShare = () => {
-    const newShare: PrefShare = {
+    const newShare: PrefShareRequest = {
         name: '',
         date: new Date(),
         seniority: 1,
@@ -333,9 +330,6 @@ const addNewShare = () => {
         pref_type: 'NP',
         pref_multiple: 1,
         pref_tri: 0,
-        pref_effective_multiple: 1,
-        pref_share_price: 0,
-        pref_amount: 0
     };
 
     // Add the new share to the local array

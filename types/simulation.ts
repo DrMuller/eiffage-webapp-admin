@@ -1,4 +1,5 @@
-import type { SimulationRequest } from "./simulationRequest";
+
+import type { CaptableRequest, CaptableResponse } from "./captable";
 
 // Output interface
 export interface SimulationResult {
@@ -43,7 +44,12 @@ export interface Simulation {
     userId: string;
     company_name: string;
     results: SimulationResult;
-    request: SimulationRequest;
+    request: CaptableResponse;
     created_at: Date;
     updated_at: Date;
-} 
+}
+
+export interface SimulationRequest {
+    captable: CaptableRequest;
+    clientId: string;
+}

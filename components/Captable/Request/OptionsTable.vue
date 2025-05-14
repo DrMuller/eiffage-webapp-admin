@@ -54,18 +54,18 @@
 
 <script setup lang="ts">
 import { computed, h, resolveComponent } from 'vue';
-import type { Option } from '~/types/simulationRequest';
+import type { OptionRequest } from '~/types/captable';
 import type { TableColumn } from '@nuxt/ui';
 import { useI18n } from 'vue-i18n';
 
 // Define component props
 const props = defineProps<{
-    options: Option[];
+    options: OptionRequest[];
 }>();
 
 // Define emits
 const emit = defineEmits<{
-    'update:options': [options: Option[]];
+    'update:options': [options: OptionRequest[]];
 }>();
 
 // Get current locale
@@ -78,7 +78,7 @@ const localOptions = computed({
 });
 
 // Define table columns
-const columns: TableColumn<Option>[] = [
+const columns: TableColumn<OptionRequest>[] = [
     {
         accessorKey: 'name',
         meta: {

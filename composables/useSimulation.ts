@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import type { Simulation } from '~/types/simulation'
-import type { PrefShare, SimulationRequest } from '~/types/simulationRequest'
+import type { Simulation, SimulationRequest } from '~/types/simulation'
+import { useCaptable } from './useCaptable'
 
 export const useSimulation = () => {
     const simulations = ref<Simulation[]>([])
@@ -13,63 +13,14 @@ export const useSimulation = () => {
         return dateString instanceof Date ? dateString : new Date(dateString)
     }
 
-    const transformRequest = (request: any) => {
-        return {
-            ...request,
-            params: {
-                ...request.params,
-                carve_out: request.params.carve_out / 100,
-            },
-            pref_shares: request.pref_shares.map((share: PrefShare) => ({
-                ...share,
-                pref_tri: share.pref_tri ? share.pref_tri / 100 : undefined
-            }))
-        }
-    }
-
-    // Transform preference shares dates
-    const transformResponsePrefShares = (prefShares: PrefShare[] = []) => {
-        return prefShares.map(share => ({
-            ...share,
-            pref_tri: share.pref_tri ? share.pref_tri * 100 : undefined,
-            date: share.date ? transformDate(share.date) : share.date
-        }))
-    }
-
-    // Transform common shares dates
-    const transformResponseCommonShares = (commonShares: any[] = []) => {
-        return commonShares.map(share => ({
-            ...share,
-            date: share.date ? transformDate(share.date) : share.date
-        }))
-    }
-
-    // Transform options dates
-    const transformResponseOptions = (options: any[] = []) => {
-        return options.map(option => ({
-            ...option,
-            date: option.date ? transformDate(option.date) : option.date
-        }))
-    }
-
-    const transformResponseParams = (params: any) => {
-        return {
-            ...params,
-            carve_out: params.carve_out * 100,
-            estimated_transfer_date: transformDate(params.estimated_transfer_date)
-        }
-    }
-
     // Transform the simulation request object
     const transformResponseRequest = (request: any) => {
         if (!request) return request
+        const { transformCaptableResponse } = useCaptable()
 
         return {
             ...request,
-            pref_shares: transformResponsePrefShares(request.pref_shares),
-            common_shares: transformResponseCommonShares(request.common_shares),
-            options: transformResponseOptions(request.options),
-            params: transformResponseParams(request.params)
+            captable: transformCaptableResponse(request.captable)
         }
     }
 
@@ -89,7 +40,7 @@ export const useSimulation = () => {
         loading.value = true
         error.value = null
         try {
-            const data = await $api<Simulation>('/simulations')
+            const data = await $api<Simulation>('/simulations', { method: 'GET' })
             return transformResponse(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulations'
@@ -102,7 +53,7 @@ export const useSimulation = () => {
         loading.value = true
         error.value = null
         try {
-            const data = await $api<Simulation>(`/simulations/${id}`)
+            const data = await $api<Simulation>(`/simulations/${id}`, { method: 'GET' })
             return transformResponse(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch simulation'
@@ -112,12 +63,13 @@ export const useSimulation = () => {
         }
     }
 
-    const createSimulation = async (request: Omit<SimulationRequest, 'id'>) => {
+    const createSimulation = async (request: Omit<SimulationRequest, '_id'>) => {
         loading.value = true
         error.value = null
+        const { transformCaptableRequest } = useCaptable()
         const data = await $api<Simulation>('/simulations', {
             method: 'POST',
-            body: transformRequest(request)
+            body: transformCaptableRequest(request.captable)
         })
         const transformedData = transformResponse(data)
         simulations.value.push(transformedData)
