@@ -66,6 +66,7 @@ export const useAuth = () => {
 
   // Initialize auth state from cookies on app load
   function initAuth() {
+    console.log('initAuth', cookie.value)
     if (cookie.value) {
       // console.log('Initializing auth state from cookies')
       try {

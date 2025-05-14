@@ -30,7 +30,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // Custom fetch function with authentication and refresh token handling
-  async function $api(url: string, options: any = {}) {
+  async function $api(url: string, options: any = {}, auth: boolean = true) {
     const { getAccessToken, getRefreshToken } = useAuth()
 
     const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`
@@ -41,13 +41,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     const accessToken = getAccessToken()
-    if (accessToken && !headers.has('Authorization')) {
+    console.log('accessToken', accessToken)
+    if (accessToken && auth) {
       headers.set('Authorization', `Bearer ${accessToken}`)
     }
 
+    console.log('headers', headers.values().toArray())
+
     const fetchOptions: RequestInit = {
       ...options,
-      headers,
+      headers: Object.fromEntries(headers.entries()),
       credentials: 'include',
     }
 
@@ -55,6 +58,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
       fetchOptions.body = JSON.stringify(options.body)
     }
+
+    console.log('fetchOptions', fetchOptions)
 
     const response = await fetch(fullUrl, fetchOptions)
 
@@ -166,12 +171,12 @@ export default defineNuxtPlugin((nuxtApp) => {
 // TypeScript declaration for $api
 declare module '#app' {
   interface NuxtApp {
-    $api: <T>(url: string, options?: unknown) => Promise<T>
+    $api: <T>(url: string, options?: unknown, auth?: boolean) => Promise<T>
   }
 }
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $api: <T>(url: string, options?: unknown) => Promise<T>
+    $api: <T>(url: string, options?: unknown, auth?: boolean) => Promise<T>
   }
 }

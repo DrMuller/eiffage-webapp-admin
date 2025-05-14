@@ -11,6 +11,13 @@
 
 <script setup lang="ts">
 import appConfig from './app.config';
+import { onMounted } from 'vue';
+
+const { initAuth } = useAuth();
+
+onMounted(() => {
+  initAuth();
+});
 </script>
 
 <style></style>

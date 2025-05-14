@@ -98,9 +98,9 @@
               <span>
                 Pour en apprendre plus,
                 <NuxtLink class=" text-blue-600 hover:underline" target="_blank"
-              to="https://calendly.com/futurz/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_futurz">
-              parlez à notre équipe
-              </NuxtLink>
+                  to="https://calendly.com/futurz/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_futurz">
+                  parlez à notre équipe
+                </NuxtLink>
               </span>
             </div>
           </div>
@@ -157,14 +157,11 @@ async function handleSubmit() {
         password: password.value,
         marketingOptIn: !marketingOptIn.value
       }
-    })
+    }, false)
 
     // Get user details
     const user = await $api<User>('/users/me', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${tokens.accessToken}`
-      }
+      method: 'GET'
     })
 
     setAuth(user, tokens)

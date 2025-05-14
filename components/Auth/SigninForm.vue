@@ -79,7 +79,7 @@ const isLoading = ref(false)
 const router = useRouter()
 
 const { $api } = useNuxtApp()
-const { setAuth } = useAuth()
+const { setAuth, updateAccessToken } = useAuth()
 
 async function handleSubmit() {
   // error.value = ''
@@ -103,13 +103,12 @@ async function handleSubmit() {
         password: password.value
       }
     })
+    await updateAccessToken(tokens.accessToken)
+
 
     // Get user details
     const user = await $api<User>('/users/me', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${tokens.accessToken}`
-      }
+      method: 'GET'
     })
 
     setAuth(user, tokens)
