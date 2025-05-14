@@ -18,6 +18,12 @@
         <UIcon name="material-symbols-light:table-chart-view" class="w-5 h-5" />
         <span>Résultats</span>
       </NuxtLink>
+
+      <NuxtLink to="/client" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/client') }">
+        <UIcon name="material-symbols-light:groups" class="w-5 h-5" />
+        <span>Clients</span>
+      </NuxtLink>
     </nav>
 
     <!-- Logout button at the bottom -->
