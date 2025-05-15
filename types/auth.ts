@@ -3,7 +3,7 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
-export const Roles = ['USER'] as const;
+export const Roles = ['USER', 'ADMIN'] as const;
 export type Role = (typeof Roles)[number];
 
 export interface User {
@@ -15,6 +15,7 @@ export interface User {
   roles: Role[];
   createdAt: Date;
   updatedAt: Date;
+  organisationId?: string;
 }
 
 export interface LoginRequest {

@@ -15,12 +15,12 @@
 <script setup lang="ts">
 import type { CaptableRequest } from '~/types/captable';
 
-const props = defineProps({
+defineProps({
   captableRequest: {
     type: Object as () => CaptableRequest,
     required: true
   }
 });
 
-console.log(props.captableRequest);
+// console.log(props.captableRequest);
 </script>

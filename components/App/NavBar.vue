@@ -24,7 +24,16 @@
         <UIcon name="material-symbols-light:groups" class="w-5 h-5" />
         <span>Clients</span>
       </NuxtLink>
+
+      <!-- Admin navigation -->
+      <NuxtLink v-if="user?.roles?.includes('ADMIN')" to="/admin/organisation" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/admin/organisations') }">
+        <UIcon name="material-symbols-light:business" class="w-5 h-5" />
+        <span>Organisations</span>
+      </NuxtLink>
     </nav>
+
+
 
     <!-- Logout button at the bottom -->
     <div class="logout-container">
@@ -37,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-const { clearAuth } = useAuth()
+const { clearAuth, user } = useAuth()
 const router = useRouter()
 const route = useRoute()
 

@@ -41,12 +41,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     const accessToken = getAccessToken()
-    console.log('accessToken', accessToken)
     if (accessToken && auth) {
       headers.set('Authorization', `Bearer ${accessToken}`)
     }
-
-    console.log('headers', headers.values().toArray())
 
     const fetchOptions: RequestInit = {
       ...options,
@@ -58,8 +55,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
       fetchOptions.body = JSON.stringify(options.body)
     }
-
-    console.log('fetchOptions', fetchOptions)
 
     const response = await fetch(fullUrl, fetchOptions)
 
