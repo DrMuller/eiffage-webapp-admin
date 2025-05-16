@@ -57,11 +57,6 @@
             <p class="text-sm font-medium text-gray-500 mb-1">Date de création</p>
             <p>{{ formatDate(client.createdAt) }}</p>
           </div>
-
-          <div>
-            <p class="text-sm font-medium text-gray-500 mb-1">Dernière mise à jour</p>
-            <p>{{ formatDate(client.updatedAt) }}</p>
-          </div>
         </div>
       </UCard>
     </div>

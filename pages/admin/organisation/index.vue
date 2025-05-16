@@ -2,42 +2,35 @@
     <div class="organisations-page p-6">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-2xl font-bold">Vos organisations</h1>
-            <UModal title="Ajouter une nouvelle organisation" :ui="{ content: 'min-w-280' }">
+            <UModal v-model="isModalOpen" title="Ajouter une nouvelle organisation">
                 <UButton color="primary" icon="material-symbols-light:add" @click="openAddOrganisationModal">
                     Ajouter une nouvelle organisation
                 </UButton>
                 <template #body>
                     <div class="p-6">
                         <h2 class="text-xl font-bold text-center mb-6">Nouvelle organisation</h2>
-                        <p class="text-center mb-8">Veuillez remplir ces informations pour créer une nouvelle
-                            organisation.</p>
 
                         <form class="space-y-6" @submit.prevent="submitNewOrganisation">
-                            <UFormGroup label="Nom de l'organisation" required>
-                                <UInput v-model="newOrganisation.name" placeholder="Entrez le nom de l'organisation" />
-                            </UFormGroup>
+                            <UFormField label="Nom de l'organisation" required>
+                                <UInput v-model="newOrganisation.name" class="w-full"
+                                    placeholder="Entrez le nom de l'organisation" required />
+                            </UFormField>
 
-                            <UFormGroup label="Description">
-                                <UTextarea v-model="newOrganisation.description"
-                                    placeholder="Entrez une description (optionnel)" />
-                            </UFormGroup>
+                            <UFormField label="SIREN" required>
+                                <UInput v-model="newOrganisation.siren" placeholder="Entrez le SIREN" required
+                                    pattern="^\d{9}$" />
+                            </UFormField>
 
-                            <UFormGroup label="SIREN">
-                                <UInput v-model="newOrganisation.siren" placeholder="Entrez le SIREN" />
-                            </UFormGroup>
+                            <UFormField label="Adresse" required>
+                                <UInput v-model="newOrganisation.address" class="w-full" placeholder="Entrez l'adresse"
+                                    required />
+                            </UFormField>
 
-                            <UFormGroup label="Adresse">
-                                <UInput v-model="newOrganisation.address" placeholder="Entrez l'adresse" />
-                            </UFormGroup>
-
-                            <UFormGroup label="Logo">
+                            <UFormField label="Logo" required>
                                 <UInput type="file" accept="image/*" @change="handleLogoChange" />
-                            </UFormGroup>
+                            </UFormField>
 
                             <div class="flex justify-end gap-4">
-                                <UButton type="button" color="neutral" variant="ghost" @click="closeModal">
-                                    Annuler
-                                </UButton>
                                 <UButton type="submit" color="primary" :loading="createLoading">
                                     Créer l'organisation
                                 </UButton>
@@ -54,7 +47,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="organisation in organisations" :key="organisation._id"
-                    class="flex items-center bg-gray-100 border border-gray-200 rounded-lg px-5 py-4 gap-4 min-w-[260px]">
+                    class="flex items-center bg-gray-100 border border-gray-200 rounded-lg px-5 py-4 gap-4 min-w-[260px] cursor-pointer hover:bg-gray-50 transition-colors"
+                    @click="navigateToOrganisation(organisation._id)">
                     <div class="organisation-logo w-8 h-8 flex items-center justify-center bg-gray-100 overflow-hidden">
                         <img v-if="organisation.logoUrl" :src="organisation.logoUrl" :alt="organisation.name"
                             class="w-full h-full object-cover">
@@ -84,37 +78,45 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import type { Organisation } from '~/types/organisation'
 
 // Get auth composable
 const { user } = useAuth()
+const router = useRouter()
 
-// Check if user is admin
-watch(user, (newUser) => {
-    if (newUser && !newUser.roles.includes('ADMIN')) {
-        // redirect to home
-        navigateTo('/')
-    }
-}, { immediate: true })
-
-// Get organisation composable
-const { loading, createOrganisation, uploadOrganisationLogo } = useOrganisation()
-const { organisations, fetchOrganisationsAdmin } = useOrganisationAdmin()
-
-// Fetch organisations on page load
-onMounted(async () => {
-    await fetchOrganisationsAdmin()
-})
-
-// New organisation data
-const createLoading = ref(false)
-const selectedLogo = ref<File | null>(null)
+const organisations = ref<Organisation[]>([])
 const newOrganisation = ref({
     name: '',
     description: '',
     siren: '',
     address: '',
 })
+const isModalOpen = ref(false)
 
+// Check if user is admin
+watch(user, (newUser) => {
+    if (newUser && !newUser.roles.includes('ADMIN')) {
+        navigateTo('/')
+    }
+}, { immediate: true })
+
+// Get organisation composable
+const { loading, uploadOrganisationLogo } = useOrganisation()
+const { fetchOrganisationsAdmin, createOrganisation } = useOrganisationAdmin()
+
+const fetchAll = async () => {
+    organisations.value = await fetchOrganisationsAdmin()
+}
+
+// Fetch organisations on page load
+onMounted(async () => {
+    await fetchAll()
+})
+
+// New organisation data
+const createLoading = ref(false)
+const selectedLogo = ref<File | null>(null)
 // Open add organisation modal
 const openAddOrganisationModal = () => {
     newOrganisation.value = {
@@ -124,6 +126,7 @@ const openAddOrganisationModal = () => {
         address: '',
     }
     selectedLogo.value = null
+    isModalOpen.value = true
 }
 
 // Handle logo change
@@ -134,23 +137,11 @@ const handleLogoChange = (event: Event) => {
     }
 }
 
-// Close modal
-const closeModal = () => {
-    // Reset form
-    newOrganisation.value = {
-        name: '',
-        description: '',
-        siren: '',
-        address: '',
-    }
-    selectedLogo.value = null
-}
-
 // Submit new organisation
 const submitNewOrganisation = async () => {
     createLoading.value = true
     try {
-        const createdOrganisation = await createOrganisation({
+        let createdOrganisation = await createOrganisation({
             name: newOrganisation.value.name,
             description: newOrganisation.value.description,
             siren: newOrganisation.value.siren,
@@ -159,16 +150,24 @@ const submitNewOrganisation = async () => {
 
         // Upload logo if provided
         if (createdOrganisation && selectedLogo.value) {
-            await uploadOrganisationLogo(createdOrganisation._id, selectedLogo.value)
+            createdOrganisation = await uploadOrganisationLogo(createdOrganisation._id, selectedLogo.value)
         }
 
-        // Reset form and close modal
-        closeModal()
+        if (createdOrganisation) {
+            organisations.value.push(createdOrganisation)
+        }
+
+        isModalOpen.value = false
     } catch (err) {
         console.error('Error creating organisation:', err)
     } finally {
         createLoading.value = false
     }
+}
+
+// Navigation
+const navigateToOrganisation = (id: string) => {
+    router.push(`/admin/organisation/${id}`)
 }
 </script>
 

@@ -1,8 +1,8 @@
 import { ref } from 'vue'
+import type { User } from '~/types/auth'
 import type { Organisation } from '~/types/organisation'
 
 // State will be preserved across component instances
-const organisation = ref<Organisation>()
 const loading = ref(false)
 const error = ref<string | null>(null)
 
@@ -27,27 +27,6 @@ export const useOrganisation = () => {
             return transformOrganisation(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch organisation'
-            return null
-        } finally {
-            loading.value = false
-        }
-    }
-
-    // Create a new organisation
-    const createOrganisation = async (organisationData: Omit<Organisation, '_id' | 'createdAt' | 'updatedAt'>) => {
-        loading.value = true
-        error.value = null
-        try {
-            const data = await nuxtApp.$api<Organisation>('/organisations', {
-                method: 'POST',
-                body: organisationData
-            })
-            const newOrganisation = transformOrganisation(data)
-            organisation.value = newOrganisation
-            return newOrganisation
-        } catch (e) {
-            error.value = e instanceof Error ? e.message : 'Failed to create organisation'
-            return null
         } finally {
             loading.value = false
         }
@@ -62,15 +41,9 @@ export const useOrganisation = () => {
                 method: 'PUT',
                 body: organisationData
             })
-            const updatedOrganisation = transformOrganisation(data)
-
-            // Update the organisation in the local state
-            organisation.value = updatedOrganisation
-
-            return updatedOrganisation
+            return transformOrganisation(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to update organisation'
-            return null
         } finally {
             loading.value = false
         }
@@ -84,8 +57,6 @@ export const useOrganisation = () => {
             await nuxtApp.$api(`/organisations/${id}`, {
                 method: 'DELETE'
             })
-            organisation.value = undefined
-            return true
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to delete organisation'
             return false
@@ -107,27 +78,32 @@ export const useOrganisation = () => {
                 body: formData
             })
 
-            const updatedOrganisation = transformOrganisation(data)
-
-            // Update the organisation in the local state
-            organisation.value = updatedOrganisation
-
-            return updatedOrganisation
+            return transformOrganisation(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to upload organisation logo'
-            return null
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const fetchUsersByOrganisationId = async (id: string) => {
+        loading.value = true
+        error.value = null
+        try {
+            return await nuxtApp.$api<User[]>(`/organisations/${id}/users`)
+        } catch (e) {
+            error.value = e instanceof Error ? e.message : 'Failed to fetch users by organisation id'
         } finally {
             loading.value = false
         }
     }
 
     return {
-        organisation,
         loading,
         error,
         transformOrganisation,
         fetchOrganisationById,
-        createOrganisation,
+        fetchUsersByOrganisationId,
         updateOrganisation,
         deleteOrganisation,
         uploadOrganisationLogo
