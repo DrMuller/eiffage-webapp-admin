@@ -1,10 +1,11 @@
 <template>
   <div class="clients-page p-6">
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-bold">Vos clients</h1>
-      <UModal title="Ajouter un nouveau client" :ui="{ content: 'min-w-280' }">
+      <h1 class="text-2xl font-bold">Vos dossiers</h1>
+
+      <UModal v-model:open="isModalOpen" title="Ajouter un nouveau dossier" :ui="{ content: 'min-w-320' }">
         <UButton color="primary" icon="material-symbols-light:add" @click="openAddClientModal">
-          Ajouter un nouveau client
+          Ajouter un nouveau dossier
         </UButton>
         <template #body>
           <div>
@@ -45,7 +46,8 @@
               <h2 class="text-xl font-bold text-center my-6">Nouveau dossier</h2>
               <p class="text-center mb-8">Veuillez remplir ces informations pour créer l'espace dédié à votre client.
               </p>
-              <ClientCreateForm :initial-data="newClient" :loading="createLoading" @next="handleStep1Complete" />
+              <ClientCreateForm :initial-data="newClient" :initial-logo="selectedLogo" :loading="createLoading"
+                @next="handleStep1Complete" />
             </div>
 
             <!-- step 2 -->
@@ -99,6 +101,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="font-medium text-base truncate">{{ client.companyName }}</h3>
+            <p v-if="client.logoFileName" class="text-xs text-gray-500 truncate">{{ client.logoFileName }}</p>
           </div>
           <UButton variant="ghost" class="flex items-center gap-1 whitespace-nowrap px-2 py-1 text-sm bg-white"
             @click="viewClientFile(client._id)">
@@ -126,6 +129,12 @@
 import { ref } from 'vue'
 import type { CaptableRequest } from '~/types/captable'
 
+// Define route meta
+definePageMeta({
+  middleware: ['auth'],
+  requiresAuth: true
+})
+
 // Get client composable
 const { clients, loading, fetchClients, createClient, uploadClientLogo } = useClient()
 const { createCaptable } = useCaptable()
@@ -137,6 +146,8 @@ onMounted(async () => {
 
 // Form step handling
 const currentStep = ref(1)
+const isModalOpen = ref(false)
+const open = ref(false)
 const nextStep = () => {
   if (currentStep.value < 3) {
     currentStep.value++
@@ -148,6 +159,7 @@ const nextStep = () => {
 // New client data
 const createLoading = ref(false)
 const selectedLogo = ref<File | null>(null)
+const selectedLogoName = ref<string>('')
 const newClient = ref({
   companyName: '',
   contactName: '',
@@ -186,6 +198,7 @@ const handleStep1Complete = (data: {
   newClient.value = { ...data.clientData }
   // Update logo
   selectedLogo.value = data.logo
+  selectedLogoName.value = data.logo?.name || ''
   // Go to next step
   nextStep()
 }
@@ -205,6 +218,7 @@ const openAddClientModal = () => {
     siren: ''
   }
   selectedLogo.value = null
+  selectedLogoName.value = ''
 }
 
 // Submit new client
@@ -213,6 +227,7 @@ const submitNewClient = async () => {
   try {
     const createdClient = await createClient({
       ...newClient.value,
+      logoFileName: selectedLogoName.value
     })
 
     // Upload logo if provided
@@ -222,26 +237,18 @@ const submitNewClient = async () => {
       await createCaptable(createdClient._id, captableRequest.value)
     }
 
-
-    // Reset form and close modal (handled by parent component)
-    currentStep.value = 1
-    // newClient.value = {
-    //   companyName: '',
-    //   contactName: '',
-    //   contactEmail: '',
-    //   siren: ''
-    // }
   } catch (err) {
     console.error('Error creating client:', err)
   } finally {
     createLoading.value = false
+    isModalOpen.value = false
   }
 }
 
 // View client file
 const router = useRouter()
 const viewClientFile = (clientId: string) => {
-  router.push(`/client/${clientId}`)
+  router.push(`/dossier/${clientId}`)
 }
 </script>
 

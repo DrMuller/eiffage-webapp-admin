@@ -8,11 +8,11 @@
       <!-- Client header -->
       <div class="mb-8 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <NuxtLink to="/client" class="text-gray-500 hover:text-gray-700">
+          <NuxtLink to="/dossier" class="text-gray-500 hover:text-gray-700">
             <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
           </NuxtLink>
 
-          <div class="client-logo w-12 h-12 flex items-center justify-center bg-gray-100 overflow-hidden">
+          <div class="client-logo flex items-center justify-center bg-gray-100 overflow-hidden">
             <img v-if="client.logoUrl" :src="client.logoUrl" :alt="client.companyName"
               class="w-full h-full object-cover">
             <UIcon v-else name="i-heroicons-building-office" class="w-8 h-8 text-gray-500" />
@@ -24,6 +24,13 @@
           </div>
         </div>
 
+        <div>
+          <NuxtLink :to="`/dossier/${clientId}/simulation`">
+            <UButton color="primary" icon="i-heroicons-chart-bar">
+              Simulation
+            </UButton>
+          </NuxtLink>
+        </div>
       </div>
 
       <!-- Client information -->
@@ -64,7 +71,7 @@
     <div v-else-if="error" class="text-center py-16">
       <UIcon name="i-heroicons-exclamation-circle" class="w-12 h-12 mx-auto mb-4 text-red-500" />
       <p class="text-lg text-red-500">{{ error }}</p>
-      <NuxtLink to="/clients" class="text-primary mt-4 inline-block">
+      <NuxtLink to="/dossier" class="text-primary mt-4 inline-block">
         Retour à la liste des clients
       </NuxtLink>
     </div>
@@ -74,6 +81,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Client } from '~/types/client'
+
+// Define route meta
+definePageMeta({
+  middleware: ['auth'],
+  requiresAuth: true
+})
 
 // Get client details from route param
 const route = useRoute()
@@ -102,10 +115,6 @@ onMounted(async () => {
   }
 })
 
-// Handle logo file upload
-const handleLogoUpload = (event: Event) => {
-  // TODO: Implement logo upload
-}
 </script>
 
 <style scoped>
