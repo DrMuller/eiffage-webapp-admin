@@ -2,41 +2,40 @@
   <div class="sidebar">
     <!-- Logo section -->
     <div class="logo-container">
-      <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10">
-      <span class="logo-text">Futurz</span>
+      <img :src="currentOrganisation?.logoUrl || '/logo_futurz.webp'" :alt="currentOrganisation?.name || 'Futurz'"
+        class="w-10 h-10">
+      <span class="logo-text">{{ currentOrganisation?.name || 'Futurz' }}</span>
     </div>
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <NuxtLink to="/" class="nav-item">
-        <UIcon name="material-symbols-light:home-rounded" class="w-6 h-6" />
-        <span>Simulateur</span>
-      </NuxtLink>
 
-      <NuxtLink to="/simulation" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/simulation') }">
-        <UIcon name="material-symbols-light:table-chart-view" class="w-5 h-5" />
-        <span>Résultats</span>
-      </NuxtLink>
-
-      <NuxtLink to="/client" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/client') }">
-        <UIcon name="material-symbols-light:groups" class="w-5 h-5" />
-        <span>Clients</span>
+      <NuxtLink to="/dossier" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dossier') }">
+        <UIcon name="material-symbols-light:grid-view-rounded" class="w-5 h-5" />
+        <span>Dossiers</span>
       </NuxtLink>
 
       <!-- Admin navigation -->
-      <NuxtLink v-if="user?.roles?.includes('ADMIN')" to="/admin/organisation" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/admin/organisations') }">
-        <UIcon name="material-symbols-light:business" class="w-5 h-5" />
-        <span>Organisations</span>
-      </NuxtLink>
+      <div v-if="user?.roles?.includes('ADMIN')" class="nav-item-admin">
+        <NuxtLink to="/admin/organisation" class="nav-item"
+          :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/admin/organisations') }">
+          <UIcon name="material-symbols-light:shield-lock-outline" class="w-5 h-5" />
+          <span>Organisations</span>
+        </NuxtLink>
+      </div>
     </nav>
 
 
 
     <!-- Logout button at the bottom -->
     <div class="logout-container">
+
+      <NuxtLink to="/settings" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/settings') }">
+        <UIcon name="material-symbols-light:settings-rounded" class="w-5 h-5" />
+        <span>Réglages</span>
+      </NuxtLink>
       <button class="logout-btn" @click="handleLogout">
         <UIcon name="material-symbols-light:exit-to-app-rounded" class="w-5 h-5" />
         <span>Déconnexion</span>
@@ -49,6 +48,8 @@
 const { clearAuth, user } = useAuth()
 const router = useRouter()
 const route = useRoute()
+const { currentOrganisation } = useOrganisation()
+
 
 const handleLogout = () => {
   clearAuth()
@@ -74,9 +75,13 @@ const handleLogout = () => {
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 .nav-links {
@@ -95,6 +100,12 @@ const handleLogout = () => {
   transition: background-color 0.2s;
   gap: 12px;
   font-size: 14px;
+}
+
+
+.nav-item-admin>.nav-item {
+  margin-top: 2rem;
+  border-top: 1px solid #f0f0f0;
 }
 
 .nav-item:hover {

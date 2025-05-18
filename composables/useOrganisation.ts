@@ -5,9 +5,10 @@ import type { Organisation } from '~/types/organisation'
 // State will be preserved across component instances
 const loading = ref(false)
 const error = ref<string | null>(null)
+const currentOrganisation = ref<Organisation>()
 
 export const useOrganisation = () => {
-    const nuxtApp = useNuxtApp()
+    const { $api } = useNuxtApp()
 
     // Transform dates from API responses
     const transformOrganisation = (organisation: Partial<Organisation>): Organisation => {
@@ -23,7 +24,7 @@ export const useOrganisation = () => {
         loading.value = true
         error.value = null
         try {
-            const data = await nuxtApp.$api<Organisation>(`/organisations/${id}`)
+            const data = await $api<Organisation>(`/organisations/${id}`)
             return transformOrganisation(data)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch organisation'
@@ -32,12 +33,17 @@ export const useOrganisation = () => {
         }
     }
 
+    const fetchCurrentOrganisation = async (id: string) => {
+        currentOrganisation.value = await fetchOrganisationById(id)
+        return currentOrganisation.value
+    }
+
     // Update an existing organisation
     const updateOrganisation = async (id: string, organisationData: Partial<Omit<Organisation, '_id' | 'createdAt' | 'updatedAt'>>) => {
         loading.value = true
         error.value = null
         try {
-            const data = await nuxtApp.$api<Organisation>(`/organisations/${id}`, {
+            const data = await $api<Organisation>(`/organisations/${id}`, {
                 method: 'PUT',
                 body: organisationData
             })
@@ -54,7 +60,7 @@ export const useOrganisation = () => {
         loading.value = true
         error.value = null
         try {
-            await nuxtApp.$api(`/organisations/${id}`, {
+            await $api(`/organisations/${id}`, {
                 method: 'DELETE'
             })
         } catch (e) {
@@ -73,7 +79,7 @@ export const useOrganisation = () => {
             const formData = new FormData()
             formData.append('logo', logoFile)
 
-            const data = await nuxtApp.$api<Organisation>(`/organisations/${id}/logo`, {
+            const data = await $api<Organisation>(`/organisations/${id}/logo`, {
                 method: 'POST',
                 body: formData
             })
@@ -90,7 +96,7 @@ export const useOrganisation = () => {
         loading.value = true
         error.value = null
         try {
-            return await nuxtApp.$api<User[]>(`/organisations/${id}/users`)
+            return await $api<User[]>(`/organisations/${id}/users`)
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to fetch users by organisation id'
         } finally {
@@ -101,8 +107,10 @@ export const useOrganisation = () => {
     return {
         loading,
         error,
+        currentOrganisation,
         transformOrganisation,
         fetchOrganisationById,
+        fetchCurrentOrganisation,
         fetchUsersByOrganisationId,
         updateOrganisation,
         deleteOrganisation,

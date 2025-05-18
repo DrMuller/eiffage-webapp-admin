@@ -9,6 +9,7 @@ const tokens = reactive<AuthTokens>({
 })
 const isAuthenticated = ref(false)
 
+
 // Cookie options
 const cookieOptions = {
   maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -18,7 +19,10 @@ const cookieOptions = {
 }
 
 export const useAuth = () => {
-  const nuxtApp = useNuxtApp()
+
+  const { fetchCurrentOrganisation, currentOrganisation } = useOrganisation()
+  const { $api } = useNuxtApp()
+
   const cookie = useCookie('auth:tokens', {
     ...cookieOptions,
     encode: (value: AuthTokens | null) => encodeURIComponent(JSON.stringify(value)),
@@ -65,7 +69,7 @@ export const useAuth = () => {
   }
 
   // Initialize auth state from cookies on app load
-  function initAuth() {
+  async function initAuth() {
     if (cookie.value) {
       // console.log('Initializing auth state from cookies')
       try {
@@ -75,17 +79,14 @@ export const useAuth = () => {
         isAuthenticated.value = true
 
         // Fetch user details with the tokens
-        nuxtApp.$api<User>('/users/me', { method: 'GET' })
-          .then((userData: User) => {
-            user.value = userData
-          })
-          .catch(() => {
-            console.log('Failed to fetch user details')
-            // If this fails, tokens might be invalid
-            // clearAuth()
-          })
+        const userData = await $api<User>('/users/me', { method: 'GET' })
+        user.value = userData
+        if (userData.organisationId) {
+          await fetchCurrentOrganisation(userData.organisationId)
+        }
       } catch (e) {
-        console.log('Failed to parse tokens from cookies')
+        console.log('Failed to fetch user details')
+        // If this fails, tokens might be invalid
         // clearAuth()
       }
     }
