@@ -46,6 +46,12 @@ import type { User } from '~/types/auth'
 const users = ref<User[]>([])
 const usersLoading = ref(true)
 
+// Define route meta
+definePageMeta({
+    middleware: ['auth'],
+    requiresAuth: true
+})
+
 // Get auth and organisation composables
 const { user } = useAuth()
 const { fetchUsersByOrganisationId } = useOrganisation()

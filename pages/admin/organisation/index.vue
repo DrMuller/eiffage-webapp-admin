@@ -27,7 +27,8 @@
                             </UFormField>
 
                             <UFormField label="Logo" required>
-                                <UInput type="file" accept="image/*" @change="handleLogoChange" />
+                                <UInput type="file" accept=".jpeg,.jpg,.gif,.png,image/jpeg,image/gif,image/png"
+                                    @change="handleLogoChange" />
                             </UFormField>
 
                             <div class="flex justify-end gap-4">
@@ -80,6 +81,12 @@
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Organisation } from '~/types/organisation'
+
+// Define route meta
+definePageMeta({
+    middleware: ['auth'],
+    requiresAuth: true
+})
 
 // Get auth composable
 const { user } = useAuth()

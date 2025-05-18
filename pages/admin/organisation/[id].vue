@@ -119,6 +119,12 @@ const router = useRouter()
 const users = ref<User[] | undefined>([])
 const organisation = ref<Organisation | undefined>(undefined)
 
+// Define route meta
+definePageMeta({
+    middleware: ['auth'],
+    requiresAuth: true
+})
+
 // Get organisation composable
 const { fetchOrganisationById } = useOrganisation()
 const { createUserAdmin, fetchUsersAdmin, loading: usersLoading } = useUserAdmin()

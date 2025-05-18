@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Simulation, SimulationRequest } from '~/types/simulation'
 import { useCaptable } from './useCaptable'
+import type { CaptableRequest } from '#components'
 
 export const useSimulation = () => {
     const simulations = ref<Simulation[]>([])
@@ -69,7 +70,10 @@ export const useSimulation = () => {
         const { transformCaptableRequest } = useCaptable()
         const data = await $api<Simulation>('/simulations', {
             method: 'POST',
-            body: transformCaptableRequest(request.captable)
+            body: {
+                clientId: request.clientId,
+                captableRequest: transformCaptableRequest(request.captable)
+            }
         })
         const transformedData = transformResponse(data)
         simulations.value.push(transformedData)
