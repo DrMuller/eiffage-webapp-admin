@@ -9,19 +9,19 @@
 
     <!-- Navigation links -->
     <nav class="nav-links">
-
-      <NuxtLink to="/dossier" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dossier') }">
-        <UIcon name="material-symbols-light:grid-view-rounded" class="w-5 h-5" />
-        <span>Dossiers</span>
-      </NuxtLink>
-
       <!-- Admin navigation -->
-      <div v-if="user?.roles?.includes('ADMIN')" class="nav-item-admin">
+      <div v-if="isAdmin">
         <NuxtLink to="/admin/organisation" class="nav-item"
           :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/admin/organisations') }">
           <UIcon name="material-symbols-light:shield-lock-outline" class="w-5 h-5" />
           <span>Organisations</span>
+        </NuxtLink>
+      </div>
+      <div v-else>
+        <NuxtLink to="/dossier" class="nav-item"
+          :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dossier') }">
+          <UIcon name="material-symbols-light:grid-view-rounded" class="w-5 h-5" />
+          <span>Dossiers</span>
         </NuxtLink>
       </div>
     </nav>
@@ -30,8 +30,7 @@
 
     <!-- Logout button at the bottom -->
     <div class="logout-container">
-
-      <NuxtLink to="/settings" class="nav-item"
+      <NuxtLink v-if="!isAdmin" to="/settings" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/settings') }">
         <UIcon name="material-symbols-light:settings-rounded" class="w-5 h-5" />
         <span>Réglages</span>
@@ -55,6 +54,8 @@ const handleLogout = () => {
   clearAuth()
   router.push('/auth/signin')
 }
+
+const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
 </script>
 
 <style scoped>
