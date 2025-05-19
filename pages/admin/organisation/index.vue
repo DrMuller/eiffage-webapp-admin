@@ -2,7 +2,7 @@
     <div class="organisations-page p-6">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-2xl font-bold">Vos organisations</h1>
-            <UModal v-model="isModalOpen" title="Ajouter une nouvelle organisation">
+            <UModal v-model:open="isModalOpen" title="Ajouter une nouvelle organisation">
                 <UButton color="primary" icon="material-symbols-light:add" @click="openAddOrganisationModal">
                     Ajouter une nouvelle organisation
                 </UButton>
@@ -133,7 +133,6 @@ const openAddOrganisationModal = () => {
         address: '',
     }
     selectedLogo.value = null
-    isModalOpen.value = true
 }
 
 // Handle logo change
@@ -164,10 +163,10 @@ const submitNewOrganisation = async () => {
             organisations.value.push(createdOrganisation)
         }
 
-        isModalOpen.value = false
     } catch (err) {
         console.error('Error creating organisation:', err)
     } finally {
+        isModalOpen.value = false
         createLoading.value = false
     }
 }
