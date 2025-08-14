@@ -14,7 +14,7 @@ definePageMeta({
     layout: 'empty'
 });
 useHead({
-    title: 'Réinitialiser le mot de passe | Futurz'
+    title: 'Réinitialiser le mot de passe | Company_Name'
 });
 
 // Add this to handle both client and server rendering

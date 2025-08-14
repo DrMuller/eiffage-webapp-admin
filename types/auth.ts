@@ -15,7 +15,6 @@ export interface User {
   roles: Role[];
   createdAt: Date;
   updatedAt: Date;
-  organisationId?: string;
 }
 
 export interface LoginRequest {

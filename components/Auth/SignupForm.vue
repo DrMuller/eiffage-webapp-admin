@@ -3,8 +3,8 @@
     <div class="flex items-center justify-center">
       <div class="p-6 bg-white rounded-lg shadow-sm">
         <div class="mb-8">
-          <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
-          <h1 class="text-3xl font-bold">Démarrer avec Futurz</h1>
+          <!-- <img src="/logo.webp" alt="Company_Name" class="w-10 h-10 mb-6"> -->
+          <h1 class="text-3xl font-bold">Démarrer avec Company_Name</h1>
         </div>
 
         <form @submit.prevent="handleSubmit">
@@ -98,7 +98,7 @@
               <span>
                 Pour en apprendre plus,
                 <NuxtLink class=" text-blue-600 hover:underline" target="_blank"
-                  to="https://calendly.com/futurz/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_futurz">
+                  to="https://calendly.com/Company_Name/30min?utm_source=webapp&utm_medium=cta_bottom&utm_campaign=signup_page&utm_content=parler_a_equipe_Company_Name">
                   parlez à notre équipe
                 </NuxtLink>
               </span>

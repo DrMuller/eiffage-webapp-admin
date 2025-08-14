@@ -2,42 +2,34 @@
   <div class="sidebar">
     <!-- Logo section -->
     <div class="logo-container">
-      <img :src="currentOrganisation?.logoUrl || '/logo_futurz.webp'" :alt="currentOrganisation?.name || 'Futurz'"
-        class="w-10 h-10">
-      <span class="logo-text">{{ currentOrganisation?.name || 'Futurz' }}</span>
+      <UIcon name="i-heroicons-home" class="w-8 h-8 text-blue-600" />
+      <span class="logo-text">Nuxt Auth</span>
     </div>
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <!-- Admin navigation -->
-      <div v-if="isAdmin">
-        <NuxtLink to="/admin/organisation" class="nav-item"
-          :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/admin/organisations') }">
-          <UIcon name="material-symbols-light:shield-lock-outline" class="w-5 h-5" />
-          <span>Organisations</span>
-        </NuxtLink>
-      </div>
-      <div v-else>
-        <NuxtLink to="/dossier" class="nav-item"
-          :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dossier') }">
-          <UIcon name="material-symbols-light:grid-view-rounded" class="w-5 h-5" />
-          <span>Dossiers</span>
-        </NuxtLink>
-      </div>
+      <NuxtLink to="/" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path === '/' }">
+        <UIcon name="i-heroicons-home" class="w-5 h-5" />
+        <span>Dashboard</span>
+      </NuxtLink>
+
+      <NuxtLink to="/settings" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/settings') }">
+        <UIcon name="i-heroicons-cog-6-tooth" class="w-5 h-5" />
+        <span>Settings</span>
+      </NuxtLink>
     </nav>
 
-
-
-    <!-- Logout button at the bottom -->
+    <!-- User info and logout at the bottom -->
     <div class="logout-container">
-      <NuxtLink v-if="!isAdmin" to="/settings" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/settings') }">
-        <UIcon name="material-symbols-light:settings-rounded" class="w-5 h-5" />
-        <span>Réglages</span>
-      </NuxtLink>
+      <div class="user-info">
+        <div class="user-name">{{ user?.firstName }} {{ user?.lastName }}</div>
+        <div class="user-email">{{ user?.email }}</div>
+      </div>
       <button class="logout-btn" @click="handleLogout">
-        <UIcon name="material-symbols-light:exit-to-app-rounded" class="w-5 h-5" />
-        <span>Déconnexion</span>
+        <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
+        <span>Sign Out</span>
       </button>
     </div>
   </div>
@@ -47,15 +39,11 @@
 const { clearAuth, user } = useAuth()
 const router = useRouter()
 const route = useRoute()
-const { currentOrganisation } = useOrganisation()
-
 
 const handleLogout = () => {
   clearAuth()
   router.push('/auth/signin')
 }
-
-const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
 </script>
 
 <style scoped>
@@ -64,6 +52,8 @@ const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
   flex-direction: column;
   width: 220px;
   height: 100vh;
+  background-color: white;
+  border-right: 1px solid #e5e7eb;
 }
 
 .logo-container {
@@ -76,13 +66,12 @@ const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
 }
 
 .nav-links {
@@ -96,43 +85,47 @@ const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  color: #666;
+  color: #6b7280;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   gap: 12px;
   font-size: 14px;
-}
-
-
-.nav-item-admin>.nav-item {
-  margin-top: 2rem;
-  border-top: 1px solid #f0f0f0;
+  border-radius: 6px;
+  margin: 2px 8px;
 }
 
 .nav-item:hover {
   background-color: #f3f4f6;
+  color: #374151;
 }
 
 .nav-item.router-link-active {
-  background-color: #f3f4f6;
-  color: #1a56db;
+  background-color: #dbeafe;
+  color: #1d4ed8;
   font-weight: 500;
-}
-
-.icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  color: #4c82db;
-  /* Blue color for icons */
 }
 
 .logout-container {
   margin-top: auto;
   padding: 16px;
   border-top: 1px solid #f0f0f0;
+}
+
+.user-info {
+  margin-bottom: 12px;
+  padding: 0 16px;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
 }
 
 .logout-btn {
@@ -143,13 +136,16 @@ const isAdmin = computed(() => user?.value?.roles?.includes('ADMIN'))
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #6b7280;
   gap: 12px;
   font-size: 14px;
   text-align: left;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .logout-btn:hover {
-  color: #1a56db;
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 </style>

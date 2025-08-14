@@ -20,7 +20,6 @@ const cookieOptions = {
 
 export const useAuth = () => {
 
-  const { fetchCurrentOrganisation, currentOrganisation } = useOrganisation()
   const { $api } = useNuxtApp()
 
   const cookie = useCookie('auth:tokens', {
@@ -81,9 +80,6 @@ export const useAuth = () => {
         // Fetch user details with the tokens
         const userData = await $api<User>('/users/me', { method: 'GET' })
         user.value = userData
-        if (userData.organisationId) {
-          await fetchCurrentOrganisation(userData.organisationId)
-        }
       } catch (e) {
         console.log('Failed to fetch user details')
         // If this fails, tokens might be invalid

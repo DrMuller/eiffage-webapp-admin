@@ -2,8 +2,8 @@
   <div class="min-h-screen flex items-center justify-center bg-blue-50">
     <div class="p-8 bg-white rounded-lg shadow-sm">
       <div class="mb-8">
-        <img src="/logo_futurz.webp" alt="Futurz" class="w-10 h-10 mb-6">
-        <h1 class="text-3xl font-bold">Connexion à Futurz</h1>
+        <!-- <img src="/logo.webp" alt="Company_Name" class="w-10 h-10 mb-6"> -->
+        <h1 class="text-3xl font-bold">Connexion à Company_Name</h1>
       </div>
 
       <form @submit.prevent="handleSubmit">
