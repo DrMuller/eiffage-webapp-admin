@@ -17,6 +17,11 @@
         <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
         <span>Compétences</span>
       </NuxtLink>
+      <NuxtLink to="/campagnes" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/campagnes') }">
+        <UIcon name="i-heroicons-calendar" class="w-5 h-5" />
+        <span>Campagnes</span>
+      </NuxtLink>
     </nav>
 
     <!-- User info and logout at the bottom -->

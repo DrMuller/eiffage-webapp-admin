@@ -18,6 +18,39 @@ export const useSkills = () => {
     const loading = ref(false)
     const error = ref<string | null>(null)
 
+    // Backend DTOs mapping helpers
+    type SkillApi = {
+        _id: string
+        name: string
+        macroSkillId: string
+        macroSkillName: string
+        macroSkillTypeId: string
+        macroSkillTypeName: string
+        jobSkills: { jobId: string; expectedLevel: number }[]
+        createdAt: string | Date
+    }
+
+    function transformSkill(dto: SkillApi): Skill {
+        return {
+            _id: dto._id,
+            name: dto.name,
+            expectedLevel: null,
+            macroSkillId: dto.macroSkillId,
+            macroSkill: {
+                _id: dto.macroSkillId,
+                name: dto.macroSkillName,
+                macroSkillTypeId: dto.macroSkillTypeId,
+                macroSkillType: {
+                    _id: dto.macroSkillTypeId,
+                    name: dto.macroSkillTypeName,
+                },
+                createdAt: new Date(dto.createdAt),
+            },
+            jobIds: dto.jobSkills?.map(j => j.jobId) ?? [],
+            createdAt: new Date(dto.createdAt),
+        }
+    }
+
     // Macro Skill Types
     async function getMacroSkillTypes(): Promise<MacroSkillType[]> {
         loading.value = true
@@ -140,12 +173,13 @@ export const useSkills = () => {
         error.value = null
 
         try {
-            const response = await $api<Skill[]>('/skills', {
+            const response = await $api<SkillApi[]>('/skills', {
                 method: 'GET'
             })
 
-            skills.value = response
-            return response
+            const mapped = response.map(transformSkill)
+            skills.value = mapped
+            return mapped
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to fetch skills'
             throw err
@@ -159,11 +193,11 @@ export const useSkills = () => {
         error.value = null
 
         try {
-            const response = await $api<Skill>(`/skills/${id}`, {
+            const response = await $api<SkillApi>(`/skills/${id}`, {
                 method: 'GET'
             })
 
-            return response
+            return transformSkill(response)
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to fetch skill'
             throw err
@@ -177,13 +211,14 @@ export const useSkills = () => {
         error.value = null
 
         try {
-            const response = await $api<Skill>('/skills', {
+            const response = await $api<SkillApi>('/skills', {
                 method: 'POST',
                 body: data
             })
 
-            skills.value.push(response)
-            return response
+            const mapped = transformSkill(response)
+            skills.value.push(mapped)
+            return mapped
         } catch (err) {
             error.value = err instanceof Error ? err.message : 'Failed to create skill'
             throw err
