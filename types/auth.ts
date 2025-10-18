@@ -14,7 +14,7 @@ export interface User {
   lastName: string;
   code: string;
   jobId: string | null;
-  managerUserId: string | null;
+  managerUserIds: string[];
   roles: Role[];
   createdAt: Date;
   updatedAt: Date;

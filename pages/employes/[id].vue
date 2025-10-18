@@ -18,7 +18,7 @@
                 </template>
                 <div class="space-y-2 p-4">
                     <div class="flex justify-between"><span class="text-gray-500">Matricule</span><span>{{ user?.code
-                    }}</span></div>
+                            }}</span></div>
                     <div class="flex justify-between"><span class="text-gray-500">Rôle(s)</span>
                         <span class="flex gap-1 flex-wrap">
                             <UBadge v-for="r in user?.roles || []" :key="r" :label="r" size="sm"
@@ -26,7 +26,7 @@
                         </span>
                     </div>
                     <div class="flex justify-between"><span class="text-gray-500">Emploi</span><span>{{ jobTitle
-                    }}</span></div>
+                            }}</span></div>
                 </div>
             </UCard>
             <!-- Managed Users Card (if Manager) -->
@@ -34,7 +34,6 @@
         </div>
 
         <div class="">
-
             <SkillsTable class="mb-4" :skills="skillsForJob" :loading="loadingJobSkills" :error="null"
                 title="Compétences du métier" @refresh="refreshJobSkills" />
 
@@ -80,13 +79,10 @@ const { $api } = useNuxtApp()
 const user = computed<User | undefined>(() => users.value.find((u) => u._id === (route.params.id as string)))
 
 const jobTitle = computed(() => {
-    console.log(currentJob.value)
     return currentJob.value ? `${currentJob.value.name} (${currentJob.value.code})` : '—'
 })
 
 const currentJob = computed<Job | null>(() => {
-    console.log(user.value)
-    console.log("jobs", jobs.value)
     const id = user.value?.jobId
     if (!id) return null
     return jobs.value.find((j: Job) => j._id === id) ?? null
@@ -127,14 +123,11 @@ onMounted(async () => {
 
         await refreshJobSkills()
         await getJobs()
-
-        // Fetch evaluations for this user
         const userId = route.params.id as string
         evaluations.value = await getEvaluationsByUserId(userId)
 
-        // If user is MANAGER, find managed users (users with managerUserId == userId)
         if ((user.value?.roles || []).includes('MANAGER')) {
-            managedUsers.value = users.value.filter((u) => u.managerUserId === userId)
+            managedUsers.value = users.value.filter((u) => u.managerUserIds.includes(userId))
         }
     } catch {
         toast.add({ title: 'Erreur', description: 'Impossible de charger le profil', color: 'error' })

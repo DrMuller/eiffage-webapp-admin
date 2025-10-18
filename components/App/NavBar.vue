@@ -7,6 +7,11 @@
 
     <!-- Navigation links -->
     <nav class="nav-links">
+      <NuxtLink v-if="isAdmin" to="/utilisateurs" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/users') }">
+        <UIcon name="i-heroicons-users" class="w-5 h-5" />
+        <span>Utilisateurs</span>
+      </NuxtLink>
       <NuxtLink v-if="isAdmin" to="/employes" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/users') }">
         <UIcon name="i-heroicons-users" class="w-5 h-5" />

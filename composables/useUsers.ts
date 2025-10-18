@@ -64,7 +64,7 @@ export const useUsers = () => {
       firstName?: string;
       lastName?: string;
       code?: string;
-      managerUserId?: string | null;
+      managerUserIds?: string[];
       roles?: string[];
       jobId?: string | null;
     }
@@ -116,7 +116,7 @@ export const useUsers = () => {
   }
 
   // Search users (admin only)
-  async function searchUsers(params: { q?: string; skillName?: string; jobName?: string; observedLevel?: string; jobIds?: string[] } = {}): Promise<User[]> {
+  async function searchUsers(params: { q?: string; skillName?: string; jobName?: string; observedLevel?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> } = {}): Promise<User[]> {
     loading.value = true
     error.value = null
 
@@ -129,6 +129,15 @@ export const useUsers = () => {
       if (params.jobIds && params.jobIds.length > 0) {
         // Use repeated params: ?jobIds=a&jobIds=b
         params.jobIds.filter(Boolean).forEach((id) => query.append('jobIds', id))
+      }
+      // New: repeated pairs of skills with levels
+      if (params.skills && params.skills.length > 0) {
+        params.skills.forEach(({ skillId, minLevel }) => {
+          if (skillId && Number.isFinite(minLevel)) {
+            query.append('skillIds', skillId)
+            query.append('levels', String(minLevel))
+          }
+        })
       }
 
       const url = `/admin/users/search${query.toString() ? `?${query.toString()}` : ''}`

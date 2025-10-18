@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { TableColumn, TableRow } from '@nuxt/ui'
+import type { TableColumn } from '@nuxt/ui'
 import type { User } from '~/types/auth'
 import type { Job } from '~/types/jobs'
 const router = useRouter()
@@ -124,21 +124,34 @@ const props = withDefaults(defineProps<{
     error?: string | null
     title?: string
     editable?: boolean
+    showRoles?: boolean
 }>(), {
     loading: false,
     error: null,
     title: 'Liste des Employés'
 })
 
-const emit = defineEmits<{
-    (e: 'select', row: TableRow<User>): void
-    (e: 'edit', user: User): void
-}>()
+// const emit = defineEmits<{
+//     (e: 'select', row: TableRow<User>): void
+//     (e: 'edit', user: User): void
+// }>()
 
 const sorting = ref([])
 
 const columns = computed<TableColumn<User>[]>(() => {
-    const cols: TableColumn<User>[] = [
+
+    const cols: TableColumn<User>[] = []
+    if (props.showRoles) {
+        cols.push({
+            id: 'roles',
+            header: 'Rôles',
+            accessorFn: (row) => Array.isArray(row.roles) ? row.roles.join(', ') : '',
+            enableSorting: true,
+            meta: { class: { th: 'text-left' } },
+        })
+    }
+
+    cols.push(
         {
             id: 'name',
             header: 'Nom',
@@ -159,13 +172,6 @@ const columns = computed<TableColumn<User>[]>(() => {
             meta: { class: { th: 'text-left' } },
         },
         {
-            id: 'roles',
-            header: 'Rôles',
-            accessorFn: (row) => Array.isArray(row.roles) ? row.roles.join(', ') : '',
-            enableSorting: true,
-            meta: { class: { th: 'text-left' } },
-        },
-        {
             id: 'job',
             header: 'Emploi',
             accessorFn: (row) => {
@@ -181,7 +187,7 @@ const columns = computed<TableColumn<User>[]>(() => {
             enableSorting: false,
             meta: { class: { th: 'text-center w-[120px]', td: 'w-[120px]' } },
         },
-    ]
+    )
 
     if (props.editable) {
         cols.push({
@@ -195,8 +201,7 @@ const columns = computed<TableColumn<User>[]>(() => {
     return cols
 })
 
-function onSelect(row: TableRow<User>) {
-    // emit('select', row)
+function onSelect() {
 }
 
 function getRoleColor(role: string) {
