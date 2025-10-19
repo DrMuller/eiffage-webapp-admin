@@ -76,10 +76,9 @@ export const useEvaluationCampaigns = () => {
         error.value = null
 
         try {
-            const body: any = {}
+            const body: { startDate?: string, endDate?: string } = {}
             if (data.startDate !== undefined) body.startDate = typeof data.startDate === 'string' ? data.startDate : data.startDate.toISOString()
             if (data.endDate !== undefined) body.endDate = typeof data.endDate === 'string' ? data.endDate : data.endDate.toISOString()
-
             const response = await $api<EvaluationCampaign>(`/evaluation-campaigns/${id}`, { method: 'PUT', body })
 
             const idx = campaigns.value.findIndex(c => c._id === id)
@@ -99,7 +98,7 @@ export const useEvaluationCampaigns = () => {
         error.value = null
 
         try {
-            await $api<void>(`/evaluation-campaigns/${id}`, { method: 'DELETE' })
+            await $api(`/evaluation-campaigns/${id}`, { method: 'DELETE' })
             campaigns.value = campaigns.value.filter(c => c._id !== id)
             if (current.value && current.value._id === id) current.value = null
         } catch (err) {

@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Job } from '~/types/jobs'
+import type { Job, JobSkillResponse } from '~/types/jobs'
 
 export const useJobs = () => {
     const { $api } = useNuxtApp()
@@ -25,11 +25,16 @@ export const useJobs = () => {
         }
     }
 
+    async function getJobSkills(jobId: string): Promise<JobSkillResponse[]> {
+        return await $api<JobSkillResponse[]>(`/jobs/${jobId}/skills`, { method: 'GET' })
+    }
+
     return {
         jobs,
         loading,
         error,
         getJobs,
+        getJobSkills,
     }
 }
 

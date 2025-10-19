@@ -25,7 +25,7 @@
 
             <!-- Type cell template -->
             <template #macroSkillType-cell="{ row }">
-                <UBadge :label="row.original.macroSkillType?.name || 'Unknown'" variant="soft" color="blue" />
+                <UBadge :label="row.original.macroSkillType?.name || 'Unknown'" variant="soft" color="info" />
             </template>
 
             <!-- Created At cell template -->
@@ -38,7 +38,7 @@
             <!-- Actions cell template -->
             <template #actions-cell="{ row }">
                 <div class="flex justify-end">
-                    <UButton icon="i-heroicons-eye" size="sm" color="gray" variant="ghost" aria-label="View Skills"
+                    <UButton icon="i-heroicons-eye" size="sm" color="neutral" variant="ghost" aria-label="View Skills"
                         @click="openSkillsModal(row.original)">
                         View Skills
                     </UButton>

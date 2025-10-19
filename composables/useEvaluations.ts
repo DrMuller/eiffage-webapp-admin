@@ -48,7 +48,7 @@ export const useEvaluations = () => {
         error.value = null
 
         try {
-            const response = await $api<EvaluationApiResponse>(`/evaluations/${id}`, {
+            const response = await $api<EvaluationApiResponse>(`/evaluations/${id}?includeSkills=true`, {
                 method: 'GET'
             })
 
