@@ -27,6 +27,7 @@
                 <UButton type="submit" color="secondary" :loading="loading">
                     Rechercher
                 </UButton>
+                <UButton type="button" color="secondary" variant="outline" @click="handleReset">Réinitialiser</UButton>
             </div>
         </form>
 
@@ -98,10 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import type { User } from '~/types/auth'
 import type { TableRow } from '@nuxt/ui'
-import type { Skill } from '~/types/skills'
 import type { Job } from '~/types/jobs'
 
 // Meta
@@ -113,14 +113,12 @@ definePageMeta({
 // Composables
 const { users, managers, loading, error, getAllUsers, updateUser, getAllManagers, searchUsers } = useUsers()
 const { jobs, getJobs } = useJobs()
-const { skills, getSkills } = useSkills()
-const { $api } = useNuxtApp()
-const router = useRouter()
+const $router = useRouter()
 // Search state (backend-driven via button)
 const searchQuery = ref('')
 
 function onSelect(row: TableRow<User>) {
-    router.push(`/employes/${row.original._id}`)
+    $router.push(`/employes/${row.original._id}`)
 }
 
 const handleReset = () => {
@@ -171,7 +169,7 @@ const managersFormatted = computed(() => {
 
 const jobsFormatted = computed(() => {
     return jobs.value.map((job: Job) => ({
-        label: `${job.name} (${job.code})`,
+        label: `${job.name} - ${job.code}`,
         value: job._id
     }))
 })
@@ -233,6 +231,7 @@ onMounted(async () => {
     try {
         await getAllUsers()
         await getAllManagers()
+        await getJobs()
     } catch (err) {
         console.error('Échec du chargement des Employés:', err)
     }

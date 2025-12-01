@@ -20,13 +20,16 @@
                             <div>
                                 <span>{{ user?.code }}</span>
                             </div>
-                            <div class="text-right">
+                            <div>
                                 <span class="w-[200px]">{{ jobTitle }}</span>
                             </div>
                             <div>
+                                <UBadge variant="outline" color="secondary">{{ jobFamily }}</UBadge>
+                            </div>
+                            <!-- <div>
                                 <span>{{ (user?.managerUserIds?.length ?? 0) > 0 ? user?.managerUserIds[0] : '—'
                                 }}</span>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </UCard>
@@ -51,6 +54,11 @@
                         <span class="text-gray-900 dark:text-white font-medium">
                             {{ row.original.skillName }}
                         </span>
+                    </template>
+                    <template #macroSkillTypeName-cell="{ row }">
+                        <UBadge variant="soft" color="secondary">
+                            {{ row.original.macroSkillTypeName }}
+                        </UBadge>
                     </template>
                     <template #expectedLevel-cell="{ row }">
                         <span>
@@ -194,6 +202,10 @@ const jobTitle = computed(() => {
     return currentJob.value ? `${currentJob.value.name} (${currentJob.value.code})` : '—'
 })
 
+const jobFamily = computed(() => {
+    return currentJob.value ? currentJob.value.jobFamily : '—'
+})
+
 const currentJob = computed<Job | null>(() => {
     const id = user.value?.jobId
     if (!id) return null
@@ -207,12 +219,14 @@ const jobSkillsRows = ref<JobSkillResponse[]>([])
 interface SkillComparison {
     skillId: string
     skillName: string
+    macroSkillTypeName: string
     expectedLevel: number
     currentLevel: number
 }
 
 const skillsCols = computed<TableColumn<SkillComparison>[]>(() => [
     { accessorKey: 'skillName', header: 'Compétence', meta: { class: { td: 'max-w-[600px] whitespace-normal break-words align-top' } } },
+    { accessorKey: 'macroSkillTypeName', header: 'Type de macro compétence', meta: { class: { th: 'text-left', td: 'text-left' } } },
     { accessorKey: 'expectedLevel', header: 'Niveau attendu', meta: { class: { th: 'text-left', td: 'text-left' } } },
     { accessorKey: 'currentLevel', header: 'Niveau actuel', meta: { class: { th: 'text-left', td: 'text-left' } } },
 ])
@@ -231,6 +245,7 @@ const skillsComparison = computed<SkillComparison[]>((): SkillComparison[] => {
         return {
             skillId: jobSkill.skillId,
             skillName: jobSkill.skillName,
+            macroSkillTypeName: jobSkill.macroSkillTypeName,
             expectedLevel,
             currentLevel,
         }
@@ -337,9 +352,6 @@ async function openEvaluationModal(evaluationId: string) {
     }
 }
 
-function onBack() {
-    navigateTo('/users')
-}
 
 onMounted(async () => {
     try {

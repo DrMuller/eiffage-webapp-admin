@@ -7,32 +7,39 @@
                     <div class="text-lg font-medium">Recherche</div>
                 </div>
             </template>
-            <div class="flex flex-wrap items-end gap-2 p-4 mt-4">
-                <div>
+            <div class="p-4 mt-4">
+                <div class="flex gap-2">
                     <UFormField label="Rechercher (nom, email, matricule, rôle)">
                         <UInput v-model="searchQuery" placeholder="Rechercher (nom, email, matricule, rôle)"
                             class="w-[420px] mb-2" />
                     </UFormField>
-                    <UFormField label="Emplois">
-                        <USelectMenu v-model="selectedJobIds" :items="jobsOptions" :value-key="'value'" multiple
-                            searchable searchable-placeholder="Filtrer par emplois..." class="w-[420px]"
-                            placeholder="Emplois" />
+                    <UFormField label="Tranche d'âge">
+                        <USelect v-model="selectedAgeRange" :items="ageRangeOptions" :value-key="'value'"
+                            class="w-[115px]" placeholder="Âge" />
                     </UFormField>
                 </div>
-                <UButton color="secondary" variant="soft" icon="i-heroicons-plus" @click="isModalOpen = true">
-                    Ajouter des compétences
-                </UButton>
-                <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
-                <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
-                    @click="handleReset">
-                    Réinitialiser
-                </UButton>
+                <div class="flex gap-2 items-end">
+                    <UFormField label="Emplois">
+                        <USelectMenu v-model="selectedJobIds" :items="jobsOptions" :value-key="'value'" multiple
+                            searchable searchable-placeholder="Filtrer par emplois..." class="w-[300px]"
+                            placeholder="Emplois" />
+                    </UFormField>
+                    <UButton color="secondary" variant="soft" icon="i-heroicons-plus" @click="isModalOpen = true">
+                        Ajouter des compétences
+                    </UButton>
+                    <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
+                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
+                        @click="handleReset">
+                        Réinitialiser
+                    </UButton>
+                </div>
+
             </div>
             <div v-if="selectedSkillFilters.length > 0" class="flex flex-col gap-2 p-4">
                 <div class="text-sm text-gray-600">Compétences sélectionnées et minimum requis</div>
                 <div class="">
                     <div v-for="sel in selectedSkillFilters" :key="sel.skillId" class="flex gap-2 rounded pb-1">
-                        <UButton icon="i-heroicons-x-mark" color="error" variant="soft"
+                        <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft"
                             @click="removeSelectedSkill(sel.skillId)" />
                         <USelect v-model="sel.minLevel" :items="levelOptions" :value-key="'value'" placeholder="Niveau"
                             class="w-[300px]" />
@@ -93,6 +100,15 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 
+// Age range enum
+enum AgeRange {
+    RANGE_18_25 = '18-25',
+    RANGE_26_35 = '26-35',
+    RANGE_36_45 = '36-45',
+    RANGE_46_55 = '46-55',
+    RANGE_56_PLUS = '56+'
+}
+
 const emit = defineEmits<{
     (e: 'search', payload: { q?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> }): void
 }>()
@@ -106,6 +122,7 @@ const { skills, macroSkills, macroSkillTypes, getSkills, getMacroSkills, getMacr
 // Local state
 const searchQuery = ref('')
 const selectedJobIds = ref<string[]>([])
+const selectedAgeRange = ref<AgeRange | undefined>(undefined)
 const selectedSkillIds = ref<string[]>([])
 const selectedMacroSkillTypeIds = ref<string[]>([])
 const selectedMacroSkillIds = ref<string[]>([])
@@ -117,6 +134,7 @@ const modalSelectedJobIds = ref<string[]>([])
 
 // Options
 const jobsOptions = computed(() => jobs.value.map((j) => ({ label: j.name, value: j._id })))
+const ageRangeOptions = computed(() => Object.values(AgeRange).map(v => ({ label: v, value: v })))
 const skillsOptions = computed(() => skills.value.map((s) => ({ label: s.name, value: s._id })))
 const macroSkillTypeOptions = computed(() => macroSkillTypes.value.map((t) => ({ label: t.name, value: t._id })))
 const macroSkillOptions = computed(() => {
@@ -232,6 +250,7 @@ function submitSearch() {
 function handleReset() {
     searchQuery.value = ''
     selectedJobIds.value = []
+    selectedAgeRange.value = undefined
     selectedSkillIds.value = []
     selectedMacroSkillTypeIds.value = []
     selectedMacroSkillIds.value = []

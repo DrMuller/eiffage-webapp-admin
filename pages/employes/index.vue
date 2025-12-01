@@ -18,7 +18,7 @@
 
         <!-- Users Table -->
         <UsersTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
-            :editable="false" show-roles="false" @select="onSelect" />
+            :editable="false" :show-roles="false" @select="onSelect" />
 
     </div>
 </template>

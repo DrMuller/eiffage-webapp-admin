@@ -227,6 +227,48 @@ export const useSkills = () => {
         }
     }
 
+    async function updateSkill(id: string, data: Partial<CreateSkillRequest>): Promise<Skill> {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await $api<SkillApi>(`/skills/${id}`, {
+                method: 'PUT',
+                body: data
+            })
+
+            const mapped = transformSkill(response)
+            const index = skills.value.findIndex(s => s._id === id)
+            if (index !== -1) {
+                skills.value[index] = mapped
+            }
+            return mapped
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to update skill'
+            throw err
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function deleteSkill(id: string): Promise<void> {
+        loading.value = true
+        error.value = null
+
+        try {
+            await $api(`/skills/${id}`, {
+                method: 'DELETE'
+            })
+
+            skills.value = skills.value.filter(s => s._id !== id)
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to delete skill'
+            throw err
+        } finally {
+            loading.value = false
+        }
+    }
+
     // Utility functions
     async function refreshAllData(): Promise<void> {
         await Promise.all([
@@ -268,6 +310,8 @@ export const useSkills = () => {
         getSkills,
         getSkillById,
         createSkill,
+        updateSkill,
+        deleteSkill,
 
         // Utilities
         refreshAllData,

@@ -25,8 +25,36 @@ export const useJobs = () => {
         }
     }
 
+    async function getJobById(jobId: string): Promise<Job> {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await $api<Job>(`/jobs/${jobId}`, { method: 'GET' })
+            return response
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Failed to fetch job'
+            throw err
+        } finally {
+            loading.value = false
+        }
+    }
+
     async function getJobSkills(jobId: string): Promise<JobSkillResponse[]> {
         return await $api<JobSkillResponse[]>(`/jobs/${jobId}/skills`, { method: 'GET' })
+    }
+
+    async function addSkillToJob(jobId: string, skillId: string, expectedLevel: number): Promise<JobSkillResponse> {
+        return await $api<JobSkillResponse>(`/jobs/${jobId}/skills`, {
+            method: 'POST',
+            body: { skillId, expectedLevel }
+        })
+    }
+
+    async function removeSkillFromJob(jobId: string, skillId: string): Promise<void> {
+        return await $api<void>(`/jobs/${jobId}/skills/${skillId}`, {
+            method: 'DELETE'
+        })
     }
 
     return {
@@ -34,7 +62,10 @@ export const useJobs = () => {
         loading,
         error,
         getJobs,
+        getJobById,
         getJobSkills,
+        addSkillToJob,
+        removeSkillFromJob,
     }
 }
 

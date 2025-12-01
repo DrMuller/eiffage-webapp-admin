@@ -128,7 +128,8 @@ const props = withDefaults(defineProps<{
 }>(), {
     loading: false,
     error: null,
-    title: 'Liste des Employés'
+    title: 'Liste des Employés',
+    showRoles: true,
 })
 
 // const emit = defineEmits<{

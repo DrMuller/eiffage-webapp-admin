@@ -17,15 +17,20 @@
         <UIcon name="i-heroicons-users" class="w-5 h-5" />
         <span>Employés</span>
       </NuxtLink>
-      <NuxtLink to="/competences" class="nav-item"
-        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/skills') }">
+      <NuxtLink to="/emplois" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/emplois') }">
         <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
-        <span>Compétences</span>
+        <span>Emplois</span>
       </NuxtLink>
       <NuxtLink to="/campagnes" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/campagnes') }">
         <UIcon name="i-heroicons-calendar" class="w-5 h-5" />
         <span>Campagnes</span>
+      </NuxtLink>
+      <NuxtLink to="/admin/import" class="nav-item"
+        :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/import-sirh') }">
+        <UIcon name="i-heroicons-arrow-up-tray" class="w-5 h-5" />
+        <span>Importer</span>
       </NuxtLink>
     </nav>
 
