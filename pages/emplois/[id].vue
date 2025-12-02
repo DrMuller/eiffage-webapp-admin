@@ -13,10 +13,6 @@
             <span class="ml-2">Chargement de l'emploi...</span>
         </div>
 
-        <!-- Error State -->
-        <UAlert v-else-if="error" icon="i-heroicons-exclamation-triangle" color="error" variant="soft"
-            title="Erreur lors du chargement" :description="error" class="mb-6" />
-
         <!-- Job Details -->
         <div v-else-if="job" class="space-y-6">
             <!-- Job Information Card -->
@@ -58,136 +54,157 @@
                 </div>
             </UCard>
 
-            <!-- Skills Section - 2 Column Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Left Column: Macro Skills List -->
-                <UCard variant="outline">
-                    <template #header>
+            <!-- Skills Section - Table -->
+            <UCard variant="outline">
+                <template #header>
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <span class="text-lg font-semibold">Macro Compétences</span>
-                            <UBadge color="info" variant="soft">{{ macroSkillsGrouped.length }}</UBadge>
+                            <span class="text-lg font-semibold">Compétences</span>
+                            <UBadge color="info" variant="soft">{{ jobSkills.length }}</UBadge>
+                        </div>
+                        <UButton icon="i-heroicons-plus" size="sm" color="primary" @click="openAddSkillModal">
+                            Ajouter une compétence
+                        </UButton>
+                    </div>
+                </template>
+
+                <UTable v-model:sorting="sorting" :data="jobSkills" :columns="columns" :loading="loadingSkills">
+                    <!-- Sortable headers -->
+                    <template #skillName-header="{ column }">
+                        <div class="inline-flex items-center gap-1 cursor-pointer select-none"
+                            @click="column.toggleSorting()">
+                            <span>Compétence</span>
+                            <UIcon
+                                :name="column.getIsSorted() === 'asc' ? 'i-heroicons-chevron-up' : column.getIsSorted() === 'desc' ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up-down'"
+                                class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </template>
+                    <template #macroSkillName-header="{ column }">
+                        <div class="inline-flex items-center gap-1 cursor-pointer select-none"
+                            @click="column.toggleSorting()">
+                            <span>Macro Compétence</span>
+                            <UIcon
+                                :name="column.getIsSorted() === 'asc' ? 'i-heroicons-chevron-up' : column.getIsSorted() === 'desc' ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up-down'"
+                                class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </template>
+                    <template #macroSkillTypeName-header="{ column }">
+                        <div class="inline-flex items-center gap-1 cursor-pointer select-none"
+                            @click="column.toggleSorting()">
+                            <span>Type</span>
+                            <UIcon
+                                :name="column.getIsSorted() === 'asc' ? 'i-heroicons-chevron-up' : column.getIsSorted() === 'desc' ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up-down'"
+                                class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </template>
+                    <template #expectedLevel-header="{ column }">
+                        <div class="inline-flex items-center gap-1 cursor-pointer select-none"
+                            @click="column.toggleSorting()">
+                            <span>Niveau</span>
+                            <UIcon
+                                :name="column.getIsSorted() === 'asc' ? 'i-heroicons-chevron-up' : column.getIsSorted() === 'desc' ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up-down'"
+                                class="w-4 h-4 text-gray-400" />
                         </div>
                     </template>
 
-                    <!-- Loading State -->
-                    <div v-if="loadingSkills" class="flex justify-center items-center py-8">
-                        <UIcon name="i-heroicons-arrow-path" class="animate-spin w-5 h-5" />
-                        <span class="ml-2">Chargement...</span>
-                    </div>
-
-                    <!-- Macro Skills List -->
-                    <div v-else-if="macroSkillsGrouped.length > 0">
-                        <div v-for="macroSkill in macroSkillsGrouped" :key="macroSkill.macroSkillId"
-                            class="p-4 cursor-pointer hover:bg-gray-50" :class="{
-                                'bg-info-100 hover:bg-info-100': selectedMacroSkillId === macroSkill.macroSkillId
-                            }" @click="selectMacroSkill(macroSkill.macroSkillId)">
-                            <div class="flex items-start justify-between gap-2">
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-medium text-gray-900 whitespace-normal break-words">
-                                        {{ macroSkill.macroSkillName }}
-                                    </h3>
-                                    <p class="text-sm text-gray-500 mt-1">
-                                        {{ macroSkill.macroSkillTypeName }}
-                                    </p>
-                                </div>
-                                <UBadge :label="String(macroSkill.skills.length)" variant="soft" color="neutral"
-                                    class="flex-shrink-0" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div v-else class="text-center py-8">
-                        <UIcon name="i-heroicons-document-text" class="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                        <p class="text-gray-600 text-sm">
-                            Aucune compétence associée à cet emploi
-                        </p>
-                    </div>
-                </UCard>
-
-                <!-- Right Column: Micro Skills (Dynamic based on selection) -->
-                <UCard variant="outline">
-                    <template #header>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg font-semibold">
-                                    {{ selectedMacroSkill ? 'Compétences' : 'Sélectionnez une macro compétence' }}
-                                </span>
-                                <UBadge v-if="selectedMicroSkills.length > 0" color="info" variant="soft">
-                                    {{ selectedMicroSkills.length }}
-                                </UBadge>
-                            </div>
-                            <UButton v-if="selectedMacroSkillId" icon="i-heroicons-plus" size="sm" color="info"
-                                @click="openAddSkillModal">
-                                Ajouter une compétence
-                            </UButton>
+                    <!-- Skill Name cell -->
+                    <template #skillName-cell="{ row }">
+                        <div class="font-medium text-gray-900 whitespace-normal break-words">
+                            {{ row.original.skillName }}
                         </div>
                     </template>
 
-                    <!-- Instruction State -->
-                    <div v-if="!selectedMacroSkillId && macroSkillsGrouped.length > 0" class="text-center py-12">
-                        <UIcon name="i-heroicons-cursor-arrow-rays" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">
-                            Sélectionnez une macro compétence
-                        </h3>
-                        <p class="text-gray-600">
-                            Cliquez sur une macro compétence à gauche pour voir ses compétences détaillées
-                        </p>
-                    </div>
-
-                    <!-- Selected Macro Skill Info -->
-                    <div v-else-if="selectedMacroSkill" class="space-y-4">
-
-                        <!-- Micro Skills List -->
-                        <div>
-                            <div v-for="skill in selectedMicroSkills" :key="skill._id"
-                                class="p-4 flex items-start justify-between gap-3 hover:bg-gray-50">
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-medium text-gray-900 whitespace-normal break-words">
-                                        {{ skill.skillName }}
-                                    </h4>
-                                </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
-                                    <UBadge v-if="skill.expectedLevel" :label="`Niveau ${skill.expectedLevel}`"
-                                        variant="soft" color="info" />
-                                    <span v-else class="text-sm text-gray-400">Aucun niveau</span>
-                                    <UButton icon="i-heroicons-trash" size="xs" color="error" variant="ghost"
-                                        :loading="deletingSkillId === skill.skillId"
-                                        @click="confirmDeleteSkill(skill.skillId)" />
-                                </div>
-                            </div>
+                    <!-- Macro Skill Name cell -->
+                    <template #macroSkillName-cell="{ row }">
+                        <div class="text-gray-900 whitespace-normal break-words">
+                            {{ row.original.macroSkillName }}
                         </div>
-                    </div>
+                    </template>
 
-                    <!-- Empty State when no skills -->
-                    <div v-else class="text-center py-12">
-                        <UIcon name="i-heroicons-document-text" class="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                        <p class="text-gray-600 text-sm">
-                            Aucune compétence disponible
-                        </p>
-                    </div>
-                </UCard>
-            </div>
+                    <!-- Macro Skill Type cell -->
+                    <template #macroSkillTypeName-cell="{ row }">
+                        <div class="text-sm text-gray-500 whitespace-normal break-words">
+                            <UBadge color="secondary" variant="soft">{{ row.original.macroSkillTypeName }}</UBadge>
+                        </div>
+                    </template>
+
+                    <!-- Expected Level cell -->
+                    <template #expectedLevel-cell="{ row }">
+                        <div v-if="row.original.expectedLevel" class="text-gray-900 font-bold text-info-600">
+                            {{ row.original.expectedLevel }}
+                        </div>
+                        <span v-else class="text-sm text-gray-400">—</span>
+                    </template>
+
+                    <!-- Actions cell -->
+                    <template #actions-cell="{ row }">
+                        <div class="flex justify-end">
+                            <UButton icon="i-heroicons-trash" size="sm" color="error" variant="ghost"
+                                :loading="deletingSkillId === row.original.skillId"
+                                @click="confirmDeleteSkill(row.original.skillId)" />
+                        </div>
+                    </template>
+                </UTable>
+
+                <div v-if="jobSkills.length === 0 && !loadingSkills" class="text-center py-12">
+                    <UIcon name="i-heroicons-document-text" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                        Aucune compétence associée à cet emploi
+                    </h3>
+                </div>
+            </UCard>
         </div>
 
         <!-- Add Skill Modal -->
-        <UModal v-model:open="isAddSkillModalOpen" title="Ajouter une compétence">
+        <UModal v-model:open="isAddSkillModalOpen" :title="'Ajouter une compétence'">
             <template #body>
-                <div class="p-6 flex flex-col gap-4">
-                    <UFormField label="Nom de la compétence *">
-                        <UInput v-model="newSkillName" placeholder="Entrez le nom de la compétence" class="w-full" />
-                    </UFormField>
-
-                    <UFormField label="Niveau attendu *">
-                        <USelect v-model="expectedLevel" :items="levelOptions" :value-key="'value'" placeholder="Niveau"
+                <div class="p-6 space-y-4">
+                    <!-- 1. Macro Skill Select -->
+                    <UFormField label="Macro Compétence *">
+                        <USelect v-model="selectedMacroSkillId" :items="macroSkillOptions" :value-key="'value'"
+                            :label-key="'label'" placeholder="Sélectionner une macro compétence" searchable
                             class="w-full" />
                     </UFormField>
 
-                    <div class="flex gap-2 justify-end mt-4">
+                    <!-- 2. Macro Skill Family Select -->
+                    <UFormField :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
+                        <template #label>
+                            <span :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
+                                Famille de Macro Compétence *
+                            </span>
+                        </template>
+                        <USelect v-model="newMacroSkillTypeId" :items="macroSkillTypeOptions" :value-key="'value'"
+                            :label-key="'label'" placeholder="Sélectionner une famille"
+                            :disabled="!isCreatingNewMacroSkill" class="w-full" />
+                    </UFormField>
+
+                    <!-- 3. Macro Skill Name Input -->
+                    <UFormField :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
+                        <template #label>
+                            <span :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
+                                Nom de la Macro Compétence *
+                            </span>
+                        </template>
+                        <UInput v-model="newMacroSkillName" placeholder="Entrez le nom de la macro compétence"
+                            :disabled="!isCreatingNewMacroSkill" class="w-full" />
+                    </UFormField>
+
+                    <!-- 4. Skill Name Input -->
+                    <UFormField label="Nom de la Compétence *">
+                        <UInput v-model="newSkillName" placeholder="Entrez le nom de la compétence" class="w-full" />
+                    </UFormField>
+
+                    <!-- 5. Skill Level Select -->
+                    <UFormField label="Niveau Attendu *">
+                        <USelect v-model="newSkillLevel" :items="levelOptions" :value-key="'value'" :label-key="'label'"
+                            placeholder="Sélectionner un niveau" class="w-full" />
+                    </UFormField>
+
+                    <div class="flex gap-2 justify-end mt-6">
                         <UButton color="neutral" variant="outline" @click="closeAddSkillModal">
                             Annuler
                         </UButton>
-                        <UButton color="primary" variant="solid" :loading="addingSkill" :disabled="!canAddSkill"
+                        <UButton color="primary" variant="solid" :loading="addingSkill" :disabled="!canSubmitSkillForm"
                             @click="handleAddSkill">
                             Ajouter
                         </UButton>
@@ -200,7 +217,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
 import type { Job, JobSkillResponse } from '~/types/jobs'
+import type { MacroSkill, MacroSkillType } from '~/types/skills'
 import { useSkillLevelLabel } from '~/composables/useSkillLevel'
 
 // Meta
@@ -213,82 +232,103 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { error, getJobById, getJobSkills, addSkillToJob, removeSkillFromJob } = useJobs()
-const { createSkill } = useSkills()
+const { getJobById, getJobSkills, removeSkillFromJob, addSkillToJob } = useJobs()
+const { getMacroSkills, getMacroSkillTypes, createMacroSkill, createSkill } = useSkills()
 
 // Local state
 const job = ref<Job | null>(null)
 const jobSkills = ref<JobSkillResponse[]>([])
 const loadingJob = ref(false)
 const loadingSkills = ref(false)
-const selectedMacroSkillId = ref<string | null>(null)
-
-// Add skill modal state
-const isAddSkillModalOpen = ref(false)
-const newSkillName = ref('')
-const expectedLevel = ref<number>(3)
-const addingSkill = ref(false)
+const sorting = ref([])
 
 // Delete skill state
 const deletingSkillId = ref<string | null>(null)
 
+// Add skill modal state
+const isAddSkillModalOpen = ref(false)
+const macroSkills = ref<MacroSkill[]>([])
+const macroSkillTypes = ref<MacroSkillType[]>([])
+const selectedMacroSkillId = ref<string>('new')
+const newMacroSkillTypeId = ref<string>('')
+const newMacroSkillName = ref('')
+const newSkillName = ref('')
+const newSkillLevel = ref<number>(3)
+const addingSkill = ref(false)
+
 // Computed properties
 const jobId = computed(() => route.params.id as string)
 
-// Group skills by macro skill
-const macroSkillsGrouped = computed(() => {
-    const grouped = new Map<string, {
-        macroSkillId: string
-        macroSkillName: string
-        macroSkillTypeId: string
-        macroSkillTypeName: string
-        skills: JobSkillResponse[]
-    }>()
+// Add skill modal computed properties
+const isCreatingNewMacroSkill = computed(() => selectedMacroSkillId.value === 'new')
 
-    jobSkills.value.forEach(skill => {
-        if (!grouped.has(skill.macroSkillId)) {
-            grouped.set(skill.macroSkillId, {
-                macroSkillId: skill.macroSkillId,
-                macroSkillName: skill.macroSkillName,
-                macroSkillTypeId: skill.macroSkillTypeId,
-                macroSkillTypeName: skill.macroSkillTypeName,
-                skills: []
-            })
-        }
-        grouped.get(skill.macroSkillId)!.skills.push(skill)
-    })
+const macroSkillOptions = computed(() => [
+    { label: 'Nouvelle macro compétence', value: 'new' },
+    ...macroSkills.value.map(ms => ({
+        label: `${ms.name} (${ms.macroSkillType.name})`,
+        value: ms._id
+    }))
+])
 
-    return Array.from(grouped.values()).sort((a, b) =>
-        a.macroSkillName.localeCompare(b.macroSkillName)
-    )
-})
+const macroSkillTypeOptions = computed(() =>
+    macroSkillTypes.value.map(type => ({
+        label: type.name,
+        value: type._id
+    }))
+)
 
-// Selected macro skill
-const selectedMacroSkill = computed(() => {
-    if (!selectedMacroSkillId.value) return null
-    return macroSkillsGrouped.value.find(ms => ms.macroSkillId === selectedMacroSkillId.value) || null
-})
-
-// Micro skills for selected macro skill
-const selectedMicroSkills = computed(() => {
-    if (!selectedMacroSkill.value) return []
-    return [...selectedMacroSkill.value.skills].sort((a, b) =>
-        a.skillName.localeCompare(b.skillName)
-    )
-})
-
-// Level options for the dropdown
 const levelOptions = computed(() => [1, 2, 3, 4].map(v => ({
     label: useSkillLevelLabel(v),
     value: v
 })))
 
-// Validation for add skill form
-const canAddSkill = computed(() => {
-    return newSkillName.value.trim().length > 0 &&
-        expectedLevel.value >= 1 &&
-        expectedLevel.value <= 4
+const canSubmitSkillForm = computed(() => {
+    const hasSkillName = newSkillName.value.trim().length > 0
+    const hasLevel = newSkillLevel.value >= 1 && newSkillLevel.value <= 4
+
+    if (isCreatingNewMacroSkill.value) {
+        return hasSkillName && hasLevel &&
+            newMacroSkillName.value.trim().length > 0 &&
+            newMacroSkillTypeId.value.length > 0
+    }
+
+    return hasSkillName && hasLevel && selectedMacroSkillId.value !== 'new'
 })
+
+// Table columns
+const columns = computed<TableColumn<JobSkillResponse>[]>(() => [
+    {
+        id: 'skillName',
+        header: 'Compétence',
+        accessorKey: 'skillName',
+        enableSorting: true,
+        meta: { class: { th: 'text-left' } },
+    },
+    {
+        accessorKey: 'macroSkillName',
+        header: 'Macro Compétence',
+        enableSorting: true,
+        meta: { class: { th: 'text-left' } },
+    },
+    {
+        accessorKey: 'macroSkillTypeName',
+        header: 'Type',
+        enableSorting: true,
+        meta: { class: { th: 'text-left' } },
+    },
+    {
+        accessorKey: 'expectedLevel',
+        header: 'Niveau',
+        enableSorting: true,
+        meta: { class: { th: 'text-right', td: 'text-right' } },
+    },
+    {
+        accessorKey: 'actions',
+        header: '',
+        enableSorting: false,
+        meta: { class: { th: 'w-[80px]', td: 'w-[80px]' } },
+    },
+])
 
 // Methods
 const formatDate = (date: Date | string) => {
@@ -300,33 +340,59 @@ const formatDate = (date: Date | string) => {
     })
 }
 
-const selectMacroSkill = (macroSkillId: string) => {
-    selectedMacroSkillId.value = macroSkillId
-}
-
-const openAddSkillModal = () => {
-    isAddSkillModalOpen.value = true
+const openAddSkillModal = async () => {
+    try {
+        // Load macro skills and types if not already loaded
+        if (macroSkills.value.length === 0) {
+            macroSkills.value = await getMacroSkills()
+        }
+        if (macroSkillTypes.value.length === 0) {
+            macroSkillTypes.value = await getMacroSkillTypes()
+        }
+        isAddSkillModalOpen.value = true
+    } catch (err) {
+        console.error('Failed to load data for modal:', err)
+        toast.add({
+            title: 'Erreur',
+            description: 'Impossible de charger les données',
+            color: 'error'
+        })
+    }
 }
 
 const closeAddSkillModal = () => {
     isAddSkillModalOpen.value = false
+    selectedMacroSkillId.value = 'new'
+    newMacroSkillTypeId.value = ''
+    newMacroSkillName.value = ''
     newSkillName.value = ''
-    expectedLevel.value = 3
+    newSkillLevel.value = 3
 }
 
 const handleAddSkill = async () => {
-    if (!newSkillName.value.trim() || !job.value || !selectedMacroSkillId.value) return
+    if (!job.value || !canSubmitSkillForm.value) return
 
     addingSkill.value = true
     try {
-        // First, create the skill with the selected macro skill
+        let macroSkillId = selectedMacroSkillId.value
+
+        // Create macro skill if needed
+        if (isCreatingNewMacroSkill.value) {
+            const createdMacroSkill = await createMacroSkill({
+                name: newMacroSkillName.value.trim(),
+                macroSkillTypeId: newMacroSkillTypeId.value
+            })
+            macroSkillId = createdMacroSkill._id
+        }
+
+        // Create the skill
         const createdSkill = await createSkill({
             name: newSkillName.value.trim(),
-            macroSkillId: selectedMacroSkillId.value
+            macroSkillId: macroSkillId
         })
 
-        // Then, add it to the job with the expected level
-        await addSkillToJob(job.value._id, createdSkill._id, expectedLevel.value)
+        // Add skill to job with expected level
+        await addSkillToJob(job.value._id, createdSkill._id, newSkillLevel.value)
 
         toast.add({
             title: 'Succès',
@@ -418,14 +484,6 @@ const loadJobSkills = async () => {
     loadingSkills.value = true
     try {
         jobSkills.value = await getJobSkills(jobId.value)
-
-        // Auto-select first macro skill if available
-        if (macroSkillsGrouped.value.length > 0) {
-            const firstGroup = macroSkillsGrouped.value[0]
-            if (firstGroup) {
-                selectedMacroSkillId.value = firstGroup.macroSkillId
-            }
-        }
     } catch (err) {
         console.error('Failed to load job skills:', err)
         toast.add({

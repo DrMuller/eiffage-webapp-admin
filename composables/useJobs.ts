@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Job, JobSkillResponse } from '~/types/jobs'
+import type { Job, JobSkillResponse, JobSkillLevelDistribution } from '~/types/jobs'
 
 export const useJobs = () => {
     const { $api } = useNuxtApp()
@@ -57,6 +57,10 @@ export const useJobs = () => {
         })
     }
 
+    async function getJobSkillLevelDistribution(jobId: string): Promise<JobSkillLevelDistribution[]> {
+        return await $api<JobSkillLevelDistribution[]>(`/jobs/${jobId}/skills/distribution`, { method: 'GET' })
+    }
+
     return {
         jobs,
         loading,
@@ -66,6 +70,7 @@ export const useJobs = () => {
         getJobSkills,
         addSkillToJob,
         removeSkillFromJob,
+        getJobSkillLevelDistribution,
     }
 }
 
