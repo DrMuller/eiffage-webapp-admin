@@ -18,7 +18,8 @@
 
         <!-- Users Table -->
         <UsersTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
-            :editable="false" :show-roles="false" @select="onSelect" />
+            :editable="false" :show-roles="false" :pagination-meta="paginationMeta" :current-page="currentPage"
+            @select="onSelect" @page-change="onPageChange" />
 
     </div>
 </template>
@@ -35,22 +36,54 @@ definePageMeta({
 })
 
 // Composables
-const { users, loading, error, getAllUsers, getAllManagers, searchUsers } = useUsers()
+const { users, loading, error, paginationMeta, getAllUsers, getAllManagers, searchUsers } = useUsers()
 const { jobs, getJobs } = useJobs()
 const router = useRouter()
-// Search handled in EmployeesSearch
+
+// Local state
+const currentPage = ref(1)
+const pageSize = ref(50)
+const currentFilters = ref<{
+    q?: string;
+    jobIds?: string[];
+    skills?: Array<{ skillId: string; minLevel: number }>;
+} | null>(null)
 
 function onSelect(row: TableRow<User>) {
     router.push(`/employes/${row.original._id}`)
 }
 
 async function onSearch(payload: { q?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> }) {
-    const { q, jobIds, skills } = payload
+    currentFilters.value = payload
+    currentPage.value = 1 // Reset to first page on new search
+    await performSearch()
+}
+
+async function performSearch() {
+    const { q, jobIds, skills } = currentFilters.value || {}
+
     if (!q && (!jobIds || jobIds.length === 0) && (!skills || skills.length === 0)) {
-        await getAllUsers()
+        await getAllUsers({ page: currentPage.value, limit: pageSize.value })
         return
     }
-    await searchUsers({ q, jobIds, skills })
+
+    await searchUsers({
+        q,
+        jobIds,
+        skills,
+        page: currentPage.value,
+        limit: pageSize.value
+    })
+
+    // Sync currentPage with the actual page from the server response
+    if (paginationMeta.value) {
+        currentPage.value = paginationMeta.value.page
+    }
+}
+
+async function onPageChange(page: number) {
+    currentPage.value = page
+    await performSearch()
 }
 
 // search UI removed; handled in EmployeesSearch
@@ -58,9 +91,11 @@ async function onSearch(payload: { q?: string; jobIds?: string[]; skills?: Array
 // Lifecycle
 onMounted(async () => {
     try {
-        await getAllUsers()
-        await getAllManagers()
-        await getJobs()
+        await Promise.all([
+            getAllUsers({ page: currentPage.value, limit: pageSize.value }),
+            getAllManagers(),
+            getJobs()
+        ])
     } catch (err) {
         console.error('Échec du chargement des Employés:', err)
     }

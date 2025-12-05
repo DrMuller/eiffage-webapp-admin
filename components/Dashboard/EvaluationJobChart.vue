@@ -16,6 +16,34 @@
             class="w-full" />
         </UFormField>
 
+        <!-- Statistics Cards -->
+        <div v-if="selectedJobId && distribution.length > 0" class="space-y-3">
+          <!-- Average Skill Level -->
+          <UCard variant="outline">
+            <div class="p-3">
+              <label class="text-sm font-medium text-gray-500">Niveau moyen global</label>
+              <p class="text-2xl font-semibold text-primary-600 mt-1">
+                {{ averageSkillLevel.toFixed(2) }}
+                <span class="text-sm font-normal text-gray-500">/ 4</span>
+              </p>
+            </div>
+          </UCard>
+
+          <!-- Employee Evaluation Coverage -->
+          <UCard variant="outline">
+            <div class="p-3">
+              <label class="text-sm font-medium text-gray-500">Employés évalués</label>
+              <p class="text-2xl font-semibold text-primary-600 mt-1">
+                {{ employeesWithEvaluation }}
+                <span class="text-sm font-normal text-gray-500">/ {{ totalEmployees }}</span>
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ evaluationCoveragePercentage }}% de couverture
+              </p>
+            </div>
+          </UCard>
+        </div>
+
         <!-- Job Details -->
         <UCard v-if="selectedJob" variant="outline">
           <template #header>
@@ -115,6 +143,7 @@ import {
   type TooltipItem,
 } from 'chart.js'
 import type { Job, JobSkillLevelDistribution } from '~/types/jobs'
+import { skillLevels } from '~/composables/useSkillLevel'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
@@ -131,12 +160,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Composables
 const { getJobSkillLevelDistribution } = useJobs()
+const { searchUsers, paginationMeta } = useUsers()
 const toast = useToast()
 
 // State
 const selectedJobId = ref<string>('')
 const distribution = ref<JobSkillLevelDistribution[]>([])
 const loadingDistribution = ref(false)
+const totalEmployeesWithJob = ref(0)
 
 // Computed
 const jobOptions = computed(() =>
@@ -149,6 +180,70 @@ const jobOptions = computed(() =>
 const selectedJob = computed(() => {
   if (!selectedJobId.value) return null
   return props.jobs.find(job => job._id === selectedJobId.value) || null
+})
+
+// Calculate average skill level across all skills and employees
+const averageSkillLevel = computed(() => {
+  if (!distribution.value || distribution.value.length === 0) return 0
+
+  let totalWeightedLevel = 0
+  let totalEmployees = 0
+
+  distribution.value.forEach(item => {
+    // For each skill, sum up (level * count) for all levels
+    for (let level = 0; level <= 4; level++) {
+      const count = item.levelDistribution[level] || 0
+      totalWeightedLevel += level * count
+      totalEmployees += count
+    }
+  })
+
+  return totalEmployees > 0 ? totalWeightedLevel / totalEmployees : 0
+})
+
+// Calculate employees with evaluation vs total employees
+const employeesWithEvaluation = computed(() => {
+  if (!distribution.value || distribution.value.length === 0) return 0
+
+  // Use a Set to count unique employees (they might appear in multiple skills)
+  const uniqueEmployees = new Set<string>()
+
+  distribution.value.forEach(item => {
+    // Count employees with level > 0 (they have been evaluated)
+    for (let level = 1; level <= 4; level++) {
+      const count = item.levelDistribution[level] || 0
+      // We can't directly get unique IDs, so we approximate by taking the max count
+      // across all skills as that represents employees evaluated
+      if (count > 0) {
+        for (let i = 0; i < count; i++) {
+          uniqueEmployees.add(`${item.skillId}-${level}-${i}`)
+        }
+      }
+    }
+  })
+
+  // Better approach: get the max count across any single skill 
+  // (since all skills should have same employee count for the job)
+  let maxEmployeeCount = 0
+  distribution.value.forEach(item => {
+    let skillEmployeeCount = 0
+    for (let level = 1; level <= 4; level++) {
+      skillEmployeeCount += item.levelDistribution[level] || 0
+    }
+    maxEmployeeCount = Math.max(maxEmployeeCount, skillEmployeeCount)
+  })
+
+  return maxEmployeeCount
+})
+
+const totalEmployees = computed(() => {
+  // Return the actual count of employees with this job from the API
+  return totalEmployeesWithJob.value
+})
+
+const evaluationCoveragePercentage = computed(() => {
+  if (totalEmployees.value === 0) return 0
+  return ((employeesWithEvaluation.value / totalEmployees.value) * 100).toFixed(1)
 })
 
 // Chart colors for levels 0-4
@@ -217,8 +312,11 @@ const chartData = computed(() => {
   const datasets = []
 
   for (let level = 0; level <= 4; level++) {
+    const skillLevel = skillLevels.find(sl => sl.value === level)
+    const levelLabel = skillLevel ? `${level} - ${skillLevel.name}` : `Niveau ${level}`
+
     datasets.push({
-      label: `Niveau ${level}`,
+      label: levelLabel,
       data: distribution.value.map(item => item.levelDistribution[level] || 0),
       backgroundColor: levelColors[level as keyof typeof levelColors],
       borderColor: levelBorderColors[level as keyof typeof levelBorderColors],
@@ -311,7 +409,15 @@ const fetchDistribution = async () => {
 
   loadingDistribution.value = true
   try {
-    distribution.value = await getJobSkillLevelDistribution(selectedJobId.value)
+    // Fetch both distribution data and employee count in parallel
+    const [distributionData] = await Promise.all([
+      getJobSkillLevelDistribution(selectedJobId.value),
+      searchUsers({ jobIds: [selectedJobId.value], limit: 1 }) // Fetch with limit 1 to get total count from meta
+    ])
+
+    distribution.value = distributionData
+    // Get the total count from pagination meta
+    totalEmployeesWithJob.value = paginationMeta.value?.total || 0
   } catch (err) {
     console.error('Failed to fetch skill distribution:', err)
     toast.add({
@@ -320,6 +426,7 @@ const fetchDistribution = async () => {
       color: 'error'
     })
     distribution.value = []
+    totalEmployeesWithJob.value = 0
   } finally {
     loadingDistribution.value = false
   }
@@ -331,6 +438,7 @@ watch(selectedJobId, () => {
     fetchDistribution()
   } else {
     distribution.value = []
+    totalEmployeesWithJob.value = 0
   }
 })
 </script>

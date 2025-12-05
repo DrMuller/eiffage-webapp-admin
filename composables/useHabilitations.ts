@@ -1,14 +1,6 @@
 import { ref } from 'vue'
 import type { Habilitation } from '~/types/habilitation'
-
-export interface PaginationMeta {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-}
+import type { PaginationMeta } from '~/types/common'
 
 export function useHabilitations() {
     const { $api } = useNuxtApp()

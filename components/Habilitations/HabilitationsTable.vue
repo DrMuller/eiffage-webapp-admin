@@ -100,8 +100,8 @@
             <template #status-cell="{ row }">
                 <UBadge
                     :label="isExpired(row.original.endDate) ? 'Expirée' : 'Valide'"
-                    :color="isExpired(row.original.endDate) ? 'error' : 'success'"
-                    variant="soft"
+                    :color="isExpired(row.original.endDate) ? 'error' : 'info'"
+                    variant="subtle"
                     size="sm"
                 />
             </template>

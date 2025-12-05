@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { User } from '~/types/auth'
+import type { PaginationMeta } from '~/types/common'
 
 export const useUsers = () => {
   const { $api } = useNuxtApp()
@@ -9,6 +10,7 @@ export const useUsers = () => {
   const managers = ref<User[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const paginationMeta = ref<PaginationMeta | null>(null)
 
   // Get current user profile
   async function getCurrentUser(): Promise<User> {
@@ -31,17 +33,23 @@ export const useUsers = () => {
   }
 
   // Get all users (admin only)
-  async function getAllUsers(): Promise<User[]> {
+  async function getAllUsers(params?: { page?: number; limit?: number }): Promise<User[]> {
     loading.value = true
     error.value = null
 
     try {
-      const allUsers = await $api<User[]>('/admin/users', {
-        method: 'GET'
+      const headers: Record<string, string> = {}
+      if (params?.page) headers['x-page'] = params.page.toString()
+      if (params?.limit) headers['x-limit'] = params.limit.toString()
+
+      const response = await $api<{ data: User[], meta: PaginationMeta }>('/admin/users', {
+        method: 'GET',
+        headers
       })
 
-      users.value = allUsers
-      return allUsers
+      users.value = response.data
+      paginationMeta.value = response.meta
+      return response.data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch users'
       throw err
@@ -116,7 +124,7 @@ export const useUsers = () => {
   }
 
   // Search users (admin only)
-  async function searchUsers(params: { q?: string; skillName?: string; jobName?: string; observedLevel?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> } = {}): Promise<User[]> {
+  async function searchUsers(params: { q?: string; skillName?: string; jobName?: string; observedLevel?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }>; page?: number; limit?: number } = {}): Promise<User[]> {
     loading.value = true
     error.value = null
 
@@ -140,10 +148,15 @@ export const useUsers = () => {
         })
       }
 
+      const headers: Record<string, string> = {}
+      if (params.page) headers['x-page'] = params.page.toString()
+      if (params.limit) headers['x-limit'] = params.limit.toString()
+
       const url = `/admin/users/search${query.toString() ? `?${query.toString()}` : ''}`
-      const results = await $api<User[]>(url, { method: 'GET' })
-      users.value = results
-      return results
+      const response = await $api<{ data: User[], meta: PaginationMeta }>(url, { method: 'GET', headers })
+      users.value = response.data
+      paginationMeta.value = response.meta
+      return response.data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to search users'
       throw err
@@ -158,6 +171,7 @@ export const useUsers = () => {
     managers,
     loading,
     error,
+    paginationMeta,
     getAllManagers,
     getCurrentUser,
     getAllUsers,

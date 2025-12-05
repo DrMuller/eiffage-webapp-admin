@@ -1,9 +1,23 @@
 <template>
     <UCard variant="outline">
         <template #header>
-            <div class="flex items-center gap-3">
-                <span class="text-lg font-semibold">{{ title }}</span>
-                <UBadge color="info" variant="soft">{{ users.length }}</UBadge>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg font-semibold">{{ title }}</span>
+                    <UBadge color="info" variant="soft">
+                        {{ paginationMeta ? paginationMeta.total : users.length }}
+                    </UBadge>
+                </div>
+                <div v-if="paginationMeta && paginationMeta.totalPages > 1">
+                    <UPagination
+                        v-model:page="currentPageModel"
+                        :total="paginationMeta.total"
+                        :items-per-page="paginationMeta.limit"
+                        :sibling-count="1"
+                        show-edges
+                        show-controls
+                    />
+                </div>
             </div>
         </template>
 
@@ -107,15 +121,41 @@
                 Aucun
             </h3>
         </div>
+
+        <template v-if="paginationMeta && paginationMeta.totalPages > 1" #footer>
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                    Page {{ paginationMeta.page }} sur {{ paginationMeta.totalPages }}
+                    ({{ paginationMeta.total }} résultat{{ paginationMeta.total > 1 ? 's' : '' }})
+                </div>
+                <UPagination
+                    v-model:page="currentPageModel"
+                    :total="paginationMeta.total"
+                    :items-per-page="paginationMeta.limit"
+                    :sibling-count="1"
+                    show-edges
+                    show-controls
+                />
+            </div>
+        </template>
     </UCard>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { User } from '~/types/auth'
 import type { Job } from '~/types/jobs'
 const router = useRouter()
+
+export interface PaginationMeta {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
 
 const props = withDefaults(defineProps<{
     users: User[]
@@ -125,19 +165,37 @@ const props = withDefaults(defineProps<{
     title?: string
     editable?: boolean
     showRoles?: boolean
+    paginationMeta?: PaginationMeta | null
+    currentPage?: number
 }>(), {
     loading: false,
     error: null,
     title: 'Liste des Employés',
     showRoles: true,
+    paginationMeta: null,
+    currentPage: 1,
 })
 
-// const emit = defineEmits<{
-//     (e: 'select', row: TableRow<User>): void
-//     (e: 'edit', user: User): void
-// }>()
+const emit = defineEmits<{
+    (e: 'page-change', page: number): void
+    (e: 'edit', user: User): void
+}>()
 
 const sorting = ref([])
+
+const currentPageModel = ref(props.currentPage)
+
+// Watch for prop changes and update local ref
+watch(() => props.currentPage, (newPage) => {
+    currentPageModel.value = newPage
+})
+
+// Watch for local ref changes and emit event
+watch(currentPageModel, (newPage) => {
+    if (newPage !== props.currentPage) {
+        emit('page-change', newPage)
+    }
+})
 
 const columns = computed<TableColumn<User>[]>(() => {
 

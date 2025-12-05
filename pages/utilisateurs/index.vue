@@ -33,7 +33,8 @@
 
         <!-- Users Table -->
         <UsersTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
-            :editable="true" @select="onSelect" @edit="viewUser" />
+            :editable="true" :pagination-meta="paginationMeta" :current-page="currentPage"
+            @select="onSelect" @edit="viewUser" @page-change="onPageChange" />
 
         <!-- Edit User Modal -->
         <UModal v-model:open="isEditModalOpen" :title="modalTitle">
@@ -111,9 +112,15 @@ definePageMeta({
 })
 
 // Composables
-const { users, managers, loading, error, getAllUsers, updateUser, getAllManagers, searchUsers } = useUsers()
+const { users, managers, loading, error, paginationMeta, getAllUsers, updateUser, getAllManagers, searchUsers } = useUsers()
 const { jobs, getJobs } = useJobs()
 const $router = useRouter()
+
+// Pagination state
+const currentPage = ref(1)
+const pageSize = ref(50)
+const currentFilters = ref<{ q?: string } | null>(null)
+
 // Search state (backend-driven via button)
 const searchQuery = ref('')
 
@@ -128,11 +135,32 @@ const handleReset = () => {
 
 const handleSearch = async () => {
     const trimmed = searchQuery.value.trim()
+    currentFilters.value = { q: trimmed || undefined }
+    currentPage.value = 1 // Reset to first page on new search
+    await performSearch()
+}
+
+async function performSearch() {
+    const { q } = currentFilters.value || {}
     try {
-        await searchUsers({ q: trimmed || undefined })
+        if (!q) {
+            await getAllUsers({ page: currentPage.value, limit: pageSize.value })
+        } else {
+            await searchUsers({ q, page: currentPage.value, limit: pageSize.value })
+        }
+
+        // Sync currentPage with the actual page from the server response
+        if (paginationMeta.value) {
+            currentPage.value = paginationMeta.value.page
+        }
     } catch (err) {
         console.error('Search failed', err)
     }
+}
+
+async function onPageChange(page: number) {
+    currentPage.value = page
+    await performSearch()
 }
 const toast = useToast()
 
@@ -212,7 +240,7 @@ const handleUpdateUser = async () => {
         })
 
         // Refresh the users list to ensure it's up to date
-        await getAllUsers()
+        await performSearch()
 
         isEditModalOpen.value = false
         editingUser.value = null
@@ -229,9 +257,11 @@ const handleUpdateUser = async () => {
 // Lifecycle
 onMounted(async () => {
     try {
-        await getAllUsers()
-        await getAllManagers()
-        await getJobs()
+        await Promise.all([
+            getAllUsers({ page: currentPage.value, limit: pageSize.value }),
+            getAllManagers(),
+            getJobs()
+        ])
     } catch (err) {
         console.error('Échec du chargement des Employés:', err)
     }
