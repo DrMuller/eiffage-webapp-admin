@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   app: {
     head: {
@@ -22,33 +22,13 @@ export default defineNuxtConfig({
   // Optimize build for memory-constrained environments
   vite: {
     build: {
-      // Disable source maps in production to save memory
       sourcemap: false,
-      // Reduce chunk size to lower memory usage
-      chunkSizeWarningLimit: 500,
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          // Manual chunk splitting to reduce memory pressure
-          manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              // Split vendor code into smaller chunks
-              if (id.includes('chart.js') || id.includes('vue-chartjs')) {
-                return 'vendor-charts';
-              }
-              if (id.includes('@nuxt/ui')) {
-                return 'vendor-ui';
-              }
-              if (id.includes('vue')) {
-                return 'vendor-vue';
-              }
-              return 'vendor';
-            }
-          }
+          manualChunks: undefined
         }
       }
-    },
-    optimizeDeps: {
-      include: ['vue', 'vue-router']
     }
   },
 
@@ -67,6 +47,12 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/i18n',
   ],
+
+  i18n: {
+    bundle: {
+      optimizeTranslationDirective: false
+    }
+  },
 
   fonts: {
     families: [
