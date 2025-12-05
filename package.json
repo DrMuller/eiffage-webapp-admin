@@ -6,7 +6,7 @@
     "node": ">=23"
   },
   "scripts": {
-    "build": "nuxt build",
+    "build": "NODE_OPTIONS='--max-old-space-size=512' nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

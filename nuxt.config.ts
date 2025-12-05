@@ -15,7 +15,41 @@ export default defineNuxtConfig({
   ssr: false,
 
   nitro: {
-    preset: 'static'
+    preset: 'static',
+    minify: true
+  },
+
+  // Optimize build for memory-constrained environments
+  vite: {
+    build: {
+      // Disable source maps in production to save memory
+      sourcemap: false,
+      // Reduce chunk size to lower memory usage
+      chunkSizeWarningLimit: 500,
+      rollupOptions: {
+        output: {
+          // Manual chunk splitting to reduce memory pressure
+          manualChunks: (id) => {
+            if (id.includes('node_modules')) {
+              // Split vendor code into smaller chunks
+              if (id.includes('chart.js') || id.includes('vue-chartjs')) {
+                return 'vendor-charts';
+              }
+              if (id.includes('@nuxt/ui')) {
+                return 'vendor-ui';
+              }
+              if (id.includes('vue')) {
+                return 'vendor-vue';
+              }
+              return 'vendor';
+            }
+          }
+        }
+      }
+    },
+    optimizeDeps: {
+      include: ['vue', 'vue-router']
+    }
   },
 
   routeRules: {
@@ -57,6 +91,17 @@ export default defineNuxtConfig({
 
   image: {
     provider: 'ipx'
+  },
+
+  // Disable source maps in production
+  sourcemap: {
+    server: false,
+    client: false
+  },
+
+  // Optimize builds
+  experimental: {
+    payloadExtraction: false
   },
 
   compatibilityDate: '2025-04-02',
