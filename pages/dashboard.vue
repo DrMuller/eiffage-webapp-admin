@@ -17,7 +17,7 @@ import type { Job } from '~/types/jobs'
 
 // Meta
 definePageMeta({
-  middleware: 'auth',
+  middleware: ['auth', 'admin'],
   layout: 'default'
 })
 

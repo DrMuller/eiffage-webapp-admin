@@ -35,8 +35,7 @@
                 </div>
                 <div class="flex gap-2">
                     <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
-                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
-                        @click="handleReset">
+                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" @click="handleReset">
                         Réinitialiser
                     </UButton>
                 </div>
@@ -105,7 +104,3 @@ onMounted(async () => {
     ])
 })
 </script>
-
-
-
-

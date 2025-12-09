@@ -30,7 +30,7 @@ import HabilitationsTable from '~/components/Habilitations/HabilitationsTable.vu
 
 // Meta
 definePageMeta({
-    middleware: ['auth', 'admin'],
+    middleware: ['auth', 'admin-or-manager'],
     layout: 'default'
 })
 

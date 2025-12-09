@@ -7,7 +7,7 @@
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <NuxtLink to="/dashboard" class="nav-item"
+      <NuxtLink v-if="isAdmin" to="/dashboard" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dashboard') }">
         <UIcon name="i-heroicons-chart-bar" class="w-5 h-5" />
         <span>Tableau de bord</span>
@@ -17,27 +17,27 @@
         <UIcon name="i-heroicons-users" class="w-5 h-5" />
         <span>Utilisateurs</span>
       </NuxtLink>
-      <NuxtLink v-if="isAdmin" to="/employes" class="nav-item"
+      <NuxtLink v-if="isAdminOrManager" to="/employes" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/users') }">
         <UIcon name="i-heroicons-identification" class="w-5 h-5" />
         <span>Employés</span>
       </NuxtLink>
-      <NuxtLink to="/emplois" class="nav-item"
+      <NuxtLink v-if="isAdmin" to="/emplois" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/emplois') }">
         <UIcon name="i-heroicons-briefcase" class="w-5 h-5" />
-        <span>Emplois</span>
+        <span>Emplois & Compétences</span>
       </NuxtLink>
-      <NuxtLink to="/habilitations" class="nav-item"
+      <NuxtLink v-if="isAdminOrManager" to="/habilitations" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/habilitations') }">
         <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
         <span>Habilitations</span>
       </NuxtLink>
-      <NuxtLink to="/campagnes" class="nav-item"
+      <NuxtLink v-if="isAdmin" to="/campagnes" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/campagnes') }">
         <UIcon name="i-heroicons-calendar" class="w-5 h-5" />
         <span>Campagnes</span>
       </NuxtLink>
-      <NuxtLink to="/admin/import" class="nav-item"
+      <NuxtLink v-if="isAdmin" to="/admin/import" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/import-sirh') }">
         <UIcon name="i-heroicons-arrow-up-tray" class="w-5 h-5" />
         <span>Importer</span>
@@ -68,6 +68,11 @@ const route = useRoute()
 // Check if user has admin role
 const isAdmin = computed(() => {
   return user.value?.roles?.includes('ADMIN') || false
+})
+
+// Check if user has admin or manager role
+const isAdminOrManager = computed(() => {
+  return user.value?.roles?.some(role => ['ADMIN', 'MANAGER'].includes(role)) || false
 })
 
 const handleLogout = () => {

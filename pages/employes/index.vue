@@ -31,7 +31,7 @@ import EmployeesSearch from '~/components/Users/EmployeesSearch.vue'
 
 // Meta
 definePageMeta({
-    middleware: ['auth', 'admin'],
+    middleware: ['auth', 'admin-or-manager'],
     layout: 'default'
 })
 
