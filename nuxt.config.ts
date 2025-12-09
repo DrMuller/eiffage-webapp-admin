@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: false },
+  devtools: { enabled: true },
 
   app: {
     head: {
@@ -15,21 +15,7 @@ export default defineNuxtConfig({
   ssr: false,
 
   nitro: {
-    preset: 'static',
-    minify: true
-  },
-
-  // Optimize build for memory-constrained environments
-  vite: {
-    build: {
-      sourcemap: false,
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          manualChunks: undefined
-        }
-      }
-    }
+    preset: 'static'
   },
 
   routeRules: {
@@ -47,12 +33,6 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/i18n',
   ],
-
-  i18n: {
-    bundle: {
-      optimizeTranslationDirective: false
-    }
-  },
 
   fonts: {
     families: [
@@ -77,17 +57,6 @@ export default defineNuxtConfig({
 
   image: {
     provider: 'ipx'
-  },
-
-  // Disable source maps in production
-  sourcemap: {
-    server: false,
-    client: false
-  },
-
-  // Optimize builds
-  experimental: {
-    payloadExtraction: false
   },
 
   compatibilityDate: '2025-04-02',

@@ -165,6 +165,29 @@ export const useUsers = () => {
     }
   }
 
+  // Invite user (admin only)
+  async function inviteUser(userId: string): Promise<void> {
+    loading.value = true
+    error.value = null
+
+    try {
+      await $api(`/admin/users/${userId}/invite`, {
+        method: 'POST'
+      })
+
+      // Update the user in the local list to reflect the new invitedAt timestamp
+      const userIndex = users.value.findIndex(u => u._id === userId)
+      if (userIndex !== -1) {
+        users.value[userIndex].invitedAt = new Date()
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to invite user'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     currentUser,
     users,
@@ -178,6 +201,7 @@ export const useUsers = () => {
     updateUser,
     refreshCurrentUser,
     refreshUsers,
-    searchUsers
+    searchUsers,
+    inviteUser
   }
 }

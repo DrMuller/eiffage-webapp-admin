@@ -9,14 +9,8 @@
                     </UBadge>
                 </div>
                 <div v-if="paginationMeta && paginationMeta.totalPages > 1">
-                    <UPagination
-                        v-model:page="currentPageModel"
-                        :total="paginationMeta.total"
-                        :items-per-page="paginationMeta.limit"
-                        :sibling-count="1"
-                        show-edges
-                        show-controls
-                    />
+                    <UPagination v-model:page="currentPageModel" :total="paginationMeta.total"
+                        :items-per-page="paginationMeta.limit" :sibling-count="1" show-edges show-controls />
                 </div>
             </div>
         </template>
@@ -96,10 +90,26 @@
                 </div>
             </template>
 
+            <template v-if="showInviteFeatures" #inviteStatus-cell="{ row }">
+                <div class="flex items-center gap-2">
+                    <UBadge v-if="row.original.invitedAt" label="Invité" color="success" variant="soft" size="sm" />
+                    <UBadge v-else label="Non invité" color="warning" variant="soft" size="sm" />
+                </div>
+            </template>
+
+            <template v-if="showInviteFeatures" #invite-cell="{ row }">
+                <div class="flex justify-center">
+                    <UButton icon="i-heroicons-envelope" size="sm" color="secondary" variant="ghost"
+                        aria-label="Inviter l'utilisateur" @click.stop="$emit('invite', row.original._id)">
+                        Inviter
+                    </UButton>
+                </div>
+            </template>
+
             <template #details-cell="{ row }">
                 <div class="flex justify-end">
                     <UButton icon="fluent:eye-16-regular" size="sm" color="neutral" variant="ghost"
-                        aria-label="Voir l'Employé" @click="router.push(`/employes/${row.original._id}`)">
+                        aria-label="Voir l'Employé" @click.stop="router.push(`/employes/${row.original._id}`)">
                         Détails
                     </UButton>
                 </div>
@@ -108,7 +118,7 @@
             <template v-if="editable" #edit-cell="{ row }">
                 <div class="flex justify-end">
                     <UButton icon="fluent:edit-16-regular" size="sm" color="neutral" variant="ghost"
-                        aria-label="Modifier" @click="$emit('edit', row.original)">
+                        aria-label="Modifier" @click.stop="$emit('edit', row.original)">
                         Modifier
                     </UButton>
                 </div>
@@ -128,14 +138,8 @@
                     Page {{ paginationMeta.page }} sur {{ paginationMeta.totalPages }}
                     ({{ paginationMeta.total }} résultat{{ paginationMeta.total > 1 ? 's' : '' }})
                 </div>
-                <UPagination
-                    v-model:page="currentPageModel"
-                    :total="paginationMeta.total"
-                    :items-per-page="paginationMeta.limit"
-                    :sibling-count="1"
-                    show-edges
-                    show-controls
-                />
+                <UPagination v-model:page="currentPageModel" :total="paginationMeta.total"
+                    :items-per-page="paginationMeta.limit" :sibling-count="1" show-edges show-controls />
             </div>
         </template>
     </UCard>
@@ -165,6 +169,7 @@ const props = withDefaults(defineProps<{
     title?: string
     editable?: boolean
     showRoles?: boolean
+    showInviteFeatures?: boolean
     paginationMeta?: PaginationMeta | null
     currentPage?: number
 }>(), {
@@ -172,6 +177,7 @@ const props = withDefaults(defineProps<{
     error: null,
     title: 'Liste des Employés',
     showRoles: true,
+    showInviteFeatures: false,
     paginationMeta: null,
     currentPage: 1,
 })
@@ -179,6 +185,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
     (e: 'page-change', page: number): void
     (e: 'edit', user: User): void
+    (e: 'invite', userId: string): void
 }>()
 
 const sorting = ref([])
@@ -240,6 +247,27 @@ const columns = computed<TableColumn<User>[]>(() => {
             enableSorting: true,
             meta: { class: { th: 'text-left' } },
         },
+    )
+
+    if (props.showInviteFeatures) {
+        cols.push(
+            {
+                id: 'inviteStatus',
+                header: 'Statut',
+                accessorFn: (row) => row.invitedAt ? 'Invité' : 'Non invité',
+                enableSorting: true,
+                meta: { class: { th: 'text-left w-[130px]', td: 'w-[130px]' } },
+            },
+            {
+                accessorKey: 'invite',
+                header: '',
+                enableSorting: false,
+                meta: { class: { th: 'text-center w-[110px]', td: 'w-[110px]' } },
+            },
+        )
+    }
+
+    cols.push(
         {
             accessorKey: 'details',
             header: '',

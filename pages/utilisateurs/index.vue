@@ -33,8 +33,8 @@
 
         <!-- Users Table -->
         <UsersTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
-            :editable="true" :pagination-meta="paginationMeta" :current-page="currentPage"
-            @select="onSelect" @edit="viewUser" @page-change="onPageChange" />
+            :editable="true" :show-invite-features="true" :pagination-meta="paginationMeta" :current-page="currentPage"
+            @select="onSelect" @edit="viewUser" @page-change="onPageChange" @invite="handleInviteUser" />
 
         <!-- Edit User Modal -->
         <UModal v-model:open="isEditModalOpen" :title="modalTitle">
@@ -112,7 +112,7 @@ definePageMeta({
 })
 
 // Composables
-const { users, managers, loading, error, paginationMeta, getAllUsers, updateUser, getAllManagers, searchUsers } = useUsers()
+const { users, managers, loading, error, paginationMeta, getAllUsers, updateUser, getAllManagers, searchUsers, inviteUser } = useUsers()
 const { jobs, getJobs } = useJobs()
 const $router = useRouter()
 
@@ -251,6 +251,28 @@ const handleUpdateUser = async () => {
             color: 'error'
         })
         console.error('Échec de la mise à jour de l\'Employé:', err)
+    }
+}
+
+const handleInviteUser = async (userId: string) => {
+    try {
+        await inviteUser(userId)
+
+        const user = users.value.find(u => u._id === userId)
+        const userName = user ? `${user.firstName} ${user.lastName}` : 'l\'utilisateur'
+
+        toast.add({
+            title: 'Invitation envoyée',
+            description: `L'email d'invitation a été envoyé à ${userName}.`,
+            color: 'success'
+        })
+    } catch (err) {
+        toast.add({
+            title: 'Erreur',
+            description: 'Échec de l\'envoi de l\'invitation.',
+            color: 'error'
+        })
+        console.error('Échec de l\'envoi de l\'invitation:', err)
     }
 }
 
