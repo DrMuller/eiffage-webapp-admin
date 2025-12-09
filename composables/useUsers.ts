@@ -32,6 +32,24 @@ export const useUsers = () => {
     }
   }
 
+  // Get user by ID
+  async function getUserById(userId: string): Promise<User> {
+    loading.value = true
+    error.value = null
+
+    try {
+      const user = await $api<User>(`/admin/users/${userId}`, {
+        method: 'GET'
+      })
+      return user
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch user'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Get all users (admin only)
   async function getAllUsers(params?: { page?: number; limit?: number }): Promise<User[]> {
     loading.value = true
@@ -195,6 +213,7 @@ export const useUsers = () => {
     loading,
     error,
     paginationMeta,
+    getUserById,
     getAllManagers,
     getCurrentUser,
     getAllUsers,

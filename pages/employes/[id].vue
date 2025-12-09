@@ -13,12 +13,12 @@
                         <div class="w-16 h-16 bg-gray-100 rounded-full p-2 flex items-center justify-center">
                             <Icon name="i-heroicons-user" class="w-8 h-8 text-gray-400" />
                         </div>
-                        <div>
+                        <div v-if="user">
                             <div>
-                                <span class="font-bold">{{ user?.firstName + ' ' + user?.lastName }}</span>
+                                <span class="font-bold">{{ user.firstName + ' ' + user.lastName }}</span>
                             </div>
                             <div>
-                                <span>{{ user?.code }}</span>
+                                <span>{{ user.code }}</span>
                             </div>
                             <div>
                                 <span class="w-[200px]">{{ jobTitle }}</span>
@@ -26,10 +26,6 @@
                             <div>
                                 <UBadge variant="outline" color="secondary">{{ jobFamily }}</UBadge>
                             </div>
-                            <!-- <div>
-                                <span>{{ (user?.managerUserIds?.length ?? 0) > 0 ? user?.managerUserIds[0] : '—'
-                                }}</span>
-                            </div> -->
                         </div>
                     </div>
                 </UCard>
@@ -188,34 +184,39 @@ definePageMeta({ middleware: ['auth'], layout: 'default' })
 
 const route = useRoute()
 const toast = useToast()
+const userId = computed(() => route.params.id as string)
 
-// Composables
-const { users, managers, getAllManagers, getAllUsers } = useUsers()
-const { getJobs, jobs, getJobSkills } = useJobs()
-const { getEvaluationsByUserId } = useEvaluations()
+// ========================================
+// COMPOSABLES & STATE
+// ========================================
+const { getUserById, users, managers, getAllManagers, getAllUsers } = useUsers()
+const { getJobById, getJobSkills } = useJobs()
+const { getEvaluationsByUserId, getEvaluationById } = useEvaluations()
 const { getSkillLevelsByUserId } = useSkillLevel()
-const userSkillLevels = ref<SkillLevel[]>([])
 
-const user = computed<User | undefined>(() => users.value.find((u) => u._id === (route.params.id as string)))
-
-const jobTitle = computed(() => {
-    return currentJob.value ? `${currentJob.value.name} (${currentJob.value.code})` : '—'
-})
-
-const jobFamily = computed(() => {
-    return currentJob.value ? currentJob.value.jobFamily : '—'
-})
-
-const currentJob = computed<Job | null>(() => {
-    const id = user.value?.jobId
-    if (!id) return null
-    return jobs.value.find((j: Job) => j._id === id) ?? null
-})
-
-// Job skills table data
+const user = ref<User | null>(null)
+const currentJob = ref<Job | null>(null)
 const jobSkillsRows = ref<JobSkillResponse[]>([])
+const userSkillLevels = ref<SkillLevel[]>([])
+const evaluations = ref<Evaluation[]>([])
+const managedUsers = ref<User[]>([])
+const isEvaluationModalOpen = ref(false)
+const selectedEvaluation = ref<Evaluation | null>(null)
 
-// Skills comparison table
+// ========================================
+// COMPUTED - USER & JOB INFO
+// ========================================
+const jobTitle = computed(() =>
+    currentJob.value ? `${currentJob.value.name} (${currentJob.value.code})` : '—'
+)
+
+const jobFamily = computed(() =>
+    currentJob.value?.jobFamily ?? '—'
+)
+
+// ========================================
+// COMPUTED - SKILLS COMPARISON
+// ========================================
 interface SkillComparison {
     skillId: string
     skillName: string
@@ -224,6 +225,20 @@ interface SkillComparison {
     currentLevel: number
 }
 
+const skillsComparison = computed<SkillComparison[]>(() => {
+    return jobSkillsRows.value.map((jobSkill) => {
+        const skillLevel = userSkillLevels.value.find((sl) => sl.skillId === jobSkill.skillId)
+
+        return {
+            skillId: jobSkill.skillId,
+            skillName: jobSkill.skillName,
+            macroSkillTypeName: jobSkill.macroSkillTypeName,
+            expectedLevel: jobSkill.expectedLevel ?? 3,
+            currentLevel: skillLevel?.level ?? 0,
+        }
+    })
+})
+
 const skillsCols = computed<TableColumn<SkillComparison>[]>(() => [
     { accessorKey: 'skillName', header: 'Compétence', meta: { class: { td: 'max-w-[600px] whitespace-normal break-words align-top' } } },
     { accessorKey: 'macroSkillTypeName', header: 'Type de macro compétence', meta: { class: { th: 'text-left', td: 'text-left' } } },
@@ -231,47 +246,12 @@ const skillsCols = computed<TableColumn<SkillComparison>[]>(() => [
     { accessorKey: 'currentLevel', header: 'Niveau actuel', meta: { class: { th: 'text-left', td: 'text-left' } } },
 ])
 
-const skillsComparison = computed<SkillComparison[]>((): SkillComparison[] => {
-    return jobSkillsRows.value.map((jobSkill: JobSkillResponse) => {
-        const expectedLevel = jobSkill.expectedLevel ?? 3
-
-        // Find current level from latest evaluation
-        let currentLevel: number = 0
-        if (userSkillLevels.value.length > 0) {
-            const skillLevel = userSkillLevels.value.find((sl) => sl.skillId === jobSkill.skillId)
-            currentLevel = skillLevel?.level ?? 3
-        }
-
-        return {
-            skillId: jobSkill.skillId,
-            skillName: jobSkill.skillName,
-            macroSkillTypeName: jobSkill.macroSkillTypeName,
-            expectedLevel,
-            currentLevel,
-        }
-    })
-})
-
-function getLevelColor(currentLevel: number, expectedLevel: number): string {
-    if (currentLevel === null) return 'text-gray-400'
-    // if (!expectedLevel) return 'text-gray-900 dark:text-white'
-    if (currentLevel >= (expectedLevel ?? 0)) return 'text-green-600 dark:text-green-400 font-medium'
-    if (currentLevel >= (expectedLevel ?? 0) - 1.5) return 'text-warning-600 dark:text-warning-400 font-medium'
-    return 'text-gray-600 dark:text-gray-400 font-medium'
-}
-
-// Evaluations table
+// ========================================
+// COMPUTED - EVALUATIONS
+// ========================================
 interface EvaluationWithManager extends Evaluation {
     managerName: string
 }
-
-const evaluationCols = computed<TableColumn<EvaluationWithManager>[]>(() => [
-    { accessorKey: 'managerName', header: 'Evaluateur' },
-    { accessorKey: 'createdAt', header: 'Date d\'évaluation' },
-    { accessorKey: 'actions', header: 'Actions', meta: { class: { th: 'text-right', td: 'text-right' } } },
-])
-
-const evaluations = ref<Evaluation[]>([])
 
 const evaluationsWithManager = computed<EvaluationWithManager[]>(() => {
     return evaluations.value.map(evaluation => ({
@@ -280,50 +260,37 @@ const evaluationsWithManager = computed<EvaluationWithManager[]>(() => {
     }))
 })
 
-// Evaluation Skills table columns for modal
-interface UiEvaluationSkillRow {
+const evaluationCols = computed<TableColumn<EvaluationWithManager>[]>(() => [
+    { accessorKey: 'managerName', header: 'Evaluateur' },
+    { accessorKey: 'createdAt', header: 'Date d\'évaluation' },
+    { accessorKey: 'actions', header: 'Actions', meta: { class: { th: 'text-right', td: 'text-right' } } },
+])
+
+// ========================================
+// COMPUTED - EVALUATION MODAL
+// ========================================
+interface EvaluationSkillRow {
     skillName: string
     observedLevel: number | null
 }
 
-const evaluationSkillsCols = computed<TableColumn<UiEvaluationSkillRow>[]>(() => [
-    {
-        accessorKey: 'skillName',
-        header: 'Compétence',
-        meta: { class: { td: 'max-w-[400px] whitespace-normal break-words' } }
-    },
+const selectedEvaluationSkillsRows = computed<EvaluationSkillRow[]>(() => {
+    if (!selectedEvaluation.value?.evaluationSkills) return []
+
+    return (selectedEvaluation.value.evaluationSkills as any[]).map((skill) => ({
+        skillName: skill.skillName ?? skill.skill?.name ?? '',
+        observedLevel: typeof skill.observedLevel === 'number' ? skill.observedLevel : null
+    }))
+})
+
+const evaluationSkillsCols = computed<TableColumn<EvaluationSkillRow>[]>(() => [
+    { accessorKey: 'skillName', header: 'Compétence', meta: { class: { td: 'max-w-[400px] whitespace-normal break-words' } } },
     { accessorKey: 'observedLevel', header: 'Niveau observé' },
 ])
 
-// Modal state
-const isEvaluationModalOpen = ref(false)
-const selectedEvaluation = ref<Evaluation | null>(null)
-
-// Normalize skills rows for UI regardless of backend shape
-type BackendEvaluationSkillEnriched = {
-    skillName?: string
-    expectedLevel?: number | null
-    observedLevel?: number | null
-    skill?: { name?: string }
-}
-
-function toUiEvaluationSkillRow(s: BackendEvaluationSkillEnriched): UiEvaluationSkillRow {
-    const skillName = typeof s.skillName === 'string'
-        ? s.skillName
-        : (s.skill && typeof s.skill.name === 'string' ? s.skill.name : '')
-    const observedLevel = typeof s.observedLevel === 'number' ? s.observedLevel : null
-    return { skillName, observedLevel }
-}
-
-const selectedEvaluationSkillsRows = computed<UiEvaluationSkillRow[]>(() => {
-    const list = (selectedEvaluation.value?.evaluationSkills || []) as unknown as BackendEvaluationSkillEnriched[]
-    if (!Array.isArray(list)) return []
-    return list.map(toUiEvaluationSkillRow)
-})
-
-// Managed users
-const managedUsers = ref<User[]>([])
-
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
 function formatDate(d: string | Date) {
     const date = typeof d === 'string' ? new Date(d) : d
     return date.toLocaleDateString()
@@ -332,15 +299,20 @@ function formatDate(d: string | Date) {
 function getManagerName(managerUserId?: string): string {
     if (!managerUserId) return '—'
     const manager = managers.value.find(m => m._id === managerUserId)
-    if (!manager) return '—'
-    return `${manager.firstName} ${manager.lastName}`
+    return manager ? `${manager.firstName} ${manager.lastName}` : '—'
+}
+
+function getLevelColor(currentLevel: number, expectedLevel: number): string {
+    if (currentLevel === null) return 'text-gray-400'
+    if (currentLevel >= expectedLevel) return 'text-green-600 dark:text-green-400 font-medium'
+    if (currentLevel >= expectedLevel - 1.5) return 'text-warning-600 dark:text-warning-400 font-medium'
+    return 'text-gray-600 dark:text-gray-400 font-medium'
 }
 
 async function openEvaluationModal(evaluationId: string) {
     try {
         isEvaluationModalOpen.value = true
         selectedEvaluation.value = null
-        const { getEvaluationById } = useEvaluations()
         selectedEvaluation.value = await getEvaluationById(evaluationId)
     } catch {
         toast.add({
@@ -352,24 +324,51 @@ async function openEvaluationModal(evaluationId: string) {
     }
 }
 
-
+// ========================================
+// LIFECYCLE - DATA LOADING
+// ========================================
 onMounted(async () => {
     try {
-        if (users.value.length === 0) await getAllUsers()
-        if (managers.value.length === 0) await getAllManagers()
-        if (!user.value?.jobId) return
-        const jobId = user.value.jobId
-        await getJobs()
-        jobSkillsRows.value = await getJobSkills(jobId)
-        const userId = route.params.id as string
-        evaluations.value = await getEvaluationsByUserId(userId)
-        userSkillLevels.value = await getSkillLevelsByUserId(userId)
+        // 1. Fetch the employee by ID
+        user.value = await getUserById(userId.value)
 
-        if ((user.value?.roles || []).includes('MANAGER')) {
-            managedUsers.value = users.value.filter((u) => u.managerUserIds.includes(userId))
+        // 2. Fetch managers (needed for evaluation display)
+        if (managers.value.length === 0) {
+            await getAllManagers()
         }
-    } catch {
-        toast.add({ title: 'Erreur', description: 'Impossible de charger le profil', color: 'error' })
+
+        // 3. Fetch job and job skills if user has a job
+        if (user.value.jobId) {
+            const [job, jobSkills] = await Promise.all([
+                getJobById(user.value.jobId),
+                getJobSkills(user.value.jobId)
+            ])
+            currentJob.value = job
+            jobSkillsRows.value = jobSkills
+        }
+
+        // 4. Fetch user evaluations and skill levels
+        const [evaluationsData, skillLevelsData] = await Promise.all([
+            getEvaluationsByUserId(userId.value),
+            getSkillLevelsByUserId(userId.value),
+        ])
+
+        evaluations.value = evaluationsData
+        userSkillLevels.value = skillLevelsData
+
+        // 5. Fetch managed users if user is a manager
+        if (user.value.roles?.includes('MANAGER')) {
+            await getAllUsers()
+            managedUsers.value = users.value.filter((u) => u.managerUserIds.includes(userId.value))
+        }
+
+    } catch (error) {
+        console.error('Error loading employee profile:', error)
+        toast.add({
+            title: 'Erreur',
+            description: 'Impossible de charger le profil',
+            color: 'error'
+        })
     }
 })
 

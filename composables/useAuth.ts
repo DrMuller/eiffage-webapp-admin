@@ -22,7 +22,7 @@ export const useAuth = () => {
 
   const { $api } = useNuxtApp()
 
-  const cookie = useCookie('auth:tokens', {
+  const cookie = useCookie('eiffage-admin:tokens', {
     ...cookieOptions,
     encode: (value: AuthTokens | null) => encodeURIComponent(JSON.stringify(value)),
     decode: (value) => JSON.parse(decodeURIComponent(value)) as AuthTokens
@@ -95,7 +95,7 @@ export const useAuth = () => {
         method: 'POST',
         body: data
       })
-      
+
       setAuth(response.user, response.tokens)
       return response
     } catch (error) {
@@ -110,7 +110,7 @@ export const useAuth = () => {
         method: 'POST',
         body: data
       })
-      
+
       setAuth(response.user, response.tokens)
       return response
     } catch (error) {
@@ -135,7 +135,7 @@ export const useAuth = () => {
         method: 'POST',
         body: { refreshToken: tokens.refreshToken }
       })
-      
+
       updateAccessToken(response.accessToken)
       return response.accessToken
     } catch (error) {
