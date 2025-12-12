@@ -32,7 +32,7 @@
             </div>
         </div>
         <div v-if="managedUsers.length > 0" class="grid grid-cols-6 gap-4">
-            <UsersTable class="col-span-4" :users="managedUsers" :jobs="jobs" title="Equipe gérée" :editable="false" />
+            <UsersEmployeesTable class="col-span-4" :users="managedUsers" :jobs="jobs" title="Equipe gérée" />
         </div>
 
         <div class="grid grid-cols-6 gap-4">
@@ -190,7 +190,7 @@ const userId = computed(() => route.params.id as string)
 // COMPOSABLES & STATE
 // ========================================
 const { getUserById, users, managers, getAllManagers, getAllUsers } = useUsers()
-const { getJobById, getJobSkills } = useJobs()
+const { getJobById, getJobSkills, getJobs, jobs } = useJobs()
 const { getEvaluationsByUserId, getEvaluationById } = useEvaluations()
 const { getSkillLevelsByUserId } = useSkillLevel()
 
@@ -277,9 +277,9 @@ interface EvaluationSkillRow {
 const selectedEvaluationSkillsRows = computed<EvaluationSkillRow[]>(() => {
     if (!selectedEvaluation.value?.evaluationSkills) return []
 
-    return (selectedEvaluation.value.evaluationSkills as any[]).map((skill) => ({
-        skillName: skill.skillName ?? skill.skill?.name ?? '',
-        observedLevel: typeof skill.observedLevel === 'number' ? skill.observedLevel : null
+    return (selectedEvaluation.value.evaluationSkills).map((evaluationSkill) => ({
+        skillName: evaluationSkill.skill?.name ?? '',
+        observedLevel: evaluationSkill.observedLevel ?? 0
     }))
 })
 
@@ -345,6 +345,11 @@ onMounted(async () => {
             ])
             currentJob.value = job
             jobSkillsRows.value = jobSkills
+        }
+
+        // fetch all jobs for each managed users
+        if (managedUsers.value.length > 0) {
+            await getJobs()
         }
 
         // 4. Fetch user evaluations and skill levels

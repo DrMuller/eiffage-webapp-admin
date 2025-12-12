@@ -13,9 +13,32 @@
                         <UInput v-model="searchQuery" placeholder="Rechercher (nom, email, matricule, rôle)"
                             class="w-[420px] mb-2" />
                     </UFormField>
-                    <UFormField label="Tranche d'âge">
-                        <USelect v-model="selectedAgeRange" :items="ageRangeOptions" :value-key="'value'"
-                            class="w-[115px]" placeholder="Âge" />
+                    <UFormField label="Etablissement">
+                        <UInput v-model="establishmentName" placeholder="ex: (Lauterbourg|Velizy)"
+                            class="w-[280px] mb-2" />
+                    </UFormField>
+                    <UFormField label="Sexe">
+                        <USelect v-model="selectedGender" :items="genderOptions" :value-key="'value'" class="w-[140px]"
+                            placeholder="Sexe" />
+                    </UFormField>
+                </div>
+                <div class="flex gap-2 mt-4 mb-4">
+                    <UFormField label="Âge">
+                        <div class="w-[320px]">
+                            <div class="text-xs text-gray-600 mb-2">
+                                {{ ageRange[0] }} - {{ ageRange[1] }}
+                            </div>
+                            <USlider v-model="ageRange" color="info" :min="AGE_MIN" :max="AGE_MAX" :step="1" />
+                        </div>
+                    </UFormField>
+                    <UFormField label="Ancienneté">
+                        <div class="w-[320px]">
+                            <div class="text-xs text-gray-600 mb-2">
+                                {{ seniorityRange[0] }} - {{ seniorityRange[1] }}
+                            </div>
+                            <USlider v-model="seniorityRange" color="info" :min="SENIORITY_MIN" :max="SENIORITY_MAX"
+                                :step="0.5" />
+                        </div>
                     </UFormField>
                 </div>
                 <div class="flex gap-2 items-end">
@@ -100,17 +123,23 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 
-// Age range enum
-enum AgeRange {
-    RANGE_18_25 = '18-25',
-    RANGE_26_35 = '26-35',
-    RANGE_36_45 = '36-45',
-    RANGE_46_55 = '46-55',
-    RANGE_56_PLUS = '56+'
-}
+const AGE_MIN = 16
+const AGE_MAX = 70
+const SENIORITY_MIN = 0
+const SENIORITY_MAX = 50
 
 const emit = defineEmits<{
-    (e: 'search', payload: { q?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> }): void
+    (e: 'search', payload: {
+        q?: string;
+        jobIds?: string[];
+        skills?: Array<{ skillId: string; minLevel: number }>;
+        gender?: 'MALE' | 'FEMALE';
+        establishmentName?: string;
+        ageMin?: number;
+        ageMax?: number;
+        seniorityMin?: number;
+        seniorityMax?: number;
+    }): void
 }>()
 
 const _props = defineProps<{ loading?: boolean }>()
@@ -121,8 +150,11 @@ const { skills, macroSkills, macroSkillTypes, getSkills, getMacroSkills, getMacr
 
 // Local state
 const searchQuery = ref('')
+const establishmentName = ref('')
 const selectedJobIds = ref<string[]>([])
-const selectedAgeRange = ref<AgeRange | undefined>(undefined)
+const ageRange = ref<[number, number]>([AGE_MIN, AGE_MAX])
+const selectedGender = ref<'MALE' | 'FEMALE' | undefined>(undefined)
+const seniorityRange = ref<[number, number]>([SENIORITY_MIN, SENIORITY_MAX])
 const selectedSkillIds = ref<string[]>([])
 const selectedMacroSkillTypeIds = ref<string[]>([])
 const selectedMacroSkillIds = ref<string[]>([])
@@ -134,7 +166,11 @@ const modalSelectedJobIds = ref<string[]>([])
 
 // Options
 const jobsOptions = computed(() => jobs.value.map((j) => ({ label: j.name, value: j._id })))
-const ageRangeOptions = computed(() => Object.values(AgeRange).map(v => ({ label: v, value: v })))
+const genderOptions = computed(() => ([
+    { label: 'Tous', value: undefined },
+    { label: 'H', value: 'MALE' },
+    { label: 'F', value: 'FEMALE' }
+] as Array<{ label: string; value: 'MALE' | 'FEMALE' | undefined }>))
 const skillsOptions = computed(() => skills.value.map((s) => ({ label: s.name, value: s._id })))
 const macroSkillTypeOptions = computed(() => macroSkillTypes.value.map((t) => ({ label: t.name, value: t._id })))
 const macroSkillOptions = computed(() => {
@@ -240,17 +276,33 @@ function submitSearch() {
     const trimmed = searchQuery.value.trim()
     const jobIds = selectedJobIds.value
     const skillsPayload = selectedSkillFilters.value.map(s => ({ skillId: s.skillId, minLevel: s.minLevel }))
+    const ageMin = ageRange.value[0]
+    const ageMax = ageRange.value[1]
+    const seniorityMin = seniorityRange.value[0]
+    const seniorityMax = seniorityRange.value[1]
+
+    const isAgeDefault = ageMin === AGE_MIN && ageMax === AGE_MAX
+    const isSeniorityDefault = seniorityMin === SENIORITY_MIN && seniorityMax === SENIORITY_MAX
     emit('search', {
         q: trimmed || undefined,
+        establishmentName: establishmentName.value.trim() || undefined,
         jobIds: jobIds.length ? jobIds : undefined,
-        skills: skillsPayload.length ? skillsPayload : undefined
+        skills: skillsPayload.length ? skillsPayload : undefined,
+        gender: selectedGender.value || undefined,
+        ageMin: isAgeDefault ? undefined : ageMin,
+        ageMax: isAgeDefault ? undefined : ageMax,
+        seniorityMin: isSeniorityDefault ? undefined : seniorityMin,
+        seniorityMax: isSeniorityDefault ? undefined : seniorityMax,
     })
 }
 
 function handleReset() {
     searchQuery.value = ''
+    establishmentName.value = ''
     selectedJobIds.value = []
-    selectedAgeRange.value = undefined
+    ageRange.value = [AGE_MIN, AGE_MAX]
+    selectedGender.value = undefined
+    seniorityRange.value = [SENIORITY_MIN, SENIORITY_MAX]
     selectedSkillIds.value = []
     selectedMacroSkillTypeIds.value = []
     selectedMacroSkillIds.value = []

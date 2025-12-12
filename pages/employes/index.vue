@@ -16,17 +16,14 @@
         <!-- Search (both parts) extracted component - stays mounted during loading -->
         <EmployeesSearch :loading="loading" class="mb-6" @search="onSearch" />
 
-        <!-- Users Table -->
-        <UsersTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
-            :editable="false" :show-roles="false" :pagination-meta="paginationMeta" :current-page="currentPage"
-            @select="onSelect" @page-change="onPageChange" />
+        <!-- Employees Table -->
+        <UsersEmployeesTable :users="users" :jobs="jobs" :loading="loading" :error="error" title="Liste des Employés"
+            :pagination-meta="paginationMeta" :current-page="currentPage" @page-change="onPageChange" />
 
     </div>
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/types/auth'
-import type { TableRow } from '@nuxt/ui'
 import EmployeesSearch from '~/components/Users/EmployeesSearch.vue'
 
 // Meta
@@ -38,7 +35,6 @@ definePageMeta({
 // Composables
 const { users, loading, error, paginationMeta, getAllUsers, getAllManagers, searchUsers } = useUsers()
 const { jobs, getJobs } = useJobs()
-const router = useRouter()
 
 // Local state
 const currentPage = ref(1)
@@ -47,22 +43,44 @@ const currentFilters = ref<{
     q?: string;
     jobIds?: string[];
     skills?: Array<{ skillId: string; minLevel: number }>;
+    gender?: 'MALE' | 'FEMALE';
+    establishmentName?: string;
+    ageMin?: number;
+    ageMax?: number;
+    seniorityMin?: number;
+    seniorityMax?: number;
 } | null>(null)
 
-function onSelect(row: TableRow<User>) {
-    router.push(`/employes/${row.original._id}`)
-}
-
-async function onSearch(payload: { q?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }> }) {
+async function onSearch(payload: {
+    q?: string;
+    jobIds?: string[];
+    skills?: Array<{ skillId: string; minLevel: number }>;
+    gender?: 'MALE' | 'FEMALE';
+    establishmentName?: string;
+    ageMin?: number;
+    ageMax?: number;
+    seniorityMin?: number;
+    seniorityMax?: number;
+}) {
     currentFilters.value = payload
     currentPage.value = 1 // Reset to first page on new search
     await performSearch()
 }
 
 async function performSearch() {
-    const { q, jobIds, skills } = currentFilters.value || {}
+    const { q, jobIds, skills, gender, establishmentName, ageMin, ageMax, seniorityMin, seniorityMax } = currentFilters.value || {}
 
-    if (!q && (!jobIds || jobIds.length === 0) && (!skills || skills.length === 0)) {
+    if (
+        !q &&
+        (!jobIds || jobIds.length === 0) &&
+        (!skills || skills.length === 0) &&
+        !gender &&
+        !establishmentName &&
+        !Number.isFinite(ageMin) &&
+        !Number.isFinite(ageMax) &&
+        !Number.isFinite(seniorityMin) &&
+        !Number.isFinite(seniorityMax)
+    ) {
         await getAllUsers({ page: currentPage.value, limit: pageSize.value })
         return
     }
@@ -71,6 +89,12 @@ async function performSearch() {
         q,
         jobIds,
         skills,
+        gender,
+        establishmentName,
+        ageMin,
+        ageMax,
+        seniorityMin,
+        seniorityMax,
         page: currentPage.value,
         limit: pageSize.value
     })

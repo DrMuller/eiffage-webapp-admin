@@ -62,9 +62,15 @@
                             <span class="text-lg font-semibold">Compétences</span>
                             <UBadge color="info" variant="soft">{{ jobSkills.length }}</UBadge>
                         </div>
-                        <UButton icon="i-heroicons-plus" size="sm" color="primary" @click="openAddSkillModal">
-                            Ajouter une compétence
-                        </UButton>
+                        <div class="flex items-center gap-2">
+                            <UButton icon="i-heroicons-plus" size="sm" color="secondary" variant="outline"
+                                @click="openAddMacroSkillModal">
+                                Ajouter une macro compétence
+                            </UButton>
+                            <UButton icon="i-heroicons-plus" size="sm" color="primary" @click="openAddSkillModal">
+                                Ajouter une compétence
+                            </UButton>
+                        </div>
                     </div>
                 </template>
 
@@ -155,46 +161,52 @@
             </UCard>
         </div>
 
+        <!-- Add Macro Skill Modal -->
+        <UModal v-model:open="isAddMacroSkillModalOpen" :title="'Ajouter une macro compétence'">
+            <template #body>
+                <div class="p-6 space-y-4">
+                    <!-- Macro Skill Family Select -->
+                    <UFormField label="Famille de Macro Compétence *">
+                        <USelect v-model="macroSkillTypeId" :items="macroSkillTypeOptions" :value-key="'value'"
+                            :label-key="'label'" placeholder="Sélectionner une famille" searchable class="w-full" />
+                    </UFormField>
+
+                    <!-- Macro Skill Name Input -->
+                    <UFormField label="Nom de la Macro Compétence *">
+                        <UInput v-model="macroSkillName" placeholder="Entrez le nom de la macro compétence"
+                            class="w-full" />
+                    </UFormField>
+
+                    <div class="flex gap-2 justify-end mt-6">
+                        <UButton color="neutral" variant="outline" @click="closeAddMacroSkillModal">
+                            Annuler
+                        </UButton>
+                        <UButton color="primary" variant="solid" :loading="addingMacroSkill"
+                            :disabled="!canSubmitMacroSkillForm" @click="handleAddMacroSkill">
+                            Ajouter
+                        </UButton>
+                    </div>
+                </div>
+            </template>
+        </UModal>
+
         <!-- Add Skill Modal -->
         <UModal v-model:open="isAddSkillModalOpen" :title="'Ajouter une compétence'">
             <template #body>
                 <div class="p-6 space-y-4">
-                    <!-- 1. Macro Skill Select -->
+                    <!-- Macro Skill Select -->
                     <UFormField label="Macro Compétence *">
                         <USelect v-model="selectedMacroSkillId" :items="macroSkillOptions" :value-key="'value'"
                             :label-key="'label'" placeholder="Sélectionner une macro compétence" searchable
-                            class="w-full" />
+                            searchable-placeholder="Rechercher une macro compétence..." class="w-full" />
                     </UFormField>
 
-                    <!-- 2. Macro Skill Family Select -->
-                    <UFormField :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
-                        <template #label>
-                            <span :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
-                                Famille de Macro Compétence *
-                            </span>
-                        </template>
-                        <USelect v-model="newMacroSkillTypeId" :items="macroSkillTypeOptions" :value-key="'value'"
-                            :label-key="'label'" placeholder="Sélectionner une famille"
-                            :disabled="!isCreatingNewMacroSkill" class="w-full" />
-                    </UFormField>
-
-                    <!-- 3. Macro Skill Name Input -->
-                    <UFormField :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
-                        <template #label>
-                            <span :class="{ 'text-gray-400': !isCreatingNewMacroSkill }">
-                                Nom de la Macro Compétence *
-                            </span>
-                        </template>
-                        <UInput v-model="newMacroSkillName" placeholder="Entrez le nom de la macro compétence"
-                            :disabled="!isCreatingNewMacroSkill" class="w-full" />
-                    </UFormField>
-
-                    <!-- 4. Skill Name Input -->
+                    <!-- Skill Name Input -->
                     <UFormField label="Nom de la Compétence *">
                         <UInput v-model="newSkillName" placeholder="Entrez le nom de la compétence" class="w-full" />
                     </UFormField>
 
-                    <!-- 5. Skill Level Select -->
+                    <!-- Skill Level Select -->
                     <UFormField label="Niveau Attendu *">
                         <USelect v-model="newSkillLevel" :items="levelOptions" :value-key="'value'" :label-key="'label'"
                             placeholder="Sélectionner un niveau" class="w-full" />
@@ -245,13 +257,17 @@ const sorting = ref([])
 // Delete skill state
 const deletingSkillId = ref<string | null>(null)
 
+// Add macro skill modal state
+const isAddMacroSkillModalOpen = ref(false)
+const macroSkillTypeId = ref<string>('')
+const macroSkillName = ref('')
+const addingMacroSkill = ref(false)
+
 // Add skill modal state
 const isAddSkillModalOpen = ref(false)
 const macroSkills = ref<MacroSkill[]>([])
 const macroSkillTypes = ref<MacroSkillType[]>([])
-const selectedMacroSkillId = ref<string>('new')
-const newMacroSkillTypeId = ref<string>('')
-const newMacroSkillName = ref('')
+const selectedMacroSkillId = ref<string>('')
 const newSkillName = ref('')
 const newSkillLevel = ref<number>(3)
 const addingSkill = ref(false)
@@ -259,16 +275,19 @@ const addingSkill = ref(false)
 // Computed properties
 const jobId = computed(() => route.params.id as string)
 
-// Add skill modal computed properties
-const isCreatingNewMacroSkill = computed(() => selectedMacroSkillId.value === 'new')
+// Add macro skill modal computed properties
+const canSubmitMacroSkillForm = computed(() => {
+    return macroSkillName.value.trim().length > 0 &&
+        macroSkillTypeId.value.length > 0
+})
 
-const macroSkillOptions = computed(() => [
-    { label: 'Nouvelle macro compétence', value: 'new' },
-    ...macroSkills.value.map(ms => ({
+// Add skill modal computed properties
+const macroSkillOptions = computed(() =>
+    macroSkills.value.map(ms => ({
         label: `${ms.name} (${ms.macroSkillType.name})`,
         value: ms._id
     }))
-])
+)
 
 const macroSkillTypeOptions = computed(() =>
     macroSkillTypes.value.map(type => ({
@@ -285,14 +304,9 @@ const levelOptions = computed(() => [1, 2, 3, 4].map(v => ({
 const canSubmitSkillForm = computed(() => {
     const hasSkillName = newSkillName.value.trim().length > 0
     const hasLevel = newSkillLevel.value >= 1 && newSkillLevel.value <= 4
+    const hasMacroSkill = selectedMacroSkillId.value.length > 0
 
-    if (isCreatingNewMacroSkill.value) {
-        return hasSkillName && hasLevel &&
-            newMacroSkillName.value.trim().length > 0 &&
-            newMacroSkillTypeId.value.length > 0
-    }
-
-    return hasSkillName && hasLevel && selectedMacroSkillId.value !== 'new'
+    return hasSkillName && hasLevel && hasMacroSkill
 })
 
 // Table columns
@@ -340,6 +354,61 @@ const formatDate = (date: Date | string) => {
     })
 }
 
+const openAddMacroSkillModal = async () => {
+    try {
+        // Load macro skill types if not already loaded
+        if (macroSkillTypes.value.length === 0) {
+            macroSkillTypes.value = await getMacroSkillTypes()
+        }
+        isAddMacroSkillModalOpen.value = true
+    } catch (err) {
+        console.error('Failed to load macro skill types:', err)
+        toast.add({
+            title: 'Erreur',
+            description: 'Impossible de charger les familles de macro compétences',
+            color: 'error'
+        })
+    }
+}
+
+const closeAddMacroSkillModal = () => {
+    isAddMacroSkillModalOpen.value = false
+    macroSkillTypeId.value = ''
+    macroSkillName.value = ''
+}
+
+const handleAddMacroSkill = async () => {
+    if (!canSubmitMacroSkillForm.value) return
+
+    addingMacroSkill.value = true
+    try {
+        await createMacroSkill({
+            name: macroSkillName.value.trim(),
+            macroSkillTypeId: macroSkillTypeId.value
+        })
+
+        toast.add({
+            title: 'Succès',
+            description: 'Macro compétence créée avec succès',
+            color: 'success'
+        })
+
+        // Reload macro skills for the skill modal
+        macroSkills.value = await getMacroSkills()
+
+        closeAddMacroSkillModal()
+    } catch (err) {
+        console.error('Failed to add macro skill:', err)
+        toast.add({
+            title: 'Erreur',
+            description: 'Impossible de créer la macro compétence',
+            color: 'error'
+        })
+    } finally {
+        addingMacroSkill.value = false
+    }
+}
+
 const openAddSkillModal = async () => {
     try {
         // Load macro skills and types if not already loaded
@@ -362,9 +431,7 @@ const openAddSkillModal = async () => {
 
 const closeAddSkillModal = () => {
     isAddSkillModalOpen.value = false
-    selectedMacroSkillId.value = 'new'
-    newMacroSkillTypeId.value = ''
-    newMacroSkillName.value = ''
+    selectedMacroSkillId.value = ''
     newSkillName.value = ''
     newSkillLevel.value = 3
 }
@@ -374,21 +441,10 @@ const handleAddSkill = async () => {
 
     addingSkill.value = true
     try {
-        let macroSkillId = selectedMacroSkillId.value
-
-        // Create macro skill if needed
-        if (isCreatingNewMacroSkill.value) {
-            const createdMacroSkill = await createMacroSkill({
-                name: newMacroSkillName.value.trim(),
-                macroSkillTypeId: newMacroSkillTypeId.value
-            })
-            macroSkillId = createdMacroSkill._id
-        }
-
         // Create the skill
         const createdSkill = await createSkill({
             name: newSkillName.value.trim(),
-            macroSkillId: macroSkillId
+            macroSkillId: selectedMacroSkillId.value
         })
 
         // Add skill to job with expected level

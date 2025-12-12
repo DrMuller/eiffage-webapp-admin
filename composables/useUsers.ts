@@ -142,7 +142,22 @@ export const useUsers = () => {
   }
 
   // Search users (admin only)
-  async function searchUsers(params: { q?: string; skillName?: string; jobName?: string; observedLevel?: string; jobIds?: string[]; skills?: Array<{ skillId: string; minLevel: number }>; page?: number; limit?: number } = {}): Promise<User[]> {
+  async function searchUsers(params: {
+    q?: string;
+    skillName?: string;
+    jobName?: string;
+    observedLevel?: string;
+    jobIds?: string[];
+    skills?: Array<{ skillId: string; minLevel: number }>;
+    gender?: 'MALE' | 'FEMALE';
+    establishmentName?: string;
+    ageMin?: number;
+    ageMax?: number;
+    seniorityMin?: number;
+    seniorityMax?: number;
+    page?: number;
+    limit?: number
+  } = {}): Promise<User[]> {
     loading.value = true
     error.value = null
 
@@ -152,6 +167,12 @@ export const useUsers = () => {
       if (params.skillName) query.set('skillName', params.skillName)
       if (params.jobName) query.set('jobName', params.jobName)
       if (params.observedLevel) query.set('observedLevel', params.observedLevel)
+      if (params.gender) query.set('gender', params.gender)
+      if (params.establishmentName) query.set('establishmentName', params.establishmentName)
+      if (Number.isFinite(params.ageMin)) query.set('ageMin', String(params.ageMin))
+      if (Number.isFinite(params.ageMax)) query.set('ageMax', String(params.ageMax))
+      if (Number.isFinite(params.seniorityMin)) query.set('seniorityMin', String(params.seniorityMin))
+      if (Number.isFinite(params.seniorityMax)) query.set('seniorityMax', String(params.seniorityMax))
       if (params.jobIds && params.jobIds.length > 0) {
         // Use repeated params: ?jobIds=a&jobIds=b
         params.jobIds.filter(Boolean).forEach((id) => query.append('jobIds', id))
