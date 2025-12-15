@@ -5,34 +5,38 @@
             <template #header>
                 <div class="flex items-center justify-between">
                     <div class="text-lg font-medium">Recherche</div>
+                    <div class="flex gap-2">
+                        <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
+                        <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
+                            @click="handleReset">
+                            Réinitialiser
+                        </UButton>
+                    </div>
                 </div>
             </template>
-            <div class="p-4 mt-4">
-                <div class="flex gap-2">
-                    <UFormField label="Rechercher (nom, email, matricule, rôle)">
+            <div class="p-4 mt-4 max-w-[800px]">
+                <div class="grid grid-cols-12 gap-4">
+                    <!-- Row 1: 10 / 2 -->
+                    <UFormField label="Rechercher (nom, email, matricule, rôle)" class="col-span-10">
                         <UInput v-model="searchQuery" placeholder="Rechercher (nom, email, matricule, rôle)"
-                            class="w-[420px] mb-2" />
+                            class="w-full" @keyup.enter="submitSearch" />
                     </UFormField>
-                    <UFormField label="Etablissement">
-                        <UInput v-model="establishmentName" placeholder="ex: (Lauterbourg|Velizy)"
-                            class="w-[280px] mb-2" />
-                    </UFormField>
-                    <UFormField label="Sexe">
-                        <USelect v-model="selectedGender" :items="genderOptions" :value-key="'value'" class="w-[140px]"
+                    <UFormField label="Sexe" class="col-span-2">
+                        <USelect v-model="selectedGender" :items="genderOptions" :value-key="'value'" class="w-full"
                             placeholder="Sexe" />
                     </UFormField>
-                </div>
-                <div class="flex gap-2 mt-4 mb-4">
-                    <UFormField label="Âge">
-                        <div class="w-[320px]">
+
+                    <!-- Row 2: 6 / 6 -->
+                    <UFormField label="Âge" class="col-span-6">
+                        <div class="w-full">
                             <div class="text-xs text-gray-600 mb-2">
                                 {{ ageRange[0] }} - {{ ageRange[1] }}
                             </div>
                             <USlider v-model="ageRange" color="info" :min="AGE_MIN" :max="AGE_MAX" :step="1" />
                         </div>
                     </UFormField>
-                    <UFormField label="Ancienneté">
-                        <div class="w-[320px]">
+                    <UFormField label="Ancienneté" class="col-span-6">
+                        <div class="w-full">
                             <div class="text-xs text-gray-600 mb-2">
                                 {{ seniorityRange[0] }} - {{ seniorityRange[1] }}
                             </div>
@@ -40,23 +44,23 @@
                                 :step="0.5" />
                         </div>
                     </UFormField>
-                </div>
-                <div class="flex gap-2 items-end">
-                    <UFormField label="Emplois">
+
+                    <!-- Row 3: 6 / 6 -->
+                    <UFormField label="Etablissement" class="col-span-6">
+                        <UInput v-model="establishmentName" placeholder="ex: (Lauterbourg|Velizy)" class="w-full"
+                            @keyup.enter="submitSearch" />
+                    </UFormField>
+                    <UFormField label="Emplois" class="col-span-6">
                         <USelectMenu v-model="selectedJobIds" :items="jobsOptions" :value-key="'value'" multiple
-                            searchable searchable-placeholder="Filtrer par emplois..." class="w-[300px]"
+                            searchable searchable-placeholder="Filtrer par emplois..." class="w-full"
                             placeholder="Emplois" />
                     </UFormField>
-                    <UButton color="secondary" variant="soft" icon="i-heroicons-plus" @click="isModalOpen = true">
-                        Ajouter des compétences
-                    </UButton>
-                    <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
-                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
-                        @click="handleReset">
-                        Réinitialiser
-                    </UButton>
                 </div>
-
+            </div>
+            <div class="p-4">
+                <UButton color="secondary" variant="soft" icon="i-heroicons-plus" @click="isModalOpen = true">
+                    Ajouter des compétences
+                </UButton>
             </div>
             <div v-if="selectedSkillFilters.length > 0" class="flex flex-col gap-2 p-4">
                 <div class="text-sm text-gray-600">Compétences sélectionnées et minimum requis</div>
@@ -72,6 +76,15 @@
                     </div>
                 </div>
             </div>
+            <template #footer>
+                <div class="flex gap-2 justify-end">
+                    <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
+                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
+                        @click="handleReset">
+                        Réinitialiser
+                    </UButton>
+                </div>
+            </template>
         </UCard>
 
         <!-- Modal: Sélection de Compétences -->

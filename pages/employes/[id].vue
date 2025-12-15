@@ -9,6 +9,11 @@
         <div class="grid grid-cols-6 gap-4">
             <div class="col-span-4">
                 <UCard>
+                    <template #header>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold">Profil</span>
+                        </div>
+                    </template>
                     <div class="flex items-center gap-4 space-y-2 p-4">
                         <div class="w-16 h-16 bg-gray-100 rounded-full p-2 flex items-center justify-center">
                             <Icon name="i-heroicons-user" class="w-8 h-8 text-gray-400" />
@@ -23,53 +28,27 @@
                             <div>
                                 <span class="w-[200px]">{{ jobTitle }}</span>
                             </div>
-                            <div>
+                            <div class="mb-2 mt-2">
                                 <UBadge variant="outline" color="secondary">{{ jobFamily }}</UBadge>
+                            </div>
+                            <div>
+                                <span>{{ user.establishmentName }}</span>
+                            </div>
+                            <div>
+                                <span>{{ user.companyName }}</span>
+                            </div>
+                            <div v-if="typeof user.seniority === 'number'">
+                                <span class="text-gray-500">Ancienneté : </span>
+                                <span class="font-medium">{{ user.seniority.toFixed(0) }} ans</span>
+                            </div>
+                            <div v-if="typeof user.age === 'number'">
+                                <span class="text-gray-500">Âge : </span>
+                                <span class="font-medium">{{ Math.round(user.age) }} ans</span>
                             </div>
                         </div>
                     </div>
                 </UCard>
             </div>
-        </div>
-        <div v-if="managedUsers.length > 0" class="grid grid-cols-6 gap-4">
-            <UsersEmployeesTable class="col-span-4" :users="managedUsers" :jobs="jobs" title="Equipe gérée" />
-        </div>
-
-        <div class="grid grid-cols-6 gap-4">
-
-
-            <!-- Skills Comparison Card -->
-            <UCard class="col-span-4" variant="outline">
-                <template #header>
-                    <div class="flex items-center justify-between">
-                        <span class="text-lg font-semibold">Compétences de l'emploi</span>
-                    </div>
-                </template>
-                <UTable :data="skillsComparison" :columns="skillsCols">
-                    <template #skillName-cell="{ row }">
-                        <span class="text-gray-900 dark:text-white font-medium">
-                            {{ row.original.skillName }}
-                        </span>
-                    </template>
-                    <template #macroSkillTypeName-cell="{ row }">
-                        <UBadge variant="soft" color="secondary">
-                            {{ row.original.macroSkillTypeName }}
-                        </UBadge>
-                    </template>
-                    <template #expectedLevel-cell="{ row }">
-                        <span>
-                            {{ useSkillLevelLabel(row.original.expectedLevel) }}
-                        </span>
-                    </template>
-                    <template #currentLevel-cell="{ row }">
-                        <span class="font-medium"
-                            :class="getLevelColor(row.original.currentLevel, row.original.expectedLevel)">
-                            {{ row.original.currentLevel !== null ? useSkillLevelLabel(row.original.currentLevel) : '—'
-                            }}
-                        </span>
-                    </template>
-                </UTable>
-            </UCard>
             <UCard class="col-span-2" variant="outline">
                 <template #header>
                     <div class="flex items-center justify-between">
@@ -86,8 +65,45 @@
                     </div>
                 </div>
             </UCard>
-
         </div>
+        <div v-if="managedUsers.length > 0" class="col-span-3">
+            <UsersEmployeesTable :key="'managerUsers'" :users="managerUsers" :jobs="jobs" title="Managers" />
+        </div>
+        <div v-if="managedUsers.length > 0" class="col-span-3">
+            <UsersEmployeesTable :key="'managedUsers'" :users="managedUsers" :jobs="jobs" title="Equipe gérée" />
+        </div>
+
+        <UCard class="col-span-4" variant="outline">
+            <template #header>
+                <div class="flex items-center justify-between">
+                    <span class="text-lg font-semibold">Compétences de l'emploi</span>
+                </div>
+            </template>
+            <UTable :data="skillsComparison" :columns="skillsCols">
+                <template #skillName-cell="{ row }">
+                    <span class="text-gray-900 dark:text-white font-medium">
+                        {{ row.original.skillName }}
+                    </span>
+                </template>
+                <template #macroSkillTypeName-cell="{ row }">
+                    <UBadge variant="soft" color="secondary">
+                        {{ row.original.macroSkillTypeName }}
+                    </UBadge>
+                </template>
+                <template #expectedLevel-cell="{ row }">
+                    <span>
+                        {{ useSkillLevelLabel(row.original.expectedLevel) }}
+                    </span>
+                </template>
+                <template #currentLevel-cell="{ row }">
+                    <span class="font-medium"
+                        :class="getLevelColor(row.original.currentLevel, row.original.expectedLevel)">
+                        {{ row.original.currentLevel !== null ? useSkillLevelLabel(row.original.currentLevel) : '—'
+                        }}
+                    </span>
+                </template>
+            </UTable>
+        </UCard>
         <div class="grid grid-cols-6 gap-4">
             <UCard class="mb-4 col-span-4" variant="outline">
                 <template #header>
@@ -189,8 +205,8 @@ const userId = computed(() => route.params.id as string)
 // ========================================
 // COMPOSABLES & STATE
 // ========================================
-const { getUserById, users, managers, getAllManagers, getAllUsers } = useUsers()
-const { getJobById, getJobSkills, getJobs, jobs } = useJobs()
+const { getUserById, managers, getAllManagers, searchUsers } = useUsers()
+const { getJobById, getJobSkills, jobs } = useJobs()
 const { getEvaluationsByUserId, getEvaluationById } = useEvaluations()
 const { getSkillLevelsByUserId } = useSkillLevel()
 
@@ -200,6 +216,7 @@ const jobSkillsRows = ref<JobSkillResponse[]>([])
 const userSkillLevels = ref<SkillLevel[]>([])
 const evaluations = ref<Evaluation[]>([])
 const managedUsers = ref<User[]>([])
+const managerUsers = ref<User[]>([])
 const isEvaluationModalOpen = ref(false)
 const selectedEvaluation = ref<Evaluation | null>(null)
 
@@ -347,11 +364,6 @@ onMounted(async () => {
             jobSkillsRows.value = jobSkills
         }
 
-        // fetch all jobs for each managed users
-        if (managedUsers.value.length > 0) {
-            await getJobs()
-        }
-
         // 4. Fetch user evaluations and skill levels
         const [evaluationsData, skillLevelsData] = await Promise.all([
             getEvaluationsByUserId(userId.value),
@@ -363,12 +375,18 @@ onMounted(async () => {
 
         // 5. Fetch managed users if user is a manager
         if (user.value.roles?.includes('MANAGER')) {
-            await getAllUsers()
-            managedUsers.value = users.value.filter((u) => u.managerUserIds.includes(userId.value))
+            managedUsers.value = await searchUsers({ managerUserId: user.value._id })
+        }
+        if (user.value.managerUserIds.length > 0) {
+            for (const managerUserId of user.value.managerUserIds) {
+                const manager = await getUserById(managerUserId)
+                if (manager) {
+                    managerUsers.value.push(manager)
+                }
+            }
         }
 
-    } catch (error) {
-        console.error('Error loading employee profile:', error)
+    } catch {
         toast.add({
             title: 'Erreur',
             description: 'Impossible de charger le profil',

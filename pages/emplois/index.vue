@@ -20,25 +20,20 @@
             title="Erreur lors du chargement des emplois" :description="error" class="mb-6" />
 
         <!-- Search and Filters -->
-        <UCard v-else class="mb-3">
-            <template #header>
-                <div class="flex items-center justify-between">
-                    <div class="text-lg font-medium">Recherche</div>
-                </div>
-            </template>
-            <div class="p-4 mt-4">
-                <div class="flex gap-2 items-end">
-                    <UFormField label="Rechercher (nom ou code)">
-                        <UInput v-model="searchQuery" placeholder="Rechercher un emploi par nom ou code"
-                            class="w-[420px]" />
-                    </UFormField>
-                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
-                        @click="handleReset">
-                        Réinitialiser
-                    </UButton>
-                </div>
+        <!-- <UCard v-else class="mb-3"> -->
+        <div class="mt-4 mb-3">
+            <div class="flex gap-2 items-end">
+                <UFormField label="Rechercher (nom ou code)">
+                    <UInput v-model="searchQuery" placeholder="Rechercher un emploi par nom ou code"
+                        class="w-[420px]" />
+                </UFormField>
+                <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
+                    @click="handleReset">
+                    Réinitialiser
+                </UButton>
             </div>
-        </UCard>
+        </div>
+        <!-- </UCard> -->
 
         <!-- Jobs Table -->
         <JobsTable :jobs="filteredJobs" :loading="loading" :error="error" />

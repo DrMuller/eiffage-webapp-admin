@@ -53,7 +53,7 @@ async function onHabilitationSubmit() {
                 </UFileUpload>
 
                 <div class="flex items-center gap-3">
-                    <UButton :label="sirhLoading ? 'Import...' : 'Lancer l\'import SIRH'" color="primary" 
+                    <UButton :label="sirhLoading ? 'Import...' : 'Lancer l\'import SIRH'" color="info" 
                         :loading="sirhLoading" :disabled="!sirhFile" @click="onSirhSubmit" />
                     <span v-if="sirhError" class="text-red-600">{{ sirhError }}</span>
                     <span v-if="sirhSuccess" class="text-green-600">{{ sirhSuccess }}</span>
@@ -93,7 +93,7 @@ async function onHabilitationSubmit() {
 
                 <div class="flex items-center gap-3">
                     <UButton :label="habilitationLoading ? 'Import...' : 'Lancer l\'import Habilitations'" 
-                        color="primary" :loading="habilitationLoading" :disabled="!habilitationFile" 
+                        color="info" :loading="habilitationLoading" :disabled="!habilitationFile" 
                         @click="onHabilitationSubmit" />
                     <span v-if="habilitationError" class="text-red-600">{{ habilitationError }}</span>
                     <span v-if="habilitationSuccess" class="text-green-600">{{ habilitationSuccess }}</span>

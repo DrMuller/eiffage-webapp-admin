@@ -144,6 +144,7 @@ export const useUsers = () => {
   // Search users (admin only)
   async function searchUsers(params: {
     q?: string;
+    managerUserId?: string;
     skillName?: string;
     jobName?: string;
     observedLevel?: string;
@@ -169,10 +170,11 @@ export const useUsers = () => {
       if (params.observedLevel) query.set('observedLevel', params.observedLevel)
       if (params.gender) query.set('gender', params.gender)
       if (params.establishmentName) query.set('establishmentName', params.establishmentName)
-      if (Number.isFinite(params.ageMin)) query.set('ageMin', String(params.ageMin))
-      if (Number.isFinite(params.ageMax)) query.set('ageMax', String(params.ageMax))
-      if (Number.isFinite(params.seniorityMin)) query.set('seniorityMin', String(params.seniorityMin))
-      if (Number.isFinite(params.seniorityMax)) query.set('seniorityMax', String(params.seniorityMax))
+      if (params.ageMin) query.set('ageMin', String(params.ageMin))
+      if (params.ageMax) query.set('ageMax', String(params.ageMax))
+      if (params.seniorityMin) query.set('seniorityMin', String(params.seniorityMin))
+      if (params.seniorityMax) query.set('seniorityMax', String(params.seniorityMax))
+      if (params.managerUserId) query.set('managerUserId', params.managerUserId)
       if (params.jobIds && params.jobIds.length > 0) {
         // Use repeated params: ?jobIds=a&jobIds=b
         params.jobIds.filter(Boolean).forEach((id) => query.append('jobIds', id))
@@ -180,7 +182,7 @@ export const useUsers = () => {
       // New: repeated pairs of skills with levels
       if (params.skills && params.skills.length > 0) {
         params.skills.forEach(({ skillId, minLevel }) => {
-          if (skillId && Number.isFinite(minLevel)) {
+          if (skillId && minLevel) {
             query.append('skillIds', skillId)
             query.append('levels', String(minLevel))
           }

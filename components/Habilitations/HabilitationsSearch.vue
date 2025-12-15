@@ -1,45 +1,50 @@
 <template>
     <div>
         <!-- Search Card -->
-        <UCard>
+        <UCard class="max-w-[800px]">
             <template #header>
                 <div class="flex items-center justify-between">
                     <div class="text-lg font-medium">Recherche</div>
                 </div>
             </template>
             <div class="p-4 mt-4">
-                <div class="flex gap-2 mb-4">
-                    <UFormField label="Rechercher (code, label, type)">
-                        <UInput v-model="searchQuery" placeholder="Rechercher (code, label, type)" class="w-[420px]" />
+                <div class="grid grid-cols-12 gap-4">
+                    <!-- Row 1: 12 (full width) -->
+                    <UFormField label="Rechercher (code, label, type)" class="col-span-12">
+                        <UInput v-model="searchQuery" placeholder="Rechercher (code, label, type)" class="w-full"
+                            @keyup.enter="submitSearch" />
                     </UFormField>
-                </div>
-                <div class="flex gap-2 items-end mb-4">
-                    <UFormField label="Emplois">
+
+                    <!-- Row 2: 6 / 6 -->
+                    <UFormField label="Emplois" class="col-span-6">
                         <USelectMenu v-model="selectedJobIds" :items="jobsOptions" :value-key="'value'" multiple
-                            searchable searchable-placeholder="Filtrer par emplois..." class="w-[300px]"
+                            searchable searchable-placeholder="Filtrer par emplois..." class="w-full"
                             placeholder="Emplois" />
                     </UFormField>
-                    <UFormField label="Employés">
+                    <UFormField label="Employés" class="col-span-6">
                         <USelectMenu v-model="selectedUserIds" :items="usersOptions" :value-key="'value'" multiple
-                            searchable searchable-placeholder="Filtrer par employés..." class="w-[300px]"
+                            searchable searchable-placeholder="Filtrer par employés..." class="w-full"
                             placeholder="Employés" />
                     </UFormField>
-                </div>
-                <div class="flex gap-2 items-end mb-4">
-                    <UFormField label="Date de début (à partir de)">
-                        <UInput v-model="startDateFrom" type="date" class="w-[180px]" />
+
+                    <!-- Row 3: 6 / 6 -->
+                    <UFormField label="Date de début (à partir de)" class="col-span-6">
+                        <UInput v-model="startDateFrom" type="date" class="w-full" @keyup.enter="submitSearch" />
                     </UFormField>
-                    <UFormField label="Date de fin (jusqu'à)">
-                        <UInput v-model="endDateTo" type="date" class="w-[180px]" />
+                    <UFormField label="Date de fin (jusqu'à)" class="col-span-6">
+                        <UInput v-model="endDateTo" type="date" class="w-full" @keyup.enter="submitSearch" />
                     </UFormField>
                 </div>
-                <div class="flex gap-2">
+            </div>
+            <template #footer>
+                <div class="flex gap-2 justify-end">
                     <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
-                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" @click="handleReset">
+                    <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
+                        @click="handleReset">
                         Réinitialiser
                     </UButton>
                 </div>
-            </div>
+            </template>
         </UCard>
     </div>
 </template>
@@ -104,5 +109,3 @@ onMounted(async () => {
     ])
 })
 </script>
-
-

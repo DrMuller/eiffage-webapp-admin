@@ -76,10 +76,10 @@ async function performSearch() {
         (!skills || skills.length === 0) &&
         !gender &&
         !establishmentName &&
-        !Number.isFinite(ageMin) &&
-        !Number.isFinite(ageMax) &&
-        !Number.isFinite(seniorityMin) &&
-        !Number.isFinite(seniorityMax)
+        !ageMin &&
+        !ageMax &&
+        !seniorityMin &&
+        !seniorityMax
     ) {
         await getAllUsers({ page: currentPage.value, limit: pageSize.value })
         return
