@@ -66,9 +66,16 @@
                 </div>
             </UCard>
         </div>
-        <div v-if="managedUsers.length > 0" class="col-span-3">
+
+        <div v-if="managerUsers.length > 0" class="col-span-3">
             <UsersEmployeesTable :key="'managerUsers'" :users="managerUsers" :jobs="jobs" title="Managers" />
         </div>
+
+        <!-- Team Statistics (only for managers) -->
+        <div v-if="user?.roles?.includes('MANAGER')">
+            <DashboardTeamStats :manager-id="userId" :hide-selector="true" />
+        </div>
+
         <div v-if="managedUsers.length > 0" class="col-span-3">
             <UsersEmployeesTable :key="'managedUsers'" :users="managedUsers" :jobs="jobs" title="Equipe gérée" />
         </div>

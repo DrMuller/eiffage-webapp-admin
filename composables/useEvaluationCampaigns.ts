@@ -51,6 +51,23 @@ export const useEvaluationCampaigns = () => {
         }
     }
 
+    async function getCurrent(): Promise<EvaluationCampaign | null> {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await $api<EvaluationCampaign>('/evaluation-campaigns/current', { method: 'GET' })
+            current.value = response
+            return response
+        } catch (err) {
+            // Return null if no active campaign (404)
+            current.value = null
+            return null
+        } finally {
+            loading.value = false
+        }
+    }
+
     async function create(data: CreateEvaluationCampaignRequest): Promise<EvaluationCampaign> {
         loading.value = true
         error.value = null
@@ -116,6 +133,7 @@ export const useEvaluationCampaigns = () => {
         error,
         getAll,
         getById,
+        getCurrent,
         create,
         update,
         remove,

@@ -32,13 +32,13 @@
 
             <UTable :data="campaigns" :columns="columns" sticky>
                 <template #startDate-cell="{ row }">
-                    <span class="text-gray-900 dark:text-white">{{ formatDate(row.original.startDate) }}</span>
+                    <span class="text-gray-900 dark:text-white">{{ useFormatDate(row.original.startDate) }}</span>
                 </template>
                 <template #endDate-cell="{ row }">
-                    <span class="text-gray-900 dark:text-white">{{ formatDate(row.original.endDate) }}</span>
+                    <span class="text-gray-900 dark:text-white">{{ useFormatDate(row.original.endDate) }}</span>
                 </template>
                 <template #createdAt-cell="{ row }">
-                    <span class="text-gray-500 dark:text-gray-400">{{ formatDate(row.original.createdAt) }}</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ useFormatDate(row.original.createdAt) }}</span>
                 </template>
                 <template #actions-cell="{ row }">
                     <div class="flex justify-end gap-2">
@@ -106,6 +106,7 @@
 import { computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { EvaluationCampaign } from '~/types/evaluationCampaign'
+import { useFormatDate } from '~/composables/useFormatter'
 
 definePageMeta({
     middleware: ['auth', 'admin'],
@@ -113,8 +114,6 @@ definePageMeta({
 })
 
 const { campaigns, loading, error, getAll, create, update, remove } = useEvaluationCampaigns()
-const { useFormatDate } = await import('~/composables/useFormatter')
-const formatDate = (d: string | Date) => useFormatDate(d)
 
 const toast = useToast()
 

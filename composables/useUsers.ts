@@ -2,6 +2,27 @@ import { ref } from 'vue'
 import type { User } from '~/types/auth'
 import type { PaginationMeta } from '~/types/common'
 
+export interface TeamStats {
+  managerId: string
+  managerName: string
+  teamSize: number
+  currentCampaign: {
+    _id: string
+    startDate: string
+    endDate: string
+  } | null
+  keySkillsMastery: {
+    masteredSkillsCount: number
+    totalEvaluatedSkillsCount: number
+    percentage: number
+  }
+  evaluationProgress: {
+    evaluatedMembersCount: number
+    totalMembersCount: number
+    percentage: number
+  }
+}
+
 export const useUsers = () => {
   const { $api } = useNuxtApp()
 
@@ -229,6 +250,24 @@ export const useUsers = () => {
     }
   }
 
+  // Get team stats for a manager
+  async function getTeamStats(managerId: string): Promise<TeamStats> {
+    loading.value = true
+    error.value = null
+
+    try {
+      const stats = await $api<TeamStats>(`/admin/users/${managerId}/team-stats`, {
+        method: 'GET'
+      })
+      return stats
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch team stats'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     currentUser,
     users,
@@ -244,6 +283,7 @@ export const useUsers = () => {
     refreshCurrentUser,
     refreshUsers,
     searchUsers,
-    inviteUser
+    inviteUser,
+    getTeamStats
   }
 }

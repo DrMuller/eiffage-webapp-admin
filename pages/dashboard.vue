@@ -6,8 +6,13 @@
       <p class="text-gray-500 mt-2">Visualisation des données d'évaluation</p>
     </div>
 
-    <!-- Evaluation Job Chart -->
-    <DashboardEvaluationJobChart :jobs="jobs" :loading-jobs="loading" />
+    <div class="space-y-6">
+      <!-- Team Stats -->
+      <DashboardTeamStats />
+
+      <!-- Evaluation Job Chart -->
+      <DashboardEvaluationJobChart :jobs="jobs" :loading-jobs="loading" />
+    </div>
   </div>
 </template>
 
