@@ -99,7 +99,8 @@
         </div>
 
         <!-- Chart -->
-        <div v-else-if="selectedJobId && chartData && chartData.labels.length > 0" class="chart-container">
+        <div v-else-if="selectedJobId && chartData && chartData.labels.length > 0" class="chart-container"
+          :style="{ minHeight: chartHeight }">
           <Bar :data="chartData" :options="chartOptions" />
         </div>
 
@@ -246,6 +247,22 @@ const evaluationCoveragePercentage = computed(() => {
   return ((employeesWithEvaluation.value / totalEmployees.value) * 100).toFixed(1)
 })
 
+// Dynamic chart height based on number of skills
+// Each skill needs enough space for its label (which can be up to 3 lines)
+const chartHeight = computed(() => {
+  const numSkills = distribution.value.length
+  if (numSkills === 0) return '600px'
+
+  // Calculate height: minimum 80px per skill to accommodate multi-line labels
+  // Add base padding of 200px for legend, title, and margins
+  const heightPerSkill = 70
+  const basePadding = 0
+  const calculatedHeight = (numSkills * heightPerSkill) + basePadding
+
+  // Ensure minimum height of 600px for better visual appeal
+  return `${Math.max(600, calculatedHeight)}px`
+})
+
 // Chart colors for levels 0-4
 // Color palette: Sophisticated progression from cool to warm tones
 const levelColors = {
@@ -272,7 +289,7 @@ const chartData = computed(() => {
   // Split long labels into multiple lines for better readability
   const labels = distribution.value.map(item => {
     const maxLength = 35
-    const maxLines = 3 // Maximum number of lines before truncating
+    const maxLines = 4 // Maximum number of lines before truncating
 
     if (item.skillName.length <= maxLength) {
       return item.skillName
@@ -331,6 +348,9 @@ const chartOptions = computed(() => ({
   indexAxis: 'y' as const, // Horizontal bar chart
   responsive: true,
   maintainAspectRatio: false,
+  // Control bar spacing
+  barPercentage: 0.7, // Reduce bar thickness to 70% of available space
+  categoryPercentage: 0.8, // Use 80% of category space, leaving 20% for gaps
   scales: {
     x: {
       stacked: true,
@@ -361,6 +381,7 @@ const chartOptions = computed(() => ({
         autoSkip: false,
         maxRotation: 0,
         minRotation: 0,
+        padding: 10, // Add padding between labels and bars
       },
       grid: {
         display: false,
@@ -369,7 +390,7 @@ const chartOptions = computed(() => ({
   },
   plugins: {
     legend: {
-      position: 'bottom' as const,
+      position: 'top' as const,
       labels: {
         color: 'rgb(17, 24, 39)', // gray-900
         font: {
