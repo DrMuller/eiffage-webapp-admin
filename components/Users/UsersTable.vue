@@ -213,7 +213,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
+import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { User } from '~/types/auth'
 import type { Job } from '~/types/jobs'
 const router = useRouter()
@@ -358,7 +358,8 @@ const columns = computed<TableColumn<User>[]>(() => {
     return cols
 })
 
-function onSelect() {
+function onSelect(row: TableRow<User>) {
+    router.push(`/employes/${row.original._id}`)
 }
 
 function getRoleColor(role: string) {

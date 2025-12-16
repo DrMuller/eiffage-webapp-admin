@@ -15,7 +15,7 @@
       </div>
     </template>
 
-    <UTable v-model:sorting="sorting" :data="users" :columns="columns">
+    <UTable v-model:sorting="sorting" :data="users" :columns="columns" @select="onSelect">
       <!-- Sortable headers -->
       <template #name-header="{ column }">
         <div class="inline-flex items-center gap-1 cursor-pointer select-none" @click="column.toggleSorting()">
@@ -134,7 +134,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
+import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { User } from '~/types/auth'
 import type { Job } from '~/types/jobs'
 
@@ -234,4 +234,8 @@ const columns = computed<TableColumn<User>[]>(() => ([
     meta: { class: { th: 'text-center w-[120px]', td: 'w-[120px]' } },
   },
 ]))
+
+function onSelect(row: TableRow<User>) {
+  router.push(`/employes/${row.original._id}`)
+}
 </script>
