@@ -136,8 +136,12 @@
 
                     <!-- Expected Level cell -->
                     <template #expectedLevel-cell="{ row }">
-                        <div v-if="row.original.expectedLevel" class="text-gray-900 font-bold text-info-600">
-                            {{ row.original.expectedLevel }}
+                        <div v-if="row.original.expectedLevel" class="flex items-center justify-end gap-2">
+                            <USelect v-model="row.original.expectedLevel" :items="levelOptions" :value-key="'value'"
+                                :label-key="'label'" size="sm" class="w-32"
+                                :loading="updatingSkillId === row.original.skillId"
+                                :disabled="updatingSkillId === row.original.skillId"
+                                @update:model-value="(newLevel) => handleUpdateSkillLevel(row.original.skillId, newLevel)" />
                         </div>
                         <span v-else class="text-sm text-gray-400">—</span>
                     </template>
@@ -244,7 +248,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { getJobById, getJobSkills, removeSkillFromJob, addSkillToJob } = useJobs()
+const { getJobById, getJobSkills, removeSkillFromJob, addSkillToJob, updateJobSkillLevel } = useJobs()
 const { getMacroSkills, getMacroSkillTypes, createMacroSkill, createSkill } = useSkills()
 
 // Local state
@@ -256,6 +260,9 @@ const sorting = ref([])
 
 // Delete skill state
 const deletingSkillId = ref<string | null>(null)
+
+// Update skill level state
+const updatingSkillId = ref<string | null>(null)
 
 // Add macro skill modal state
 const isAddMacroSkillModalOpen = ref(false)
@@ -469,6 +476,42 @@ const handleAddSkill = async () => {
         })
     } finally {
         addingSkill.value = false
+    }
+}
+
+const handleUpdateSkillLevel = async (skillId: string, newLevel: number) => {
+    if (!job.value) return
+
+    const skill = jobSkills.value.find(s => s.skillId === skillId)
+    if (!skill) return
+
+    const oldLevel = skill.expectedLevel
+
+    updatingSkillId.value = skillId
+    try {
+        await updateJobSkillLevel(job.value._id, skillId, newLevel)
+
+        toast.add({
+            title: 'Succès',
+            description: `Niveau mis à jour de ${oldLevel} à ${newLevel}`,
+            color: 'success'
+        })
+
+        // Reload job skills to get fresh data
+        await loadJobSkills()
+    } catch (err) {
+        console.error('Failed to update skill level:', err)
+
+        toast.add({
+            title: 'Erreur',
+            description: 'Impossible de mettre à jour le niveau',
+            color: 'error'
+        })
+
+        // Reload to restore the old value
+        await loadJobSkills()
+    } finally {
+        updatingSkillId.value = null
     }
 }
 

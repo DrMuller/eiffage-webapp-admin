@@ -51,6 +51,13 @@ export const useJobs = () => {
         })
     }
 
+    async function updateJobSkillLevel(jobId: string, skillId: string, expectedLevel: number): Promise<JobSkillResponse> {
+        return await $api<JobSkillResponse>(`/jobs/${jobId}/skills/${skillId}`, {
+            method: 'PUT',
+            body: { expectedLevel }
+        })
+    }
+
     async function removeSkillFromJob(jobId: string, skillId: string): Promise<void> {
         return await $api<void>(`/jobs/${jobId}/skills/${skillId}`, {
             method: 'DELETE'
@@ -69,6 +76,7 @@ export const useJobs = () => {
         getJobById,
         getJobSkills,
         addSkillToJob,
+        updateJobSkillLevel,
         removeSkillFromJob,
         getJobSkillLevelDistribution,
     }

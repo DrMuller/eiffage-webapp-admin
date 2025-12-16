@@ -5,13 +5,6 @@
             <template #header>
                 <div class="flex items-center justify-between">
                     <div class="text-lg font-medium">Recherche</div>
-                    <div class="flex gap-2">
-                        <UButton color="secondary" variant="solid" @click="submitSearch">Rechercher</UButton>
-                        <UButton icon="i-heroicons-x-mark" color="neutral" variant="soft" :loading="loading"
-                            @click="handleReset">
-                            Réinitialiser
-                        </UButton>
-                    </div>
                 </div>
             </template>
             <div class="p-4 mt-4 max-w-[800px]">
