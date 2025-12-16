@@ -99,7 +99,7 @@ import type { Job } from '~/types/jobs'
 
 const router = useRouter()
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   jobs: Job[]
   loading?: boolean
   error?: string | null

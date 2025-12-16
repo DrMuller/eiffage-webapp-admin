@@ -11,7 +11,7 @@ export const useJobs = () => {
     async function getJobs(query: string = ''): Promise<Job[]> {
         loading.value = true
         error.value = null
-
+        
         try {
             const url = query && query.trim().length > 0 ? `/jobs?q=${encodeURIComponent(query)}` : '/jobs'
             const response = await $api<Job[]>(url, { method: 'GET' })
@@ -59,7 +59,7 @@ export const useJobs = () => {
     }
 
     async function removeSkillFromJob(jobId: string, skillId: string): Promise<void> {
-        return await $api<void>(`/jobs/${jobId}/skills/${skillId}`, {
+        return await $api(`/jobs/${jobId}/skills/${skillId}`, {
             method: 'DELETE'
         })
     }

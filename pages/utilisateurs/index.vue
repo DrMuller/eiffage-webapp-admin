@@ -112,7 +112,7 @@ definePageMeta({
 })
 
 // Composables
-const { users, managers, loading, error, paginationMeta, getAllUsers, updateUser, getAllManagers, searchUsers, inviteUser } = useUsers()
+const { users, managers, loading, error, paginationMeta, updateUser, getAllManagers, searchUsers, inviteUser } = useUsers()
 const { jobs, getJobs } = useJobs()
 const $router = useRouter()
 
@@ -287,7 +287,7 @@ const handleInviteUser = async (userId: string, role: 'ADMIN' | 'MANAGER') => {
 onMounted(async () => {
     try {
         await Promise.all([
-            getAllUsers({ page: currentPage.value, limit: pageSize.value }),
+            searchUsers({ page: currentPage.value, limit: pageSize.value }),
             getAllManagers(),
             getJobs()
         ])

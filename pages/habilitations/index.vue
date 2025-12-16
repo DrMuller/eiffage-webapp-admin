@@ -14,7 +14,7 @@
             title="Erreur lors du chargement des habilitations" :description="error" class="mb-6" />
 
         <!-- Search component - stays mounted during loading -->
-        <HabilitationsSearch :loading="loading" class="mb-6" @search="onSearch" />
+        <HabilitationsSearch :loading="loading" :jobs="jobs" :users="users" class="mb-6" @search="onSearch" />
 
         <!-- Habilitations Table -->
         <HabilitationsTable :habilitations="habilitations" :users="users" :jobs="jobs" :loading="loading" :error="error"

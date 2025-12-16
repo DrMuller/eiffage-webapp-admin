@@ -33,7 +33,7 @@ definePageMeta({
 })
 
 // Composables
-const { users, loading, error, paginationMeta, getAllUsers, getAllManagers, searchUsers } = useUsers()
+const { users, loading, error, paginationMeta, getAllManagers, searchUsers } = useUsers()
 const { jobs, getJobs } = useJobs()
 
 // Local state
@@ -101,7 +101,7 @@ async function onPageChange(page: number) {
 onMounted(async () => {
     try {
         await Promise.all([
-            getAllUsers({ page: currentPage.value, limit: pageSize.value }),
+            searchUsers({ page: currentPage.value, limit: pageSize.value }),
             getAllManagers(),
             getJobs()
         ])

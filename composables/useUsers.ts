@@ -76,14 +76,12 @@ export const useUsers = () => {
     loading.value = true
     error.value = null
 
+    params = params || { page: 1, limit: 9000 }
+    if (params.page) params.page = 1
+    if (params.limit) params.limit = 9000
     try {
-      const headers: Record<string, string> = {}
-      if (params?.page) headers['x-page'] = params.page.toString()
-      if (params?.limit) headers['x-limit'] = params.limit.toString()
-
-      const response = await $api<{ data: User[], meta: PaginationMeta }>('/admin/users', {
-        method: 'GET',
-        headers
+      const response = await $api<{ data: User[], meta: PaginationMeta }>(`/admin/users?page=${params.page}&limit=${params.limit}`, {
+        method: 'GET'
       })
 
       users.value = response.data
@@ -94,13 +92,6 @@ export const useUsers = () => {
       throw err
     } finally {
       loading.value = false
-    }
-  }
-
-  // Refresh current user data
-  async function refreshCurrentUser(): Promise<void> {
-    if (currentUser.value) {
-      await getCurrentUser()
     }
   }
 
@@ -157,10 +148,6 @@ export const useUsers = () => {
     }
   }
 
-  // Refresh users list
-  async function refreshUsers(): Promise<void> {
-    await getAllUsers()
-  }
 
   // Search users (admin only)
   async function searchUsers(params: {
@@ -241,6 +228,7 @@ export const useUsers = () => {
       // Update the user in the local list to reflect the new invitedAt timestamp and role
       const userIndex = users.value.findIndex(u => u._id === userId)
       if (userIndex !== -1) {
+        if (!users.value[userIndex]) return emailContent
         users.value[userIndex].invitedAt = new Date()
         if (role) {
           const currentRoles = users.value[userIndex].roles || ['USER']
@@ -287,8 +275,6 @@ export const useUsers = () => {
     getCurrentUser,
     getAllUsers,
     updateUser,
-    refreshCurrentUser,
-    refreshUsers,
     searchUsers,
     inviteUser,
     getTeamStats

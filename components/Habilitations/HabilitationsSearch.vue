@@ -51,6 +51,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import type { User } from '~/types/auth';
+import type { Job } from '~/types/jobs';
 
 const emit = defineEmits<{
     (e: 'search', payload: {
@@ -62,11 +64,8 @@ const emit = defineEmits<{
     }): void
 }>()
 
-defineProps<{ loading?: boolean }>()
+const props = defineProps<{ loading?: boolean, jobs?: Job[], users?: User[] }>()
 
-// Composables (self-contained data)
-const { jobs, getJobs } = useJobs()
-const { users, getAllUsers } = useUsers()
 
 // Local state
 const searchQuery = ref('')
@@ -76,8 +75,8 @@ const startDateFrom = ref('')
 const endDateTo = ref(new Date().toISOString().split('T')[0])
 
 // Options
-const jobsOptions = computed(() => jobs.value.map((j) => ({ label: j.name, value: j._id })))
-const usersOptions = computed(() => users.value.map((u) => ({
+const jobsOptions = computed(() => props.jobs?.map((j) => ({ label: j.name, value: j._id })) || [])
+const usersOptions = computed(() => props.users?.map((u) => ({
     label: `${u.firstName} ${u.lastName} (${u.code})`,
     value: u._id
 })))
@@ -102,10 +101,4 @@ function handleReset() {
     submitSearch()
 }
 
-onMounted(async () => {
-    await Promise.all([
-        getJobs(),
-        getAllUsers()
-    ])
-})
 </script>
