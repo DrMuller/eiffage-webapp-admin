@@ -46,8 +46,8 @@
 
     <!-- User info and logout at the bottom -->
     <div class="logout-container">
-      <div class="mb-4">
-        <UButton color="primary" variant="soft" @click="handleGoToEvaluation">
+      <div class="mb-4 flex justify-center">
+        <UButton color="primary" variant="outline" @click="handleGoToEvaluation">
           <span>Webapp Evaluation</span>
         </UButton>
       </div>
