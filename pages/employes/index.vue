@@ -70,21 +70,6 @@ async function onSearch(payload: {
 async function performSearch() {
     const { q, jobIds, skills, gender, establishmentName, ageMin, ageMax, seniorityMin, seniorityMax } = currentFilters.value || {}
 
-    if (
-        !q &&
-        (!jobIds || jobIds.length === 0) &&
-        (!skills || skills.length === 0) &&
-        !gender &&
-        !establishmentName &&
-        !ageMin &&
-        !ageMax &&
-        !seniorityMin &&
-        !seniorityMax
-    ) {
-        await getAllUsers({ page: currentPage.value, limit: pageSize.value })
-        return
-    }
-
     await searchUsers({
         q,
         jobIds,

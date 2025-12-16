@@ -80,7 +80,7 @@ export const useAuth = () => {
         // Fetch user details with the tokens
         const userData = await $api<User>('/users/me', { method: 'GET' })
         user.value = userData
-      } catch (e) {
+      } catch {
         console.log('Failed to fetch user details')
         // If this fails, tokens might be invalid
         // clearAuth()

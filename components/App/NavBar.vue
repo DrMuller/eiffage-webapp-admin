@@ -7,7 +7,7 @@
 
     <!-- Navigation links -->
     <nav class="nav-links">
-      <NuxtLink v-if="isAdmin" to="/dashboard" class="nav-item"
+      <NuxtLink v-if="isAdminOrManager" to="/dashboard" class="nav-item"
         :class="{ 'router-link-active router-link-exact-active': route.path.startsWith('/dashboard') }">
         <UIcon name="i-heroicons-chart-bar" class="w-5 h-5" />
         <span>Tableau de bord</span>
@@ -46,6 +46,11 @@
 
     <!-- User info and logout at the bottom -->
     <div class="logout-container">
+      <div class="mb-4">
+        <UButton color="primary" variant="soft" @click="handleGoToEvaluation">
+          <span>Webapp Evaluation</span>
+        </UButton>
+      </div>
       <div class="user-info">
         <div class="user-name">{{ user?.firstName }} {{ user?.lastName }}</div>
         <div class="user-email">{{ user?.email }}</div>
@@ -64,6 +69,7 @@ import { computed } from 'vue'
 const { clearAuth, user } = useAuth()
 const router = useRouter()
 const route = useRoute()
+const config = useRuntimeConfig()
 
 // Check if user has admin role
 const isAdmin = computed(() => {
@@ -78,6 +84,11 @@ const isAdminOrManager = computed(() => {
 const handleLogout = () => {
   clearAuth()
   router.push('/auth/signin')
+}
+
+const handleGoToEvaluation = () => {
+  // new tab
+  window.open(config.public.evaluationWebappUrl, '_blank')
 }
 </script>
 

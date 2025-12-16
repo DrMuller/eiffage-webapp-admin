@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3">
       <div class="col-span-1 lg:col-span-1 p-4">
         <!-- Manager Selection -->
-        <UFormField v-if="!hideSelector" label="Sélectionner un manager">
+        <UFormField v-if="!shouldHideSelector" label="Sélectionner un manager">
           <USelectMenu v-model="selectedManagerId" :items="managerOptions" :value-key="'value'" searchable
             searchable-placeholder="Rechercher un manager..." :loading="loadingManagers"
             placeholder="Sélectionner un manager" class="w-full" />
@@ -181,10 +181,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Composables
 const { getAllManagers, getTeamStats, managers: managersRef } = useUsers()
+const { user } = useAuth()
 const toast = useToast()
 
+// Check if current user is a manager
+const isCurrentUserManager = computed(() =>
+  user.value?.roles.includes('MANAGER') ?? false
+)
+
 // State
-const selectedManagerId = ref<string>(props.managerId || '')
+const selectedManagerId = ref<string>(
+  props.managerId || (isCurrentUserManager.value ? user.value?._id || '' : '')
+)
 const stats = ref<TeamStats | null>(null)
 const loadingManagers = ref(false)
 const loadingStats = ref(false)
@@ -193,6 +201,10 @@ const loadingStats = ref(false)
 const circumference = 2 * Math.PI * 56
 
 // Computed
+const shouldHideSelector = computed(() =>
+  props.hideSelector || isCurrentUserManager.value
+)
+
 const managerOptions = computed(() =>
   managersRef.value.map((manager: User) => ({
     label: `${manager.firstName} ${manager.lastName}`,
@@ -259,9 +271,13 @@ watch(selectedManagerId, () => {
 
 // Lifecycle
 onMounted(() => {
-  fetchManagers()
-  // If managerId is provided via props, fetch stats immediately
-  if (props.managerId) {
+  // Only fetch managers list if the current user is not a manager
+  if (!isCurrentUserManager.value) {
+    fetchManagers()
+  }
+
+  // If managerId is provided via props or user is a manager, fetch stats immediately
+  if (props.managerId || isCurrentUserManager.value) {
     fetchStats()
   }
 })
