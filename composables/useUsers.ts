@@ -228,20 +228,27 @@ export const useUsers = () => {
   }
 
   // Invite user (admin only)
-  async function inviteUser(userId: string): Promise<void> {
+  async function inviteUser(userId: string, role?: 'ADMIN' | 'MANAGER'): Promise<{ to: string; subject: string; body: string }> {
     loading.value = true
     error.value = null
 
     try {
-      await $api(`/admin/users/${userId}/invite`, {
-        method: 'POST'
+      const emailContent = await $api<{ to: string; subject: string; body: string }>(`/admin/users/${userId}/invite`, {
+        method: 'POST',
+        body: role ? { role } : undefined
       })
 
-      // Update the user in the local list to reflect the new invitedAt timestamp
+      // Update the user in the local list to reflect the new invitedAt timestamp and role
       const userIndex = users.value.findIndex(u => u._id === userId)
       if (userIndex !== -1) {
         users.value[userIndex].invitedAt = new Date()
+        if (role) {
+          const currentRoles = users.value[userIndex].roles || ['USER']
+          users.value[userIndex].roles = Array.from(new Set([...currentRoles, role, 'USER']))
+        }
       }
+
+      return emailContent
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to invite user'
       throw err

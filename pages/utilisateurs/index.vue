@@ -254,25 +254,32 @@ const handleUpdateUser = async () => {
     }
 }
 
-const handleInviteUser = async (userId: string) => {
+const handleInviteUser = async (userId: string, role: 'ADMIN' | 'MANAGER') => {
     try {
-        await inviteUser(userId)
+        const emailContent = await inviteUser(userId, role)
 
         const user = users.value.find(u => u._id === userId)
         const userName = user ? `${user.firstName} ${user.lastName}` : 'l\'utilisateur'
+        const roleLabel = role === 'ADMIN' ? 'RH (Administrateur)' : 'Manager'
+
+        // Open mailto link with prefilled content
+        const mailtoLink = `mailto:${emailContent.to}?subject=${encodeURIComponent(emailContent.subject)}&body=${encodeURIComponent(emailContent.body)}`
+        window.open(mailtoLink, '_blank')
 
         toast.add({
-            title: 'Invitation envoyée',
-            description: `L'email d'invitation a été envoyé à ${userName}.`,
+            title: 'Invitation préparée',
+            description: `L'invitation pour ${userName} avec le rôle ${roleLabel} a été préparée. Veuillez envoyer l'email depuis votre client.`,
             color: 'success'
         })
+        
+        await performSearch() // Refresh user list to show updated roles/invite status
     } catch (err) {
         toast.add({
             title: 'Erreur',
-            description: 'Échec de l\'envoi de l\'invitation.',
+            description: 'Échec de la préparation de l\'invitation.',
             color: 'error'
         })
-        console.error('Échec de l\'envoi de l\'invitation:', err)
+        console.error('Échec de la préparation de l\'invitation:', err)
     }
 }
 

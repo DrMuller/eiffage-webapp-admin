@@ -100,7 +100,7 @@
             <template v-if="showInviteFeatures" #invite-cell="{ row }">
                 <div class="flex justify-center">
                     <UButton icon="i-heroicons-envelope" size="sm" color="secondary" variant="ghost"
-                        aria-label="Inviter l'utilisateur" @click.stop="$emit('invite', row.original._id)">
+                        aria-label="Inviter l'utilisateur" @click.stop="openInviteModal(row.original)">
                         Inviter
                     </UButton>
                 </div>
@@ -143,6 +143,72 @@
             </div>
         </template>
     </UCard>
+
+    <!-- Invite Modal -->
+    <UModal v-model:open="isInviteModalOpen" title="Inviter l'utilisateur">
+        <template #body>
+            <div class="p-6">
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        Vous êtes sur le point d'inviter :
+                    </p>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                        {{ selectedUserForInvite?.firstName }} {{ selectedUserForInvite?.lastName }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ selectedUserForInvite?.email }}
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Sélectionnez le rôle à attribuer :
+                    </p>
+
+                    <div class="space-y-2">
+                        <button type="button"
+                            class="w-full p-4 border-2 rounded-lg transition-all hover:border-secondary-500 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                            :class="selectedRole === 'ADMIN' ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20' : 'border-gray-200 dark:border-gray-700'"
+                            @click="selectedRole = 'ADMIN'">
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900 dark:text-white">RH (Administrateur)</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Accès complet à la plateforme
+                                    </div>
+                                </div>
+                                <UIcon name="i-heroicons-check-circle" class="w-6 h-6 transition-colors"
+                                    :class="selectedRole === 'ADMIN' ? 'text-secondary-500' : 'text-gray-300 dark:text-gray-600'" />
+                            </div>
+                        </button>
+
+                        <button type="button"
+                            class="w-full p-4 border-2 rounded-lg transition-all hover:border-secondary-500 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                            :class="selectedRole === 'MANAGER' ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20' : 'border-gray-200 dark:border-gray-700'"
+                            @click="selectedRole = 'MANAGER'">
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900 dark:text-white">Manager</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Gestion d'équipe et
+                                        évaluations</div>
+                                </div>
+                                <UIcon name="i-heroicons-check-circle" class="w-6 h-6 transition-colors"
+                                    :class="selectedRole === 'MANAGER' ? 'text-secondary-500' : 'text-gray-300 dark:text-gray-600'" />
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-6">
+                    <UButton color="neutral" variant="soft" @click="closeInviteModal">
+                        Annuler
+                    </UButton>
+                    <UButton color="secondary" :disabled="!selectedRole" :loading="inviteLoading" @click="handleInvite">
+                        Envoyer l'invitation
+                    </UButton>
+                </div>
+            </div>
+        </template>
+    </UModal>
 </template>
 
 <script setup lang="ts">
@@ -185,10 +251,14 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
     (e: 'page-change', page: number): void
     (e: 'edit', user: User): void
-    (e: 'invite', userId: string): void
+    (e: 'invite', userId: string, role: 'ADMIN' | 'MANAGER'): void
 }>()
 
 const sorting = ref([])
+const isInviteModalOpen = ref(false)
+const selectedUserForInvite = ref<User | null>(null)
+const selectedRole = ref<'ADMIN' | 'MANAGER' | null>(null)
+const inviteLoading = ref(false)
 
 const currentPageModel = ref(props.currentPage)
 
@@ -319,5 +389,30 @@ function getRoleVariant(role: string): 'solid' | 'outline' | 'soft' {
         default:
             return 'outline'
     }
+}
+
+function openInviteModal(user: User) {
+    selectedUserForInvite.value = user
+    selectedRole.value = null
+    isInviteModalOpen.value = true
+}
+
+function closeInviteModal() {
+    isInviteModalOpen.value = false
+    selectedUserForInvite.value = null
+    selectedRole.value = null
+    inviteLoading.value = false
+}
+
+async function handleInvite() {
+    if (!selectedUserForInvite.value || !selectedRole.value) return
+
+    inviteLoading.value = true
+    emit('invite', selectedUserForInvite.value._id, selectedRole.value)
+    // Note: The parent component should handle success/error and close the modal
+    // We'll close it after a short delay to allow for feedback
+    setTimeout(() => {
+        closeInviteModal()
+    }, 500)
 }
 </script>
